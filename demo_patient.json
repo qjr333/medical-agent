@@ -29,8 +29,8 @@
     "scheduled": {
       "label": "定时随访",
       "followup_reason": "到达每日计划健康随访时间",
-      "bp_systolic": 162,
-      "bp_diastolic": 96
+      "bp_systolic": null,
+      "bp_diastolic": null
     },
     "high_bp": {
       "label": "血压异常",

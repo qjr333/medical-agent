@@ -45,6 +45,7 @@ from agent.planner import get_available_actions, select_next_action
 from agent.question_planner import generate_question
 from agent.reporting import build_urgent_message, generate_report, build_finish_message
 from agent.runner import run_agent as _run_agent
+from agent.llm_v4 import extract_user_patch_v4, run_agent_v4
 from medical_tools.safety import (
     HIGH_BP_SYS, HIGH_BP_DIA, ATTENTION_BP_SYS, ATTENTION_BP_DIA, DANGER_PATTERNS,
     phrase_is_negated, detect_danger_signs, contains_red_flag_language,
@@ -89,6 +90,8 @@ def create_patient_state(trigger_type: str):
 
 
 def extract_user_patch(text: str, patient_state=None):
+    if os.getenv("LLM_AGENT_V4", "0") == "1":
+        return extract_user_patch_v4(text, patient_state, call_json_model=call_json_model)
     return _extract_user_patch(
         text, patient_state, call_json_model=call_json_model,
         contains_red_flag_language=contains_red_flag_language,
@@ -104,6 +107,11 @@ def tool_generate_visit_advice(state: dict):
 
 
 def run_agent(state: dict):
+    if os.getenv("LLM_AGENT_V4", "0") == "1":
+        print("[AGENT] Running LLM-driven Agent V4", flush=True)
+        return run_agent_v4(state, call_json_model=call_json_model)
+
+    print("[AGENT] Running rule-based Agent V3", flush=True)
     return _run_agent(state, call_json_model=call_json_model)
 
 

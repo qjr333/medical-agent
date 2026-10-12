@@ -478,6 +478,11 @@ def merge_user_patch(state: dict, patch: dict, raw_text: str):
     # 调用原安全规则，但限定每个分句的否定范围，避免前句“没有”吞掉转折后红旗。
     dangers = unique_list([flag for clause in split_answer_clauses(raw_text)
                            for flag in detect_danger_signs(clause)])
+    # V4 prevalidates model-extracted red flags against patient utterance / previous question.
+    if patch.get("_llm_v4_verified"):
+        for item in patch.get("red_flags") or []:
+            if item in DANGER_PATTERNS or item == "疑似危险症状（筛查阳性，具体类型待确认）":
+                dangers.append(item)
     state["red_flags"] = unique_list((state.get("red_flags") or []) + dangers)
     state["denied_red_flags"] = [flag for flag in unique_list(
         state["denied_red_flags"] + (patch.get("denied_red_flags") or [])
