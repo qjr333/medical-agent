@@ -1,4 +1,71 @@
-.env
+# ==========================================
+# 银龄守护 Medical Agent - Git Ignore
+# ==========================================
+
+# 1. Python虚拟环境
 .venv/
+venv/
+env/
+
+# 2. Python缓存及临时文件
 __pycache__/
-data/rag_cache/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 3. 环境变量及API密钥
+.env
+.env.*
+!.env.example
+
+# 4. SQLite数据库及运行数据
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# 5. RAG模型及向量缓存
+.cache/
+rag_cache/
+models_cache/
+*.npy
+*.npz
+
+# 6. React / Vite前端依赖及构建产物
+node_modules/
+dist/
+.vite/
+coverage/
+
+# 7. 日志文件
+*.log
+logs/
+
+# 8. Mac系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 9. Windows系统文件
+Thumbs.db
+desktop.ini
+
+# 10. VS Code本地配置
+.vscode/
+.idea/
+
+# 11. Python测试和覆盖率结果
+.coverage
+htmlcov/
+.tox/
+
+# 12. 临时文件
+*.tmp
+*.bak
+*.swp
+*~
