@@ -10,7 +10,7 @@ load_dotenv()
 
 DEEPSEEK_API_KEY = os.getenv(
     "DEEPSEEK_API_KEY",
-    ""
+    "sk-e4e9eb6baf434c43b9c78c24dee4aa11"
 ).strip()
 
 
