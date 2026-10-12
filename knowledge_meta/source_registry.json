@@ -1,0 +1,172 @@
+{
+  "registry_version": "1.0",
+  "project": "elderly_hypertension_followup_agent",
+  "priority_note": "base_priority only controls retrieval routing; it is not a medical quality score. Final ranking should also consider semantic relevance, topic, population and recency.",
+  "sources": [
+    {
+      "source_id": "CN_NHC_WS_T_872_2025",
+      "file_name": "《基层医疗卫生机构高血压防治管理标准》20250929.pdf",
+      "title": "基层医疗卫生机构高血压防治管理标准",
+      "standard_no": "WS/T 872-2025",
+      "year": 2025,
+      "document_type": "推荐性卫生行业标准",
+      "issuer": "国家卫生健康委员会",
+      "effective_date": "2026-03-01",
+      "topics": [
+        "blood_pressure_measurement",
+        "followup_workflow",
+        "medication_management",
+        "referral",
+        "health_education"
+      ],
+      "base_priority": 100
+    },
+    {
+      "source_id": "CN_PRIMARY_HTN_GUIDE_2025",
+      "file_name": "国家基层高血压防治管理指南2025版.pdf",
+      "title": "国家基层高血压防治管理指南2025版",
+      "year": 2025,
+      "document_type": "基层高血压管理指南",
+      "topics": [
+        "diagnosis",
+        "treatment",
+        "followup_workflow",
+        "referral",
+        "health_education",
+        "home_bp_monitoring"
+      ],
+      "base_priority": 96
+    },
+    {
+      "source_id": "CN_HTN_GUIDE_2024",
+      "file_name": "中国高血压防治指南(2024年修订版).pdf",
+      "title": "中国高血压防治指南（2024年修订版）",
+      "year": 2024,
+      "document_type": "综合专业指南",
+      "topics": [
+        "blood_pressure_measurement",
+        "diagnosis",
+        "risk_assessment",
+        "treatment",
+        "home_bp_monitoring",
+        "internet_health_management",
+        "lifestyle"
+      ],
+      "base_priority": 94
+    },
+    {
+      "source_id": "CN_HTN_CLINICAL_2024",
+      "file_name": "中国高血压临床实践指南.pdf",
+      "title": "中国高血压临床实践指南",
+      "year": 2024,
+      "document_type": "循证临床实践指南",
+      "topics": [
+        "diagnosis",
+        "pharmacological_treatment",
+        "treatment_target",
+        "followup"
+      ],
+      "base_priority": 94
+    },
+    {
+      "source_id": "CN_ELDERLY_HTN_2023",
+      "file_name": "中国老年高血压管理指南2023.pdf",
+      "title": "中国老年高血压管理指南2023",
+      "year": 2023,
+      "document_type": "老年专病指南",
+      "population": [
+        "age>=65"
+      ],
+      "topics": [
+        "elderly_management",
+        "home_bp_monitoring",
+        "orthostatic_bp",
+        "frailty",
+        "cognitive_function",
+        "polypharmacy",
+        "medication_safety"
+      ],
+      "base_priority": 90,
+      "population_boost": {
+        "age>=65": 15,
+        "age>=80": 18
+      }
+    },
+    {
+      "source_id": "CN_NHC_LIFESTYLE_HTN_2024",
+      "file_name": "高血压营养和运动指导原则（2024版）.pdf",
+      "title": "高血压营养和运动指导原则（2024年版）",
+      "year": 2024,
+      "document_type": "国家卫生健康指导原则",
+      "topics": [
+        "nutrition",
+        "exercise",
+        "weight_management",
+        "salt_intake",
+        "lifestyle"
+      ],
+      "base_priority": 86
+    },
+    {
+      "source_id": "CN_HOME_BP_2019",
+      "file_name": "2019中国家庭血压监测指南.pdf",
+      "title": "2019中国家庭血压监测指南",
+      "year": 2019,
+      "document_type": "专题指南",
+      "topics": [
+        "home_bp_monitoring",
+        "measurement_method",
+        "measurement_frequency",
+        "remote_bp_data"
+      ],
+      "base_priority": 84,
+      "topic_boost": {
+        "home_bp_monitoring": 18
+      }
+    },
+    {
+      "source_id": "WHO_HTN_PHARM_2021",
+      "file_name": "2021 who成人高血压药物治疗指南.pdf",
+      "title": "Guideline for the pharmacological treatment of hypertension in adults",
+      "year": 2021,
+      "document_type": "WHO guideline",
+      "topics": [
+        "pharmacological_treatment",
+        "treatment_initiation",
+        "combination_therapy",
+        "treatment_target",
+        "followup_interval"
+      ],
+      "base_priority": 80
+    },
+    {
+      "source_id": "CN_PRIMARY_HTN_MANUAL_2020",
+      "file_name": "国家基层高血压防治管理手册.pdf",
+      "title": "国家基层高血压防治管理手册2020版",
+      "year": 2020,
+      "document_type": "基层操作手册",
+      "topics": [
+        "followup_workflow",
+        "patient_education",
+        "screening",
+        "operational_process"
+      ],
+      "base_priority": 76
+    },
+    {
+      "source_id": "CN_BASIC_PUBLIC_HEALTH_2017",
+      "file_name": "国家基本公共卫生服务规范（第三版）.pdf",
+      "title": "国家基本公共卫生服务规范（第三版）",
+      "year": 2017,
+      "document_type": "国家基本公共卫生服务规范",
+      "topics": [
+        "health_record",
+        "hypertension_followup",
+        "medication_adherence",
+        "referral",
+        "followup_form"
+      ],
+      "base_priority": 74
+    }
+  ]
+}

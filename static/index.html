@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        银龄守护 - 主动健康随访 Agent
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f7fb;
+            font-family:
+                Arial,
+                "Microsoft YaHei",
+                sans-serif;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 30px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .topbar p {
+            margin: 8px 0 0;
+            color: #6b7280;
+        }
+
+        .demo-notice {
+            margin-top: 12px;
+            display: inline-block;
+            background: #fff7e6;
+            color: #8a5a00;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .main {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 20px;
+
+            display: grid;
+            grid-template-columns:
+                minmax(320px, 420px)
+                minmax(0, 1fr);
+
+            gap: 22px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .panel-title {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h3 {
+            margin: 0 0 14px;
+            font-size: 15px;
+        }
+
+        .profile-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .profile-label {
+            color: #6b7280;
+        }
+
+        .profile-value {
+            font-weight: 600;
+        }
+
+        .bp-history {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .bp-card {
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+            text-align: center;
+            border: 1px solid #edf0f4;
+        }
+
+        .bp-card .date {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .bp-card .value {
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .trigger-button {
+            width: 100%;
+            min-height: 48px;
+            border: 1px solid #dbe2ea;
+            border-radius: 10px;
+            background: white;
+            padding: 11px 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            transition: .15s;
+        }
+
+        .trigger-button:hover {
+            background: #f5f8ff;
+            border-color: #9abcf7;
+        }
+
+        .trigger-button strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .trigger-button small {
+            color: #6b7280;
+        }
+
+        .state-box {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .state-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .state-item span:first-child {
+            color: #6b7280;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.waiting {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .status.following {
+            background: #e8f2ff;
+            color: #1858a8;
+        }
+
+        .status.completed {
+            background: #e9f8ef;
+            color: #237447;
+        }
+
+        .status.escalated {
+            background: #fff0f0;
+            color: #b42318;
+        }
+
+        .chat-panel {
+            min-height: 720px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-head {
+            padding: 18px 22px;
+            border-bottom: 1px solid #e5e7eb;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .chat-head-title {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .chat-head-sub {
+            margin-top: 5px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .reset-button {
+            border: none;
+            background: #eef1f5;
+            padding: 10px 14px;
+            border-radius: 9px;
+            cursor: pointer;
+        }
+
+        #chat {
+            flex: 1;
+            min-height: 520px;
+            max-height: 650px;
+            overflow-y: auto;
+            padding: 22px;
+            background: #fbfcfe;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 18px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .bubble {
+            max-width: 78%;
+            padding: 13px 16px;
+            border-radius: 14px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+            font-size: 15px;
+        }
+
+        .assistant .bubble {
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+
+        .user .bubble {
+            background: #1769e0;
+            color: white;
+        }
+
+        .message.loading .bubble {
+            color: #475569;
+            border: 1px dashed #bfcee0;
+            background: #f6f9fc;
+        }
+
+        .trigger-button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .system-message {
+            text-align: center;
+            margin: 14px 0 20px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            padding: 18px 20px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        #messageInput {
+            flex: 1;
+            border: 1px solid #d5dae1;
+            border-radius: 10px;
+            padding: 13px 14px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        #messageInput:focus {
+            border-color: #1769e0;
+        }
+
+        #sendButton {
+            border: none;
+            border-radius: 10px;
+            background: #1769e0;
+            color: white;
+            padding: 0 24px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        #sendButton:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .alert-box {
+            margin-top: 12px;
+            background: #fff1f0;
+            color: #a61b1b;
+            border-radius: 9px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        @media (
+            max-width: 900px
+        ) {
+
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-panel {
+                min-height: 600px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="topbar">
+
+    <h1>
+        银龄守护
+    </h1>
+
+    <p>
+        面向老年高血压患者的主动健康随访 Agent
+    </p>
+
+    <div class="demo-notice">
+        比赛 Demo：当前通过按钮模拟定时任务、
+        健康数据和行为事件主动触发 Agent
+    </div>
+
+</div>
+
+
+<div class="main">
+
+
+    <!-- ========================= -->
+    <!-- 左侧：管理端 -->
+    <!-- ========================= -->
+
+    <div class="panel">
+
+        <div class="panel-title">
+            随访管理端
+        </div>
+
+
+        <div class="section">
+
+            <h3>
+                患者档案
+            </h3>
+
+            <div class="profile-row">
+
+                <span class="profile-label">
+                    姓名
+                </span>
+
+                <span
+                    class="profile-value"
+                    id="patientName"
+                >
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="profile-row">
+
+                <span class="profile-label">
+                    年龄
+                </span>
+
+                <span
+                    class="profile-value"
+                    id="patientAge"
+                >
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="profile-row">
+
+                <span class="profile-label">
+                    慢病
+                </span>
+
+                <span
+                    class="profile-value"
+                    id="patientCondition"
+                >
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="profile-row">
+
+                <span class="profile-label">
+                    计划随访时间
+                </span>
+
+                <span
+                    class="profile-value"
+                    id="followupTime"
+                >
+                    -
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="section">
+
+            <h3>
+                近期血压
+            </h3>
+
+            <div
+                class="bp-history"
+                id="bpHistory"
+            >
+            </div>
+
+        </div>
+
+
+        <div class="section">
+
+            <h3>
+                模拟主动触发
+            </h3>
+
+
+            <button
+                class="trigger-button"
+                data-trigger="scheduled"
+            >
+
+                <strong>
+                    ⏰ 定时随访
+                </strong>
+
+                <small>
+                    模拟到达每日计划随访时间
+                </small>
+
+            </button>
+
+
+            <button
+                class="trigger-button"
+                data-trigger="high_bp"
+            >
+
+                <strong>
+                    📈 血压异常
+                </strong>
+
+                <small>
+                    模拟健康数据触发主动随访
+                </small>
+
+            </button>
+
+
+            <button
+                class="trigger-button"
+                data-trigger="missed_measurement"
+            >
+
+                <strong>
+                    📭 连续未测血压
+                </strong>
+
+                <small>
+                    模拟行为异常触发主动提醒
+                </small>
+
+            </button>
+
+        </div>
+
+
+        <div class="section">
+
+            <h3>
+                本次随访状态
+            </h3>
+
+            <div class="state-box">
+
+                <div class="state-item">
+
+                    <span>
+                        状态
+                    </span>
+
+                    <span
+                        class="status waiting"
+                        id="statusBadge"
+                    >
+                        等待触发
+                    </span>
+
+                </div>
+
+
+                <div class="state-item">
+
+                    <span>
+                        触发原因
+                    </span>
+
+                    <span
+                        id="triggerReason"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="state-item">
+
+                    <span>
+                        当前血压
+                    </span>
+
+                    <span
+                        id="currentBp"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="state-item">
+
+                    <span>
+                        服药情况
+                    </span>
+
+                    <span
+                        id="medicationStatus"
+                    >
+                        尚未询问
+                    </span>
+
+                </div>
+
+
+                <div class="state-item">
+
+                    <span>
+                        当前症状
+                    </span>
+
+                    <span
+                        id="currentSymptoms"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="state-item">
+
+                    <span>
+                        风险状态
+                    </span>
+
+                    <span
+                        id="riskLevel"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="alert-box"
+                    id="alertBox"
+                    style="display:none;"
+                >
+
+                    已生成家属及医护告警草稿（比赛模拟，未实际发送）
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- 右侧：老人端 -->
+    <!-- ========================= -->
+
+    <div class="panel chat-panel">
+
+        <div class="chat-head">
+
+            <div>
+
+                <div class="chat-head-title">
+                    老人端 · AI 主动随访
+                </div>
+
+                <div class="chat-head-sub">
+                    Agent 根据触发原因和 Patient State
+                    动态决定下一问
+                </div>
+
+            </div>
+
+
+            <button
+                class="reset-button"
+                id="resetButton"
+            >
+                重新演示
+            </button>
+
+        </div>
+
+
+        <div id="chat">
+
+            <div class="system-message">
+
+                请从左侧选择一个触发场景，
+                模拟 Agent 主动联系老人。
+
+            </div>
+
+        </div>
+
+
+        <div class="input-area">
+
+            <input
+                id="messageInput"
+                placeholder="请先触发一次主动随访"
+                disabled
+            >
+
+            <button
+                id="sendButton"
+                disabled
+            >
+                发送
+            </button>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+"use strict";
+
+// Compatible with both current FastAPI API: {message, state, session_id}
+// and legacy frontend API: {reply, patient_state, session_id}.
+const CHAT_TIMEOUT_MS = 90000;
+const TRIGGER_TIMEOUT_MS = 60000;
+const DEMO_TIMEOUT_MS = 12000;
+
+let sessionId = null;
+let followupDone = false;
+let demoPatient = null;
+let busy = false;
+let activeController = null;
+let activeProgress = null;
+let progressTicker = null;
+let requestGeneration = 0;
+
+const byId = id => document.getElementById(id);
+const chat = byId('chat');
+const messageInput = byId('messageInput');
+const sendButton = byId('sendButton');
+const resetButton = byId('resetButton');
+const statusBadge = byId('statusBadge');
+const triggerReason = byId('triggerReason');
+const currentBp = byId('currentBp');
+const medicationStatus = byId('medicationStatus');
+const currentSymptoms = byId('currentSymptoms');
+const riskLevel = byId('riskLevel');
+const alertBox = byId('alertBox');
+const triggerButtons = Array.from(document.querySelectorAll('.trigger-button'));
+
+function addMessage(text, role = 'assistant') {
+    const row = document.createElement('div');
+    row.className = `message ${role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = String(text ?? '');
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+    return row;
+}
+
+function addSystemMessage(text) {
+    const div = document.createElement('div');
+    div.className = 'system-message';
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+}
+
+function clearProgress() {
+    if (progressTicker !== null) {
+        clearInterval(progressTicker);
+        progressTicker = null;
+    }
+    if (activeProgress) {
+        activeProgress.remove();
+        activeProgress = null;
+    }
+}
+
+function showProgress(kind) {
+    clearProgress();
+    const startedAt = Date.now();
+    const initial = kind === 'trigger' ? '正在启动主动随访' : 'Agent 正在处理您的回复';
+    activeProgress = addMessage(initial + '（0秒）…', 'assistant loading');
+    const bubble = activeProgress.querySelector('.bubble');
+    progressTicker = setInterval(() => {
+        if (!bubble) return;
+        const seconds = Math.floor((Date.now() - startedAt) / 1000);
+        const note = seconds >= 25 ? '，可能正在等待模型或医学知识检索' : '';
+        bubble.textContent = `${initial}（${seconds}秒${note}）…`;
+    }, 1000);
+}
+
+function updateControls() {
+    const canChat = Boolean(sessionId) && !followupDone && !busy;
+    messageInput.disabled = !canChat;
+    sendButton.disabled = !canChat;
+    triggerButtons.forEach(button => { button.disabled = busy; });
+    if (busy) {
+        messageInput.placeholder = '正在处理，请稍候…';
+    } else if (followupDone) {
+        messageInput.placeholder = '本次随访已结束，可重新选择触发场景';
+    } else if (sessionId) {
+        messageInput.placeholder = '请输入您的回复，例如：我今天按时服药了';
+    } else {
+        messageInput.placeholder = '请先触发一次主动随访';
+    }
+}
+
+function updateStatus(status) {
+    const labels = {
+        waiting: '等待触发',
+        following: 'AI随访中',
+        active: '随访进行中',
+        waiting_for_user: '等待患者回复',
+        completed: '随访完成',
+        escalated: '异常升级'
+    };
+    const styles = {
+        waiting: 'waiting',
+        following: 'following',
+        active: 'following',
+        waiting_for_user: 'following',
+        completed: 'completed',
+        escalated: 'escalated'
+    };
+    statusBadge.className = 'status ' + (styles[status] || 'waiting');
+    statusBadge.textContent = labels[status] || '状态未知';
+}
+
+function normalizeResponse(data) {
+    if (!data || typeof data !== 'object') {
+        throw new Error('后端没有返回有效的 JSON 对象');
+    }
+    const state = data.state ?? data.patient_state ?? null;
+    const message = data.message ?? data.reply ?? null;
+    const alerts = data.alerts ?? null;
+    const hasAlerts = Boolean(
+        alerts || data.family_alert || data.clinician_alert
+    );
+    const status = state?.followup_status;
+    return {
+        sessionId: data.session_id ?? null,
+        state,
+        message,
+        hasAlerts,
+        done: Boolean(data.done || status === 'completed' || status === 'escalated'),
+        status
+    };
+}
+
+function updatePatientState(state) {
+    if (!state || typeof state !== 'object') return;
+    triggerReason.textContent = state.followup_reason || '-';
+    const systolic = state.bp_systolic;
+    const diastolic = state.bp_diastolic;
+    currentBp.textContent = (systolic != null && diastolic != null)
+        ? `${systolic}/${diastolic} mmHg` : '尚未获得';
+    const medMap = {
+        unknown: '尚未确认', taken: '已报告按时服药',
+        missed: '报告存在漏服', irregular: '近期服药不规律',
+        stopped: '报告已停药'
+    };
+    medicationStatus.textContent = medMap[state.medication_status] || '尚未确认';
+    if (Array.isArray(state.symptoms) && state.symptoms.length > 0) {
+        currentSymptoms.textContent = state.symptoms.join('、');
+    } else if (state.symptom_status === 'denied') {
+        currentSymptoms.textContent = '患者明确否认不适';
+    } else {
+        // Unknown != no symptoms. This is essential for medical safety.
+        currentSymptoms.textContent = '尚未确认';
+    }
+    riskLevel.textContent = ({normal: '常规', attention: '需关注', high: '高风险'})[state.risk_level] || '未评估';
+    updateStatus(state.followup_status || 'following');
+}
+
+async function fetchJSON(url, options = {}, timeoutMs = 30000) {
+    const controller = new AbortController();
+    activeController = controller;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, {...options, signal: controller.signal});
+        const body = await response.text();
+        let data;
+        try {
+            data = body ? JSON.parse(body) : null;
+        } catch (_) {
+            throw new Error(`后端返回了非 JSON 内容（HTTP ${response.status}）`);
+        }
+        if (!response.ok) {
+            const detail = data?.detail ?? data?.error ?? data?.message ?? '请求失败';
+            const detailText = typeof detail === 'string' ? detail : JSON.stringify(detail);
+            throw new Error(`HTTP ${response.status}：${detailText}`);
+        }
+        if (data?.error) throw new Error(String(data.error));
+        return data;
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            throw new Error(`请求等待超过 ${Math.round(timeoutMs / 1000)} 秒。后端可能仍在处理，请勿立即重复提交。`);
+        }
+        if (error instanceof TypeError) {
+            throw new Error('无法连接后端，请确认 FastAPI 正在 127.0.0.1:8000 运行。');
+        }
+        throw error;
+    } finally {
+        clearTimeout(timer);
+        if (activeController === controller) activeController = null;
+    }
+}
+
+async function loadDemo() {
+    try {
+        const data = await fetchJSON('/api/demo', {}, DEMO_TIMEOUT_MS);
+        const patient = data?.patient;
+        if (!patient) throw new Error('接口缺少 patient 数据');
+        demoPatient = patient;
+        byId('patientName').textContent = patient.patient_name ?? patient.name ?? '-';
+        byId('patientAge').textContent = patient.age == null ? '-' : `${patient.age} 岁`;
+        const conditions = patient.conditions ?? patient.condition ?? [];
+        byId('patientCondition').textContent = Array.isArray(conditions)
+            ? (conditions.join('、') || '-') : (String(conditions) || '-');
+        byId('followupTime').textContent = patient.followup_time || '-';
+
+        // Current API places bp_history at the top level of /api/demo.
+        const history = Array.isArray(data.bp_history) ? data.bp_history
+            : (Array.isArray(patient.bp_history) ? patient.bp_history : []);
+        const container = byId('bpHistory');
+        container.innerHTML = '';
+        for (const item of history) {
+            const card = document.createElement('div');
+            card.className = 'bp-card';
+            const label = document.createElement('div');
+            label.className = 'date';
+            label.textContent = item.label ?? item.measured_at ?? '-';
+            const value = document.createElement('div');
+            value.className = 'value';
+            value.textContent = `${item.systolic ?? '-'}/${item.diastolic ?? '-'}`;
+            card.appendChild(label);
+            card.appendChild(value);
+            container.appendChild(card);
+        }
+    } catch (error) {
+        console.error('加载演示患者失败:', error);
+        addSystemMessage(`患者资料加载失败：${error.message}。请检查 /api/demo 接口。`);
+    }
+}
+
+async function triggerAgent(triggerType) {
+    if (busy) return;
+    const generation = ++requestGeneration;
+    busy = true;
+    sessionId = null;
+    followupDone = false;
+    updateControls();
+    alertBox.style.display = 'none';
+    chat.innerHTML = '';
+    addSystemMessage('已收到模拟触发事件，正在创建随访会话…');
+    showProgress('trigger');
+    updateStatus('following');
+    const startedAt = performance.now();
+    try {
+        const data = await fetchJSON('/api/trigger', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({trigger_type: triggerType})
+        }, TRIGGER_TIMEOUT_MS);
+        if (generation !== requestGeneration) return;
+        const result = normalizeResponse(data);
+        if (!result.sessionId) throw new Error('触发成功，但后端没有返回 session_id');
+        if (typeof result.message !== 'string' || !result.message.trim()) {
+            throw new Error('触发成功，但后端没有返回 message/reply 文本');
+        }
+        sessionId = result.sessionId;
+        updatePatientState(result.state);
+        if (result.hasAlerts) alertBox.style.display = 'block';
+        followupDone = result.done;
+        clearProgress();
+        addMessage(result.message, 'assistant');
+        addSystemMessage(`主动随访已启动 · 耗时 ${((performance.now() - startedAt) / 1000).toFixed(2)} 秒`);
+        if (result.state == null) updateStatus(result.done ? 'completed' : 'following');
+    } catch (error) {
+        if (generation !== requestGeneration) return;
+        console.error('触发随访失败:', error);
+        clearProgress();
+        addMessage(`启动随访失败：${error.message}`, 'assistant');
+        updateStatus('waiting');
+    } finally {
+        if (generation === requestGeneration) {
+            clearProgress();
+            busy = false;
+            updateControls();
+            if (sessionId && !followupDone) messageInput.focus();
+        }
+    }
+}
+
+async function sendMessage() {
+    if (busy || followupDone || !sessionId) return;
+    const message = messageInput.value.trim();
+    if (!message) return;
+    const generation = ++requestGeneration;
+    const currentSessionId = sessionId;
+    busy = true;
+    messageInput.value = '';
+    addMessage(message, 'user');
+    updateControls();
+    showProgress('chat');
+    const startedAt = performance.now();
+    try {
+        const data = await fetchJSON('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({session_id: currentSessionId, message})
+        }, CHAT_TIMEOUT_MS);
+        if (generation !== requestGeneration) return;
+        const result = normalizeResponse(data);
+        // If the backend schema unexpectedly changes, show an error instead of "undefined".
+        if (typeof result.message !== 'string' || !result.message.trim()) {
+            throw new Error('后端请求成功，但响应缺少 message/reply 字段');
+        }
+        if (result.sessionId && result.sessionId !== currentSessionId) {
+            throw new Error('后端返回了不同的会话编号，请重新触发随访');
+        }
+        updatePatientState(result.state);
+        followupDone = result.done;
+        if (result.hasAlerts) alertBox.style.display = 'block';
+        clearProgress();
+        addMessage(result.message, 'assistant');
+        addSystemMessage(`回复耗时 ${((performance.now() - startedAt) / 1000).toFixed(2)} 秒`);
+        if (result.state == null && result.done) updateStatus('completed');
+    } catch (error) {
+        if (generation !== requestGeneration) return;
+        console.error('Agent消息请求失败:', error);
+        clearProgress();
+        addMessage(`本轮请求未能正常显示：${error.message}`, 'assistant');
+        // The server might still finish an aborted request; do not auto-submit again.
+        if (!sessionId) updateStatus('waiting');
+    } finally {
+        if (generation === requestGeneration) {
+            clearProgress();
+            busy = false;
+            updateControls();
+            if (sessionId && !followupDone) messageInput.focus();
+        }
+    }
+}
+
+function resetDemo() {
+    // Prevent an in-flight request from writing stale content into the reset UI.
+    ++requestGeneration;
+    if (activeController) activeController.abort();
+    activeController = null;
+    clearProgress();
+    busy = false;
+    sessionId = null;
+    followupDone = false;
+    chat.innerHTML = '';
+    addSystemMessage('请从左侧选择一个触发场景，模拟 Agent 主动联系老人。');
+    updateStatus('waiting');
+    triggerReason.textContent = '-';
+    currentBp.textContent = '-';
+    medicationStatus.textContent = '尚未询问';
+    currentSymptoms.textContent = '-';
+    riskLevel.textContent = '-';
+    alertBox.style.display = 'none';
+    messageInput.value = '';
+    updateControls();
+}
+
+triggerButtons.forEach(button => button.addEventListener('click', () => {
+    triggerAgent(button.dataset.trigger);
+}));
+sendButton.addEventListener('click', sendMessage);
+messageInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.isComposing) {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+resetButton.addEventListener('click', resetDemo);
+updateControls();
+loadDemo();
+</script>
+
+
+</body>
+
+</html>

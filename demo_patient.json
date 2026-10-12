@@ -1,0 +1,48 @@
+{
+  "patient": {
+    "patient_id": "P001",
+    "patient_name": "张先生",
+    "age": 72,
+    "conditions": [
+      "高血压"
+    ],
+    "followup_time": "20:00"
+  },
+  "bp_history": [
+    {
+      "label": "前3日",
+      "systolic": 146,
+      "diastolic": 86
+    },
+    {
+      "label": "前2日",
+      "systolic": 148,
+      "diastolic": 88
+    },
+    {
+      "label": "昨日",
+      "systolic": 151,
+      "diastolic": 90
+    }
+  ],
+  "trigger_configs": {
+    "scheduled": {
+      "label": "定时随访",
+      "followup_reason": "到达每日计划健康随访时间",
+      "bp_systolic": 162,
+      "bp_diastolic": 96
+    },
+    "high_bp": {
+      "label": "血压异常",
+      "followup_reason": "系统收到新的血压记录，并触发主动健康随访",
+      "bp_systolic": 162,
+      "bp_diastolic": 96
+    },
+    "missed_measurement": {
+      "label": "缺少测量",
+      "followup_reason": "系统近期未获得新的家庭血压记录",
+      "bp_systolic": null,
+      "bp_diastolic": null
+    }
+  }
+}
