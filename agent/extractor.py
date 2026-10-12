@@ -41,6 +41,13 @@ def _term_is_negated(clause, match):
 
 
 def _medication_timing(text):
+    # 短答“没到/还没到”允许由本轮服药时间问题的语境消歧。
+    # 下游 medication_context 会阻止非服药话题写入药物观察记录。
+    compact = re.sub(r"[\s，,。.!！?？]", "", text or "")
+    if re.fullmatch(r"(?:还)?没(?:有)?到(?:了|呢|啊|呀|哦)?", compact):
+        return "not_due"
+    if re.fullmatch(r"(?:已经|都)?(?:过了|超过了|错过了)(?:呢|啊|呀|哦)?", compact):
+        return "overdue"
     if re.search(r"不确定|不知道|记不清|不记得|好像|可能|也许", text):
         return "unknown"
     if re.search(r"(?:还没|尚未|没有|没)到(?:.{0,8}(?:吃药|服药|用药).{0,4}|(?:规定|原定)的?)?(?:时间|时候|点)", text):
@@ -137,6 +144,16 @@ def _short_answer(text):
 
 def _answer_availability(text):
     """拒答和无法作答描述对话意愿，不能作为症状/服药的否认。"""
+    # 患者明确“记不清/不知道”时，立即标记无法提供；不把它当成普通模糊回答反复澄清。
+    # 仅匹配独立、无其他事实的短答，避免吞掉“我不知道，但现在喘不上气”等危险症状。
+    compact = re.sub(r"[\s，,。.!！?？]", "", text or "")
+    if re.fullmatch(
+        r"(?:我)?(?:真的|实在|确实|也)?"
+        r"(?:不知道|不清楚|不太清楚|记不清(?:楚)?|不记得|记不得|想不起来|忘记了|忘了)"
+        r"(?:了|呢|啊|呀|哦)?",
+        compact,
+    ):
+        return "unable"
     if re.search(r"拒绝回答|不想回答|不愿(?:意)?回答|不想说|不愿(?:意)?说|不告诉你|先不回答|先不说|别(?:再)?问了|不要再问", text or ""):
         return "refused"
     if re.search(r"无法回答|不能回答|回答不了|没法回答|无法(?:测|量)|不能(?:测|量)|不会(?:测|量)|(?:测|量)不了", text or ""):
