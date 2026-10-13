@@ -111,7 +111,7 @@ def execution_fingerprint(state, action, query=None):
         "age", "conditions", "bp_systolic", "bp_diastolic", "bp_trend",
         "medication_status", "medication_timing", "medication_date", "medication_detail",
         "symptoms", "denied_symptoms", "red_flags", "denied_red_flags",
-        "symptom_status", "red_flag_status", "coverage", "additional_information",
+        "symptom_status", "red_flag_status", "coverage", "additional_information", "measurement_context",
     )}
     memory = state.get("patient_memory") or {}
     memory_facts = {key: memory.get(key) for key in ("blood_pressure", "medication", "last_followup")}

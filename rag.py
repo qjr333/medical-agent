@@ -622,8 +622,7 @@ def load_source_registry():
     except Exception as error:
 
         print(
-            "[RAG] Source Registry读取失败：",
-            error
+            "[RAG] Source Registry读取失败"
         )
 
 
@@ -653,7 +652,7 @@ def parse_markdown_blocks(
     except Exception as error:
 
         print(
-            f"[RAG] 无法读取 {filename}: {error}"
+            f"[RAG] 无法读取知识来源：{filename}"
         )
 
         return []
@@ -1164,8 +1163,7 @@ def load_knowledge_base():
 
 
     print(
-        "[RAG] Markdown文件：",
-        markdown_files
+        f"[RAG] Markdown文件：{len(markdown_files)} 个来源"
     )
 
 
@@ -1215,7 +1213,7 @@ def load_embedding_model():
             from sentence_transformers import SentenceTransformer as model_class
             SentenceTransformer = model_class
 
-        print("[RAG] 正在加载Embedding模型：", EMBEDDING_MODEL_NAME)
+        print("[RAG] 正在加载Embedding模型")
         embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
         embedding_available = True
         embedding_error = None
@@ -1223,7 +1221,7 @@ def load_embedding_model():
     except Exception as error:
         embedding_available = False
         embedding_error = str(error)
-        print("[RAG] Embedding模型加载失败，使用关键词检索：", error)
+        print("[RAG] Embedding模型加载失败，使用关键词检索")
 
 
 # =========================================================
@@ -1962,7 +1960,7 @@ def _read_index_cache():
         return None
     except Exception as error:
         # A stale/corrupt/unreadable cache is a cache miss, never an API error.
-        print("[RAG] 向量缓存不可用，首次检索时重新构建：", error)
+        print("[RAG] 向量缓存不可用，首次检索时重新构建")
         return None
 
 
@@ -1984,10 +1982,10 @@ def _write_index_cache(embeddings):
             os.fsync(file.fileno())
         os.replace(temporary_path, INDEX_CACHE_PATH)
         temporary_path = None
-        print("[RAG] 知识块向量已缓存：", INDEX_CACHE_PATH)
+        print(f"[RAG] 知识块向量已缓存：{len(embeddings)} 个知识块")
     except Exception as error:
         # The in-memory index still works when the cache directory is unwritable.
-        print("[RAG] 向量缓存写入失败，保留内存索引：", error)
+        print("[RAG] 向量缓存写入失败，保留内存索引")
     finally:
         if temporary_path is not None:
             try:
@@ -2082,7 +2080,7 @@ def _ensure_embedding_index():
     except Exception as error:
         embedding_available = False
         embedding_error = str(error)
-        print("[RAG] 知识块向量生成失败，使用关键词检索：", error)
+        print("[RAG] 知识块向量生成失败，使用关键词检索")
         return False
 
 
@@ -2137,15 +2135,9 @@ def retrieve_medical_guidance(
         "\n[RAG] =============================="
     )
 
-    print(
-        "[RAG] Query:",
-        query
-    )
-
-    print(
-        "[RAG] Routed Topics:",
-        routed_topics
-    )
+    # Patient queries and model exception details may contain personal data.
+    # Public diagnostics report counts and knowledge source identifiers only.
+    print(f"[RAG] Routed Topics：{len(routed_topics)} 个主题")
 
 
     # =====================================================
@@ -2167,7 +2159,7 @@ def retrieve_medical_guidance(
             embedding_available = False
             embedding_error = str(error)
             using_embeddings = False
-            print("[RAG] 查询向量生成失败，使用关键词检索：", error)
+            print("[RAG] 查询向量生成失败，使用关键词检索")
 
     if not using_embeddings:
         semantic_scores = np.asarray([
@@ -2199,6 +2191,12 @@ def retrieve_medical_guidance(
                 "topic"
             )
         )
+
+        # Metadata only reranks relevant evidence. In keyword fallback mode,
+        # source authority, patient population or a topic hint must not create
+        # a match when the query shares no keywords with a knowledge block.
+        if not using_embeddings and semantic_score <= 0:
+            continue
 
 
         # -------------------------------------------------
@@ -2781,39 +2779,10 @@ def retrieve_medical_guidance(
     # Debug输出
     # -----------------------------------------------------
 
-    print(
-        "[RAG] Selected:"
-    )
-
+    print(f"[RAG] Selected：{len(results)} 个知识块")
 
     for result in results:
-
-        print(
-
-            "   ",
-
-            result[
-                "block_id"
-            ],
-
-            "|",
-
-            result[
-                "topic"
-            ],
-
-            "|",
-
-            result[
-                "source_file"
-            ],
-
-            "| score:",
-
-            result[
-                "score"
-            ]
-        )
+        print("[RAG] Source:", result["source_id"])
 
 
     print(

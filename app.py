@@ -7,7 +7,7 @@ import sqlite3
 from time import perf_counter
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -90,7 +90,7 @@ def create_patient_state(trigger_type: str):
 
 
 def extract_user_patch(text: str, patient_state=None):
-    if os.getenv("LLM_AGENT_V4", "0") == "1":
+    if os.getenv("LLM_AGENT_V42", "0") == "1" or os.getenv("LLM_AGENT_V4", "0") == "1":
         return extract_user_patch_v4(text, patient_state, call_json_model=call_json_model)
     return _extract_user_patch(
         text, patient_state, call_json_model=call_json_model,
@@ -107,6 +107,8 @@ def tool_generate_visit_advice(state: dict):
 
 
 def run_agent(state: dict):
+    if os.getenv("LLM_AGENT_V42", "0") == "1":
+        return run_agent_v4(state, call_json_model=call_json_model, enable_v42=True)
     if os.getenv("LLM_AGENT_V4", "0") == "1":
         print("[AGENT] Running LLM-driven Agent V4", flush=True)
         return run_agent_v4(state, call_json_model=call_json_model)
@@ -126,6 +128,9 @@ app = FastAPI(
     version="1.6.1-demo-json",
     description="老年高血压主动随访 Agent Demo",
 )
+
+from backend.collaboration_api import router as collaboration_router
+app.include_router(collaboration_router)
 
 
 @app.exception_handler(sqlite3.Error)
@@ -214,6 +219,64 @@ class ChatRequest(
     message: str
 
 
+def _finalize_urgent_report(session_id):
+    """Executed after the response is sent; an urgent report never calls an LLM."""
+    from agent.reporting_v42 import build_report_v42
+    with SESSION_LOCK:
+        try:
+            state = read_session(session_id)
+            if not state or state.get("completion_outcome") != "escalated":
+                return
+            state = copy.deepcopy(state)
+            build_report_v42(state)
+            state["report_generation"] = {"status": "generated"}
+            add_trace(state, "REPORT_GENERATED", {"version": "4.2", "outcome": "escalated",
+                      "ai_called": False})
+            persist_session(session_id, state)
+        except Exception as error:
+            # Pending state was durably stored before the emergency response.
+            # A doctor can retry report generation; don't reopen the session.
+            held = sessions.get(session_id)
+            if held:
+                held["report_generation"] = {"status": "failed", "error_type": type(error).__name__}
+            print("[REPORT] Emergency report pending retry:", type(error).__name__)
+
+
+def _client_response(response, session_id, background_tasks):
+    state = response["state"]
+    if state.get("agent_version") == "V4.2":
+        if state.get("report_generation", {}).get("status") == "pending":
+            background_tasks.add_task(_finalize_urgent_report, session_id)
+        response = copy.deepcopy(response)
+        # Keep the patient UI contract; professional collaboration views are
+        # available exclusively through the authenticated report/message APIs.
+        for holder in (response, response["state"]):
+            report = holder.get("report")
+            if isinstance(report, dict):
+                holder["report"] = {key: report.get(key) for key in (
+                    "patient", "trigger", "blood_pressure", "medication", "symptoms", "risk",
+                    "visit_advice", "medication_guidance", "long_term_memory", "knowledge",
+                    "generated_at", "task_completion") if key in report}
+    response["session_id"] = session_id
+    return response
+
+
+def _guard_collaboration_read(patient_id, authorization, state=None):
+    """Legacy debug routes cannot act as a bypass for V4.2 professional views."""
+    if os.getenv("LLM_AGENT_V42", "0") != "1" and (state or {}).get("agent_version") != "V4.2":
+        return
+    from database.collaboration import authenticate_token, require_patient_access
+    if not isinstance(authorization, str) or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="需要有效的身份令牌")
+    user = authenticate_token(authorization[7:].strip())
+    if user is None:
+        raise HTTPException(status_code=401, detail="身份令牌无效或已过期")
+    try:
+        require_patient_access(user, patient_id, roles=("doctor",))
+    except PermissionError:
+        raise HTTPException(status_code=403, detail="无权访问该患者的专业数据") from None
+
+
 @app.on_event("startup")
 def initialize_local_database():
     init_db()
@@ -282,7 +345,7 @@ def get_demo():
 
 
 @app.post("/api/trigger")
-def trigger_followup(request: TriggerRequest):
+def trigger_followup(request: TriggerRequest, background_tasks: BackgroundTasks):
     trigger_type = request.trigger_type
     if trigger_type not in TRIGGER_CONFIGS:
         raise HTTPException(status_code=400, detail=f"Unknown trigger_type: {trigger_type}")
@@ -320,12 +383,11 @@ def trigger_followup(request: TriggerRequest):
             "followup_status": state.get("followup_status"),
         })
         _persist_safely(session_id, state)
-        response["session_id"] = session_id
-        return response
+        return _client_response(response, session_id, background_tasks)
 
 
 @app.post("/api/chat")
-def chat(request: ChatRequest):
+def chat(request: ChatRequest, background_tasks: BackgroundTasks):
     session_id = request.session_id
     message = (request.message or "").strip()
     if not message:
@@ -333,7 +395,7 @@ def chat(request: ChatRequest):
 
     with SESSION_LOCK:
         cached = sessions.get(session_id)
-        if cached and cached.get("followup_status") in {"completed", "escalated"}:
+        if cached and cached.get("followup_status") in {"completed", "partially_completed", "escalated"}:
             raise HTTPException(status_code=409, detail="该随访已结束或转入高风险升级流程，请发起新随访。")
         try:
             state = read_session(session_id)
@@ -344,6 +406,9 @@ def chat(request: ChatRequest):
                 systolic, diastolic = None, None
             danger = unique_list([label for clause in split_answer_clauses(message)
                                   for label in detect_danger_signs(clause)])
+            if os.getenv("LLM_AGENT_V42", "0") == "1":
+                from agent.llm_v4 import _minimal_safety_signals
+                danger = unique_list(danger + _minimal_safety_signals(message, cached or {}))
             emergency_state = {"bp_systolic": systolic, "bp_diastolic": diastolic,
                                "red_flags": danger, "symptoms": [], "trace": []}
             tool_assess_risk(emergency_state)
@@ -360,7 +425,7 @@ def chat(request: ChatRequest):
             raise HTTPException(status_code=503, detail=detail) from None
         if state is None:
             raise HTTPException(status_code=404, detail="Session not found")
-        if state.get("followup_status") in {"completed", "escalated"}:
+        if state.get("followup_status") in {"completed", "partially_completed", "escalated"}:
             raise HTTPException(
                 status_code=409,
                 detail="该随访已结束或转入高风险升级流程，请发起新随访。",
@@ -421,8 +486,7 @@ def chat(request: ChatRequest):
             "followup_status": state.get("followup_status"),
         })
         _persist_safely(session_id, state)
-        response["session_id"] = session_id
-        return response
+        return _client_response(response, session_id, background_tasks)
 
 
 @app.get("/api/test-rag")
@@ -593,10 +657,11 @@ def rebuild_knowledge():
 
 
 @app.get("/api/debug/session/{session_id}")
-def debug_session(session_id: str):
+def debug_session(session_id: str, authorization: Optional[str] = Header(default=None)):
     state = read_session(session_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Session not found")
+    _guard_collaboration_read(state["patient_id"], authorization, state)
     return state
 
 
@@ -607,8 +672,9 @@ def db_status():
 
 
 @app.get("/api/patients/{patient_id}/history")
-def patient_history(patient_id: str, limit: int = 30):
+def patient_history(patient_id: str, limit: int = 30, authorization: Optional[str] = Header(default=None)):
     """返回数据库中的长期记录。仅用于本地演示，真实患者信息需鉴权。"""
+    _guard_collaboration_read(patient_id, authorization)
     result = repository.get_patient_history(patient_id, limit)
     if result is None:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -616,8 +682,9 @@ def patient_history(patient_id: str, limit: int = 30):
 
 
 @app.get("/api/patients/{patient_id}/memory")
-def patient_memory_api(patient_id: str):
+def patient_memory_api(patient_id: str, authorization: Optional[str] = Header(default=None)):
     """只读历史记忆预览。比赛本地演示用；部署时需患者权限校验。"""
+    _guard_collaboration_read(patient_id, authorization)
     if not repository.patient_exists(patient_id):
         raise HTTPException(status_code=404, detail="Patient not found")
     return load_patient_memory(patient_id)
