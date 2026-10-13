@@ -514,6 +514,12 @@ def merge_user_patch(state: dict, patch: dict, raw_text: str):
         elif value == "answered" and topic == "measurement_context":
             coverage[topic] = True
             topics[topic] = "answered"
+            # Persist the actual answer, not just a coverage flag. V4.2's
+            # evaluator/report must be able to distinguish known context from
+            # an old boolean that has no supporting patient statement.
+            quote = patch.get("measurement_context")
+            state["measurement_context"] = (quote if isinstance(quote, str) and quote and quote in raw_text
+                                             else raw_text)
     additional = (patch.get("additional_information") or "").strip()
     if additional:
         previous = state.get("additional_information") or ""

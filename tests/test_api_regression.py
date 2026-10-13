@@ -172,8 +172,12 @@ class APIRegressionTests(unittest.TestCase):
 
     def test_medication_question_uses_guidance_and_safety_interception(self):
         sid = self.trigger()["session_id"]
-        # V3先核实162/96下的危险表现，再处理普通用药问答。
-        screening = self.chat(sid, "都没有")
+        # 开场可能只问血压或部分症状；完整否认不依赖某一版问题列表。
+        screening = self.chat(
+            sid,
+            "没有胸痛，没有呼吸困难，没有晕厥，没有意识异常，"
+            "没有突发肢体无力，没有突发言语异常，也没有其他不舒服",
+        )
         self.assertEqual(screening.status_code, 200, screening.text)
         self.assertTrue(screening.json()["state"]["coverage"]["red_flags"])
         response = self.chat(sid, "我今天忘记吃降压药，现在能不能自己多吃一片？")

@@ -9,6 +9,14 @@ from backend.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL
 
 client = None
 model_failure_observer = ContextVar("medical_agent_model_failure_observer", default=None)
+model_call_observer = ContextVar("medical_agent_model_call_observer", default=None)
+
+
+def _notify_call(mode, status, error=None):
+    observer = model_call_observer.get()
+    if observer is not None:
+        observer({"provider": "deepseek", "mode": mode, "status": status,
+                  "error_type": type(error).__name__ if error is not None else None})
 
 if DEEPSEEK_API_KEY:
 
@@ -25,7 +33,7 @@ if DEEPSEEK_API_KEY:
 
         print(
             "[MODEL] Client初始化失败：",
-            error
+            type(error).__name__
         )
 
 
@@ -155,6 +163,8 @@ def call_json_model(
 
     try:
 
+        _notify_call("json", "started")
+
         response = (
             client
             .chat
@@ -185,6 +195,8 @@ def call_json_model(
             .content
         )
 
+        _notify_call("json", "success")
+
 
         return parse_json_text(
             content
@@ -193,9 +205,11 @@ def call_json_model(
 
     except Exception as first_error:
 
+        _notify_call("json", "error", first_error)
+
         print(
             "[MODEL] JSON mode调用失败，尝试普通模式：",
-            first_error
+            type(first_error).__name__
         )
 
 
@@ -204,6 +218,8 @@ def call_json_model(
     # -----------------------------------------------------
 
     try:
+
+        _notify_call("plain", "started")
 
         response = (
             client
@@ -230,6 +246,8 @@ def call_json_model(
             .content
         )
 
+        _notify_call("plain", "success")
+
 
         return parse_json_text(
             content
@@ -238,9 +256,11 @@ def call_json_model(
 
     except Exception as error:
 
+        _notify_call("plain", "error", error)
+
         print(
             "[MODEL] 调用失败：",
-            error
+            type(error).__name__
         )
 
         observer = model_failure_observer.get()

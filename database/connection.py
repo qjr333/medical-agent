@@ -1,4 +1,4 @@
-"""SQLite connection and idempotent initialization of the existing seven tables."""
+"""SQLite connection and additive, idempotent initialization/migrations."""
 
 import sqlite3
 from pathlib import Path
@@ -117,6 +117,8 @@ def init_db(db_path=None):
         ON agent_events(session_id);
         """)
 
+        from database.collaboration import init_collaboration_schema
+        init_collaboration_schema(conn)
         conn.commit()
 
     finally:

@@ -236,7 +236,7 @@ def persist_session(
             report = state.get("report")
             if report:
                 existing = conn.execute(
-                    "SELECT id FROM reports WHERE session_id = ? LIMIT 1",
+                    "SELECT id FROM reports WHERE session_id = ? ORDER BY id LIMIT 1",
                     (session_id,),
                 ).fetchone()
                 if existing:
@@ -249,6 +249,15 @@ def persist_session(
                         "INSERT INTO reports (session_id, report_json) VALUES (?, ?)",
                         (session_id, to_json(report)),
                     )
+                if report.get("schema_version") == "4.2":
+                    # The session upsert already holds the SQLite writer lock;
+                    # report identity and unique recipient messages commit together.
+                    from database.collaboration import persist_report_delivery
+                    report_id = conn.execute(
+                        "SELECT id FROM reports WHERE session_id = ? ORDER BY id LIMIT 1",
+                        (session_id,),
+                    ).fetchone()["id"]
+                    persist_report_delivery(conn, report_id, state["patient_id"], report)
     finally:
         conn.close()
     sessions[session_id] = state
