@@ -76,27 +76,24 @@ def phrase_is_negated(
     text: str,
     phrase: str,
 ):
+    """Respect coordinated denials and later positive clauses independently.
 
-    escaped = re.escape(
-        phrase
-    )
-
-
-    pattern = (
-        r"(没有|无|否认|并无|未出现|不伴|没有出现)"
-        r".{0,5}"
-        +
-        escaped
-    )
-
-
-    return (
-        re.search(
-            pattern,
-            text
-        )
-        is not None
-    )
+    The nearest polarity marker governs each occurrence. Every occurrence
+    must be denied before the whole phrase can be ruled out; a later explicit
+    positive statement remains a danger signal.
+    """
+    occurrences = list(re.finditer(re.escape(phrase), text or ""))
+    if not occurrences:
+        return False
+    boundaries = r"[，,。.;；!?！？\n]|但是|不过|然而|可是|只有|只是|现在|当前|此刻|而且|并且|但|却"
+    negatives = {"没有出现", "没有", "并无", "否认", "未出现", "不伴", "无", "没"}
+    for occurrence in occurrences:
+        prefix = re.split(boundaries, text[:occurrence.start()])[-1]
+        markers = list(re.finditer(
+            r"没有出现|没有|并无|否认|未出现|不伴|无(?!力|法|论)|没|(?<![没无])有|出现|伴随", prefix))
+        if not markers or markers[-1].group() not in negatives:
+            return False
+    return True
 
 
 

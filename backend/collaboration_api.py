@@ -77,12 +77,12 @@ def read_message(message_id: int, user=Depends(authenticated_user)):
 def retry_report(session_id: str, user=Depends(authenticated_user)):
     """Recover a pending background report without reopening a closed follow-up."""
     require_role(user, "doctor")
-    with repository.SESSION_LOCK:
+    with repository.session_lock(session_id):
         state = repository.read_session(session_id)
         if state is None:
             raise HTTPException(status_code=404, detail="Session not found")
         require_patient_access(user, state["patient_id"], "doctor")
-        if state.get("agent_version") != "V4.2" or state.get("followup_status") not in {
+        if state.get("agent_version") not in {"V4.2", "V5.0"} or state.get("followup_status") not in {
                 "completed", "partially_completed", "escalated"}:
             raise HTTPException(status_code=409, detail="随访尚未达到报告生成条件")
         from agent.reporting_v42 import build_report_v42
