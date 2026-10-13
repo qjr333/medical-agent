@@ -24,7 +24,7 @@ from backend.utils import now_iso, to_json, unique_list
 from database.connection import get_connection, init_db
 from database import repository
 from database.repository import (
-    sessions, SESSION_LOCK, get_recent_bp_records, get_recent_medication_records,
+    sessions, session_lock, get_recent_bp_records, get_recent_medication_records,
     read_session, persist_session,
 )
 from memory.patient_memory import (
@@ -90,8 +90,8 @@ def create_patient_state(trigger_type: str):
 
 
 def extract_user_patch(text: str, patient_state=None):
-    if os.getenv("LLM_AGENT_V42", "0") == "1" or os.getenv("LLM_AGENT_V4", "0") == "1":
-        return extract_user_patch_v4(text, patient_state, call_json_model=call_json_model)
+    if any(os.getenv(flag, "0") == "1" for flag in ("LLM_AGENT_V50", "LLM_AGENT_V42", "LLM_AGENT_V4")):
+        return extract_user_patch_v4(text, patient_state, call_json_model=call_json_model, enable_v50=os.getenv("LLM_AGENT_V50", "0") == "1")
     return _extract_user_patch(
         text, patient_state, call_json_model=call_json_model,
         contains_red_flag_language=contains_red_flag_language,
@@ -107,6 +107,8 @@ def tool_generate_visit_advice(state: dict):
 
 
 def run_agent(state: dict):
+    if os.getenv("LLM_AGENT_V50", "0") == "1":
+        return run_agent_v4(state, call_json_model=call_json_model, enable_v50=True)
     if os.getenv("LLM_AGENT_V42", "0") == "1":
         return run_agent_v4(state, call_json_model=call_json_model, enable_v42=True)
     if os.getenv("LLM_AGENT_V4", "0") == "1":
@@ -125,12 +127,15 @@ def seed_demo_patient():
 
 app = FastAPI(
     title="Elderly Hypertension Follow-up Agent",
-    version="1.6.1-demo-json",
+    version="5.0",
     description="老年高血压主动随访 Agent Demo",
 )
 
 from backend.collaboration_api import router as collaboration_router
 app.include_router(collaboration_router)
+from backend.v5_api import router as v5_router, simulation_scope, start_workers, stop_workers
+app.include_router(v5_router)
+app.middleware("http")(simulation_scope)
 
 
 @app.exception_handler(sqlite3.Error)
@@ -222,7 +227,7 @@ class ChatRequest(
 def _finalize_urgent_report(session_id):
     """Executed after the response is sent; an urgent report never calls an LLM."""
     from agent.reporting_v42 import build_report_v42
-    with SESSION_LOCK:
+    with session_lock(session_id):
         try:
             state = read_session(session_id)
             if not state or state.get("completion_outcome") != "escalated":
@@ -244,8 +249,14 @@ def _finalize_urgent_report(session_id):
 
 def _client_response(response, session_id, background_tasks):
     state = response["state"]
-    if state.get("agent_version") == "V4.2":
-        if state.get("report_generation", {}).get("status") == "pending":
+    if state.get("agent_version") in {"V4.2", "V5.0"}:
+        if state.get("agent_version") == "V5.0":
+            from backend.runtime_v5 import AgentRuntime
+            if state.get("followup_status") == "processing":
+                background_tasks.add_task(AgentRuntime(call_json_model).turn, session_id)
+            elif state.get("report_generation", {}).get("status") in {"pending", "summary_pending"}:
+                background_tasks.add_task(AgentRuntime(call_json_model).finalize, session_id)
+        elif state.get("report_generation", {}).get("status") == "pending":
             background_tasks.add_task(_finalize_urgent_report, session_id)
         response = copy.deepcopy(response)
         # Keep the patient UI contract; professional collaboration views are
@@ -263,7 +274,7 @@ def _client_response(response, session_id, background_tasks):
 
 def _guard_collaboration_read(patient_id, authorization, state=None):
     """Legacy debug routes cannot act as a bypass for V4.2 professional views."""
-    if os.getenv("LLM_AGENT_V42", "0") != "1" and (state or {}).get("agent_version") != "V4.2":
+    if not any(os.getenv(flag, "0") == "1" for flag in ("LLM_AGENT_V42", "LLM_AGENT_V50")) and (state or {}).get("agent_version") not in {"V4.2", "V5.0"}:
         return
     from database.collaboration import authenticate_token, require_patient_access
     if not isinstance(authorization, str) or not authorization.startswith("Bearer "):
@@ -281,6 +292,7 @@ def _guard_collaboration_read(patient_id, authorization, state=None):
 def initialize_local_database():
     init_db()
     seed_demo_patient()
+    start_workers()
     print("[DB] SQLite已初始化；会话、血压、用药及Agent Trace可持久化。")
 
 
@@ -350,8 +362,8 @@ def trigger_followup(request: TriggerRequest, background_tasks: BackgroundTasks)
     if trigger_type not in TRIGGER_CONFIGS:
         raise HTTPException(status_code=400, detail=f"Unknown trigger_type: {trigger_type}")
 
-    with SESSION_LOCK:
-        session_id = str(uuid.uuid4())
+    session_id = str(uuid.uuid4())
+    with session_lock(session_id):
         state = create_patient_state(trigger_type)
         memory = _refresh_memory_safely(state)
         add_trace(state, "MEMORY_LOADED", {
@@ -378,6 +390,7 @@ def trigger_followup(request: TriggerRequest, background_tasks: BackgroundTasks)
         _refresh_memory_safely(state, session_id)
 
         response = run_agent(state)
+        state["last_agent_response"] = response.get("message", "")
         add_trace(state, "AGENT_RESPONSE", {
             "message": response.get("message", ""),
             "followup_status": state.get("followup_status"),
@@ -393,7 +406,7 @@ def chat(request: ChatRequest, background_tasks: BackgroundTasks):
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    with SESSION_LOCK:
+    with session_lock(session_id):
         cached = sessions.get(session_id)
         if cached and cached.get("followup_status") in {"completed", "partially_completed", "escalated"}:
             raise HTTPException(status_code=409, detail="该随访已结束或转入高风险升级流程，请发起新随访。")
@@ -406,7 +419,7 @@ def chat(request: ChatRequest, background_tasks: BackgroundTasks):
                 systolic, diastolic = None, None
             danger = unique_list([label for clause in split_answer_clauses(message)
                                   for label in detect_danger_signs(clause)])
-            if os.getenv("LLM_AGENT_V42", "0") == "1":
+            if os.getenv("LLM_AGENT_V42", "0") == "1" or os.getenv("LLM_AGENT_V50", "0") == "1":
                 from agent.llm_v4 import _minimal_safety_signals
                 danger = unique_list(danger + _minimal_safety_signals(message, cached or {}))
             emergency_state = {"bp_systolic": systolic, "bp_diastolic": diastolic,
@@ -481,6 +494,7 @@ def chat(request: ChatRequest, background_tasks: BackgroundTasks):
         _persist_safely(session_id, state, new_bp=new_bp, new_medication=new_medication)
         _refresh_memory_safely(state, session_id)
         response = run_agent(state)
+        state["last_agent_response"] = response.get("message", "")
         add_trace(state, "AGENT_RESPONSE", {
             "message": response.get("message", ""),
             "followup_status": state.get("followup_status"),
@@ -819,3 +833,13 @@ def test_symptom_status():
         }
 
     return results
+
+
+@app.on_event("shutdown")
+def stop_v5_workers():
+    stop_workers()
+
+
+@app.get("/v5-demo")
+def v5_demo():
+    return FileResponse(os.path.join(STATIC_DIR, "v5-demo.html"))

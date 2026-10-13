@@ -3,14 +3,47 @@
 import json
 from datetime import datetime, timedelta, timezone
 from threading import RLock
+from collections.abc import MutableMapping
 
 from backend.utils import now_iso, to_json
 from medical_tools.safety import valid_bp_measurement
-from .connection import get_connection
+from .connection import get_connection, current_database_path
 
 # SQLite state_json remains authoritative; memory is a process-local cache.
-sessions: dict[str, dict] = {}
+class ScopedSessions(MutableMapping):
+    """Caches are isolated even when two databases contain the same session ID."""
+    def __init__(self):
+        self._data = {}
+        self._lock = RLock()
+    def _key(self, key):
+        return (str(current_database_path()), key)
+    def __getitem__(self, key):
+        with self._lock:
+            return self._data[self._key(key)]
+    def __setitem__(self, key, value):
+        with self._lock:
+            self._data[self._key(key)] = value
+    def __delitem__(self, key):
+        with self._lock:
+            del self._data[self._key(key)]
+    def __iter__(self):
+        scope = str(current_database_path())
+        with self._lock:
+            return iter([key for database, key in self._data if database == scope])
+    def __len__(self):
+        return sum(1 for _ in self)
+
+
+sessions = ScopedSessions()
 SESSION_LOCK = RLock()
+_session_locks = {}
+_session_locks_guard = RLock()
+
+
+def session_lock(session_id):
+    key = (str(current_database_path()), session_id)
+    with _session_locks_guard:
+        return _session_locks.setdefault(key, RLock())
 
 def seed_demo_patient(patient: dict, bp_history: list):
     """只在首次初始化时补入3条演示历史，不污染已有数据。"""

@@ -161,8 +161,11 @@ def _effective_tool_failures(context):
                 continue
             status = result.get("status")
             if status in {"success", "empty", "cached", "fallback", "blocked", "error"}:
-                latest[result["tool"]] = status
-    return ["tool:" + tool for tool, status in latest.items() if status == "error"]
+                data = result.get("data") or {}
+                query = result.get("query") or (data.get("query") if isinstance(data, dict) else None)
+                key = (result["tool"], query if result["tool"] == "RETRIEVE_MEDICAL_GUIDANCE" else None)
+                latest[key] = status
+    return _unique(["tool:" + tool for (tool, query), status in latest.items() if status == "error"])
 
 
 def _pending(state, context, monitoring_confirmed):

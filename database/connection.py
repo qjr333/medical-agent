@@ -1,16 +1,33 @@
 """SQLite connection and additive, idempotent initialization/migrations."""
 
 import sqlite3
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 DB_PATH = DATA_DIR / "medical_agent.db"
+_database_path = ContextVar("medical_database_path", default=None)
+
+
+def current_database_path():
+    return Path(_database_path.get() or DB_PATH).resolve()
+
+
+@contextmanager
+def using_database(path):
+    """Server-selected database scope; never use an arbitrary client file path."""
+    token = _database_path.set(Path(path).resolve())
+    try:
+        yield
+    finally:
+        _database_path.reset(token)
 
 
 def get_connection(db_path=None):
     """Open SQLite without initializing or replacing existing data."""
-    path = Path(db_path) if db_path is not None else DB_PATH
+    path = Path(db_path) if db_path is not None else current_database_path()
     path.parent.mkdir(parents=True, exist_ok=True)
 
     conn = sqlite3.connect(str(path), timeout=30)
@@ -119,6 +136,8 @@ def init_db(db_path=None):
 
         from database.collaboration import init_collaboration_schema
         init_collaboration_schema(conn)
+        from database.tasks import init_task_schema
+        init_task_schema(conn)
         conn.commit()
 
     finally:

@@ -433,3 +433,112 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -B -m unittest discover -s tests -v
 ```
 
 本批不提交、推送或合并GitHub分支，不修改`.env`，不写入现有患者数据库。
+
+## V5.0 多智能体主动随访与协同演示（2026-10-13）
+
+### 已接通的流程
+
+虚构患者选择 → 持久化计划或实际异常血压事件 → 主动任务领取 → 随访Agent自主规划与模拟患者回应
+→ 实际Medical Tools/RAG → LLM完成评估或独立Safety升级 → 真实事实报告 → 医生/授权家属站内投递
+→ 医生处理和家属已读 → 固定隐藏事实与执行记录的客观评测。
+
+V5由`LLM_AGENT_V50=1`开启，优先于V4.2/V4.1开关。原API字段及报告`schema_version=4.2`继续兼容。
+内部规划仍至多8次，V5每次规划执行预算20秒；预算暂停保存`execution_pending`和工具反馈，后台最多3次恢复，
+不增加患者对话轮数、不制造患者“继续”输入；不能完成则明确`interrupted`，不生成假完成报告。
+具体字段校验错误会反馈给Planner并跨恢复保留。安全检查独立于LLM，危险输入不等待报告或通知。
+历史/未来读数和用药与本次事实分开处理，已确认及无法回答的问题不重复询问。
+全局模型执行锁已改为按数据库及会话加锁，不同患者会话可并发，提供202后台输入接口。
+
+正常终态先生成事实报告，摘要模型仅选择/排序真实fact_id；失败仍显示`ai_summary.status=failed/invalid`。
+后台恢复扫描已结束但报告仍pending/summary_pending/failed的V5会话，以及processing执行，有限重试。
+报告、医生状态、消息及已读继续使用V4.2事务与唯一键。重推不重复消息，保留处理意见与已读。
+
+模拟患者包含stable/high_bp/nonadherent/unclear/danger/refusing六种固定虚构档案。
+模拟患者LLM选择与当前问题相关的事实；数字、症状、否定和处方事实不能随意改写，非法输出标记fallback，
+拒答、记不清和危险首轮事实可直接由固定档案保障。随访Agent不能读取隐藏档案。
+每个run使用`data/simulations/<run_id>/medical_agent.db`，注册记录在独立`simulation_registry.db`，
+会话内存也按数据库隔离，不写入真实患者库。可用`SIMULATION_DATA_DIR`覆盖服务端目录；客户端不能指定路径。
+`live`使用实际DeepSeek；`scripted`是明确选择的离线脚本，绝不作为live模型失败后的静默回退。
+
+主动引擎新增`proactive_plans/proactive_events/proactive_tasks/proactive_inbox`，保留原数据库。
+按时间到期、真实异常BP事件、实际测量窗口缺测产生任务；同事件ID和计划窗口幂等，不同payload复用ID被拒绝。
+SQLite租约、随机claim_token和续约防止并发重复执行；失败退避5/10/20秒，默认最多3次，重启回收过期租约。
+任务预分配稳定session_id；等待回答与真正完成分开保存。后台4个工作线程按真实时间执行。
+演示可推进**模拟**时钟，真实计划按UTC时间运行（输入时间必须有时区）。
+`delivery_status=not_configured`表示外部短信/微信未配置；站内报告真实投递用`station_delivery_status/station_messages`记录。
+任务创建、站内消息送达、家属已读和医生处理是四种独立状态，不能互相代替。
+
+### 新增API与前端对接
+
+| 方法与路径 | 输入 / 返回 / 权限 |
+| --- | --- |
+| GET `/api/v5/scenarios` | 6个虚构场景公共介绍，无隐藏答案 |
+| POST `/api/v5/simulations` | `{scenario_id,model_mode:live或scripted,trigger_type?,max_turns?:20,delay_seconds?:1}`；202，返回run_id/run_token及该虚构运行的doctor_token/family_token（仅创建时返回） |
+| GET `/api/v5/simulations/{run_id}` | `X-Demo-Token: run_token`；真实进度、完整虚构对话、脱敏trace、task、evaluation、真实provider请求计数 |
+| POST `/api/v5/simulations/{run_id}/resume` | 同run token；恢复queued/running的中断运行；已结束/预算耗尽/failed返回409，重新启动新运行 |
+| POST `/api/v5/evaluations/compare` | `{runs:[{run_id,run_token}]}`；逐个校验访问权，返回场景/模型模式/结果及分项评测 |
+| POST `/api/v5/plans` | 关联医生Bearer；`{patient_id,plan_type:scheduled或missed_measurement,due_at,interval_seconds,window_seconds?}` |
+| GET `/api/v5/plans?patient_id=...` | 关联医生Bearer；计划列表 |
+| PATCH `/api/v5/plans/{plan_id}` | 关联医生Bearer；更新enabled/due_at/interval_seconds/window_seconds |
+| POST `/api/v5/bp-events` | 关联医生Bearer；`{patient_id,event_id,systolic,diastolic,measured_at?}`；实际保存读数并按已有160/100关注阈值触发任务 |
+| GET `/api/v5/tasks?patient_id=...` | 关联医生Bearer；任务、尝试数、执行/站内投递状态 |
+| POST `/api/v5/engine/tick` | 医生Bearer；202，仅推进其已授权患者的真实时间任务，不能改变其他患者任务 |
+| GET `/api/v5/sessions/{sid}` | 关联医生Bearer；回复、随访状态、question_context、报告生成状态，适合202后的轮询 |
+| POST `/api/v5/sessions/{sid}/messages` | 关联医生Bearer；`{message}`；202后台执行，忙会话409，不静默丢弃输入 |
+| GET `/api/v5/sessions/{sid}/trace` | 关联医生Bearer；实际事件组成的前端stage数据，不含原始真实患者输入、模型prompt/推理或密钥 |
+| GET `/v5-demo` | 独立演示页面，不覆盖React源码 |
+
+模拟医生与家属访问**现有**`/api/reports`、`/api/messages`、`/handling`、`/read`等协同API时，
+带`Authorization: Bearer <该运行角色token>`和`X-Simulation-Run-ID: <run_id>`。
+服务端只选择注册过的数据库，并在该数据库重新校验身份及患者授权；run ID不会赋予医生角色。
+跨运行角色token、未授权家属、伪造角色/用户ID或客户端DB路径均不能访问。
+普通真实协同请求省略模拟header，继续使用原数据库与管理员签发的关联账户令牌。
+家属只收到family_view，不能获取专业trace、医生处理备注或修改handling。
+
+Trace展示实际patient_input/information_extraction/planner/medical_tool/rag/agent_reply/completion/report/notification/safety/resume事件。
+检索来源来自实际工具sources（source_id/block_id/title/pages），缓存与执行分别标注；没有事件就没有对应节点。
+每个LLM事件provider_request_count统计真实SDK started事件；脚本模式此数为0。
+评测总100分：采集30、安全25、追问15、执行证据15、完成10、报告真实性5，医学事实错误即硬失败。
+比较时保留live/scripted及provider请求数，缺失报告或事实只能扣分/待确认，不能补造。
+
+### 可复现演示
+
+```sh
+cd /Users/qingjiarui/Documents/medical-agent
+LLM_AGENT_V50=1 .venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+打开`http://127.0.0.1:8000/v5-demo`，选择血压偏高患者，选择真实DeepSeek调用，点击启动。
+观察任务触发、双Agent对话和实际工具/检索，等待报告及评测；医生填写备注保存处理状态，家属确认已读。
+再点再次站内推送验证新增消息为0；选择危险患者验证先升级、紧急报告不调用摘要模型；
+选择记不清/拒答验证部分完成与待确认，选择未测量提醒观察实际空窗口及患者恢复监测计划。
+没有Key或网络时live明确失败；选择“离线脚本演示”可演示业务链路，但该模式不是模型测试。
+React成员可沿表中API建设正式医生/家属/报告/任务/trace页面，令牌接入与错误状态由其前端处理。
+
+命令行验证完整链路（包括实际医生处理、家属已读和重复推送检查）：
+
+```sh
+.venv/bin/python -B scripts/smoke_v50.py --scenario high_bp --mode live --env-file .env --output /tmp/v50-high.json
+.venv/bin/python -B scripts/smoke_v50.py --scenario danger --mode live --env-file .env --output /tmp/v50-danger.json
+DEEPSEEK_API_KEY='' .venv/bin/python -B scripts/smoke_v50.py --scenario stable --mode scripted
+```
+
+该脚本使用临时隔离数据库，结束后清理；导出只含虚构事实与安全trace，无角色token/API Key。
+正式运行的模拟数据和注册记录保存在data目录，服务重启可恢复尚在queued/running且租约过期的run。
+模拟回合预算仅控制测试成本；预算耗尽不会把真实随访伪装为completed。
+
+### 本次验证与交付范围
+
+真实DeepSeek模型`deepseek-flash`验证：血压偏高场景20次真实SDK请求，两个Agent对话、实际RAG及Medical Tools、
+completed报告、医生处理closed、家属read、重复推送新增0，客观评测100分通过。
+危险症状场景1次真实Planner请求，固定危险档案立即披露，独立Safety升级escalated，
+紧急报告不调用摘要模型；医生处理、家属已读与客观评测100分通过。
+第一次真实高血压流程发现red_flag标签schema不匹配，修复精确schema和具体反馈后重新验证通过。
+自动化回归 **478/478通过**（V5新增122项），**81个Python文件语法检查通过**。
+自动化测试使用显式离线模型/阻塞桩和临时SQLite，覆盖V3/V4.1/V4.2兼容、六场景、主动任务、并发、恢复、
+权限、报告和消息去重，以及trace/客观评测；真实请求结果与这些Mock测试分开记录。
+
+本次保持React源码及队友修改完整，增加独立可操作演示页面。未提交密钥/数据库/真实患者资料；不提交、推送或合并GitHub。
+外部通知接入、正式患者登录与React页面整合、生产部署和临床验证仍需后续工作。
+模拟启动入口用于本机比赛演示，正式部署前应接入管理员登录和调用额度控制。
+安全层对历史/假设性的危险表述仍保守处理，可能升级，需进一步做医疗语义验证。
