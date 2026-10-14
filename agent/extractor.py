@@ -1,4 +1,4 @@
-"""以原文规则为先的患者信息提取；短答使用本轮问题的上下文。"""
+"""信息提取兼容入口。V5 使用语义提取与证据复核；旧 Agent 保留规则路径。"""
 
 import json
 import re
@@ -278,7 +278,10 @@ def _verified_model_bp(text, model_patch):
 
 
 def extract_user_patch(text: str, patient_state=None, *, call_json_model=None, contains_red_flag_language=None):
-    """确定性规则先执行；模型只能保留可在当前原话中核实的内容。"""
+    """按已选 Agent 模式分派，保留旧版本调用接口。"""
+    if (patient_state or {}).get("agent_version") == "V5.0":
+        from agent.llm_v4 import extract_user_patch_v4
+        return extract_user_patch_v4(text, patient_state, call_json_model=call_json_model, enable_v50=True)
     if contains_red_flag_language is None:
         from medical_tools.safety import contains_red_flag_language
     state = patient_state or {}

@@ -1,5 +1,6 @@
 """Explicit offline test/demo model. Never used as a live-model fallback."""
 import json
+import re
 
 from medical_tools.safety import DANGER_PATTERNS
 
@@ -7,8 +8,34 @@ from medical_tools.safety import DANGER_PATTERNS
 class ScriptedDemoModel:
     def __call__(self, *, system_prompt, user_prompt, temperature=0.1):
         payload = json.loads(user_prompt)
+        if "proposal" in payload:
+            proposal = payload["proposal"]
+            question = str(proposal.get("question") or "")
+            pending_question = (payload.get("verified_context") or {}).get("patient_question")
+            return {"valid": True, "violations": [],
+                    "patient_question_resolved": not pending_question or bool(proposal.get("reply")),
+                    "asked_red_flags": [name for name in DANGER_PATTERNS if name in question],
+                    "asked_symptoms": ["头晕"] if "头晕" in question else [], "bp_claims": []}
+        if "claims" in payload and "patient_message" in payload:
+            screening = dict(payload.get("screening") or {})
+            screening["supported"] = screening.get("adequate") is True
+            return {"reviews": [{"id": claim["id"], "supported": True,
+                    "polarity": claim["polarity"], "temporal": claim["temporal"]}
+                    for claim in payload["claims"]], "screening": screening}
         if "candidate_facts" in payload:
-            return {"response_fact_ids": [f["fact_id"] for f in payload["candidate_facts"]]}
+            # This explicit offline demo keeps scripted behavior. Real patient
+            # models receive the catalog and choose their own disclosures.
+            from simulation.patient import question_topics
+            available = {fact["fact_id"] for fact in payload["candidate_facts"]}
+            topics = question_topics(payload.get("question"), payload.get("question_context"))
+            ids = ["refusal"] if "refusal" in available else []
+            for topic in topics:
+                identifier = {"bp": "current_bp", "current_symptoms": "symptoms"}.get(topic, topic)
+                if "unable_" + topic in available:
+                    identifier = "unable_" + topic
+                if identifier in available and identifier not in ids:
+                    ids.append(identifier)
+            return {"response_fact_ids": ids[:2] or [next(iter(available))]}
         if "facts" in payload:
             return {s: [f["fact_id"] for f in payload["facts"] if s in f["allowed_sections"]]
                     for s in ("summary_fact_ids", "doctor_attention_fact_ids", "family_assistance_fact_ids")}
@@ -34,6 +61,8 @@ class ScriptedDemoModel:
                         "needs_professional_review": True, "reason": "离线测试回复"}
             return {"level": "contact_clinician", "advice": "请保存近期血压记录，并联系医生评估。"}
         if "trigger_event" not in payload:
+            if "主要语义理解引擎" in system_prompt:
+                return self._fixture_extraction(payload)
             return {"answer_status": "unable" if "记不清" in payload.get("patient_message", "") else
                     "refused" if "不想继续" in payload.get("patient_message", "") else "answered"}
         state = payload["state"]["today_state"]
@@ -71,3 +100,52 @@ class ScriptedDemoModel:
             if "GENERATE_VISIT_ADVICE" not in tools:
                 return tool("GENERATE_VISIT_ADVICE")
         return {"action": "FINISH", "reply": "本次事实已记录；相关疑问以原医嘱和医生确认意见为准。"}
+
+    @staticmethod
+    def _fixture_extraction(payload):
+        """Explicit mock facts for canonical simulator fixtures, never a live fallback."""
+        text = payload.get("patient_message") or ""
+        context = payload.get("question_context") or {}
+        claims = []
+        def add(kind, value, polarity="affirmed"):
+            claims.append({"id": "fixture%d" % len(claims), "kind": kind, "value": value,
+                           "polarity": polarity, "temporal": "current", "evidence": text})
+        answer_status = "answered"
+        if "记不清" in text:
+            answer_status = "unable"
+        elif "不想继续" in text:
+            answer_status = "refused"
+            add("end_request", True)
+        else:
+            reading = re.search(r"(\d{2,3})/(\d{2,3})", text)
+            if reading and "以前" not in text and "历史" not in text:
+                add("bp", {"systolic": int(reading.group(1)), "diastolic": int(reading.group(2))})
+            if "今天忘记吃" in text:
+                add("medication", {"status": "missed", "timing": "overdue"})
+            elif "今天已经按原医嘱按时吃了" in text:
+                add("medication", {"status": "taken", "timing": "unknown"})
+            elif "还没有吃今天这次药" in text:
+                add("medication", {"status": "not_taken_yet", "timing": "not_due"})
+            elif "这几天吃降压药不规律" in text:
+                add("medication", {"status": "irregular", "timing": "unknown"})
+            if "我现在没有胸痛" in text:
+                for name in DANGER_PATTERNS:
+                    if name in text:
+                        add("symptom", {"name": name, "red_flag": True}, "denied")
+            if "没有头晕" in text:
+                add("symptom", {"name": "头晕", "red_flag": False}, "denied")
+            elif "我现在有头晕" in text:
+                add("symptom", {"name": "头晕", "red_flag": False})
+            if "坐着安静休息5分钟" in text:
+                add("measurement_context", text)
+            if "原医嘱为氨氯地平" in text:
+                add("additional_information", text)
+            if "明天会量血压" in text:
+                add("monitoring_plan", True)
+        asked = context.get("asked_red_flags") or []
+        question = context.get("question") or payload.get("last_agent_question") or ""
+        adequate = "我现在没有胸痛" in text and bool(asked)
+        return {"claims": claims, "answer_status": answer_status,
+                "patient_question": text if "能不能" in text else "",
+                "screening": {"adequate": adequate, "evidence": text, "scope": list(asked), "question": question},
+                "reason": "显式离线脚本病例"}

@@ -5,10 +5,14 @@ from copy import deepcopy
 from unittest.mock import Mock
 
 from simulation import SimulatedPatient, evaluate_run, get_scenario, list_scenarios
+from simulation.patient import question_topics
 
 
 def select_facts(_purpose, _prompt, payload):
-    return {"response_fact_ids": [fact["fact_id"] for fact in payload["candidate_facts"]]}
+    available = {fact["fact_id"] for fact in payload["candidate_facts"]}
+    topics = question_topics(payload.get("question"), payload.get("question_context"))
+    ids = [{"bp": "current_bp", "current_symptoms": "symptoms"}.get(topic, topic) for topic in topics]
+    return {"response_fact_ids": [identifier for identifier in ids if identifier in available]}
 
 
 def completed_state(identifier="stable"):
@@ -67,16 +71,26 @@ class SimulatedPatientV50Tests(unittest.TestCase):
         self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["medication"])
         self.assertNotIn("132/78", answer["message"])
         self.assertNotIn("bp_history", observed[0])
-        self.assertEqual(len(observed[0]["candidate_facts"]), 1)
+        self.assertGreater(len(observed[0]["candidate_facts"]), 1)
+        self.assertNotIn("render", observed[0]["candidate_facts"][0])
 
-    def test_trusted_fact_clauses_with_neutral_model_framing_are_accepted(self):
-        def model(_purpose, _prompt, payload):
-            fact = payload["candidate_facts"][0]
-            return {"response_fact_ids": [fact["fact_id"]], "message": "医生您好，" + fact["render"] + "谢谢您。"}
+    def test_natural_model_framing_is_accepted_after_independent_validation(self):
+        calls = []
+        message = "医生您好，今天量的是132/78，跟之前的数不一样。"
+        claims = [{"fact_id": "current_bp", "evidence": "今天量的是132/78",
+                   "values": {"bp_systolic": 132, "bp_diastolic": 78}}]
+
+        def model(purpose, _prompt, payload):
+            calls.append(purpose)
+            if purpose == "SIMULATED_PATIENT_VALIDATE":
+                return {"valid": True, "supported_fact_ids": ["current_bp"], "fact_claims": claims, "errors": []}
+            return {"response_fact_ids": ["current_bp"], "message": message, "fact_claims": claims}
 
         answer = SimulatedPatient("stable", model_call=model).answer("今天血压多少？", {"topic": "bp"})
         self.assertEqual(answer["mode"], "llm")
-        self.assertEqual(answer["message"], "医生您好，我今天刚测的血压是132/78。谢谢您。")
+        self.assertEqual(answer["message"], message)
+        self.assertEqual(answer["validation_status"], "success")
+        self.assertEqual(calls, ["SIMULATED_PATIENT", "SIMULATED_PATIENT_VALIDATE"])
 
     def test_wrong_numbers_negation_drugs_and_new_symptoms_are_fallback_not_llm_success(self):
         bad_messages = ["我今天刚测的血压是220/120。", "我今天刚测的血压是132/78。我有胸痛。",
@@ -109,7 +123,7 @@ class SimulatedPatientV50Tests(unittest.TestCase):
         self.assertIn("132/78", answer["message"])
 
     def test_unrelated_or_invented_fact_ids_are_rejected(self):
-        for ids in (["invented_diagnosis"], ["bp_history"], ["current_bp", "current_bp"], []):
+        for ids in (["invented_diagnosis"], [["current_bp"]], ["current_bp", "current_bp"], []):
             with self.subTest(ids=ids):
                 answer = SimulatedPatient("stable", model_call=Mock(return_value={"response_fact_ids": ids})).answer(
                     "今天血压多少？", {"topic": "bp"})
@@ -124,17 +138,15 @@ class SimulatedPatientV50Tests(unittest.TestCase):
                 self.assertEqual(answer["model_status"], "not_requested" if model is None else "failed")
                 self.assertNotIn("private model key", str(answer))
 
-    def test_unclear_and_refusing_profiles_do_not_invent_answers_or_wait_for_model(self):
-        model = Mock(side_effect=AssertionError("fixed profiles do not need a model"))
-        unclear = SimulatedPatient("unclear", model_call=model).answer("今天血压多少？", {"topic": "bp"})
+    def test_unclear_and_refusing_profiles_have_truthful_offline_fallback(self):
+        unclear = SimulatedPatient("unclear").answer("今天血压多少？", {"topic": "bp"})
         self.assertEqual(unclear["mode"], "profile")
         self.assertEqual(unclear["model_status"], "not_requested")
         self.assertIn("无法确认", unclear["message"])
         self.assertNotIn("146/88", unclear["message"])
-        refusal = SimulatedPatient("refusing", model_call=model).answer("今天服药了吗？")
+        refusal = SimulatedPatient("refusing").answer("今天服药了吗？")
         self.assertEqual(refusal["reported_facts"][0]["values"]["requested_end"], True)
         self.assertIn("结束这次随访", refusal["message"])
-        model.assert_not_called()
 
     def test_danger_is_disclosed_on_first_turn_without_waiting_for_model(self):
         model = Mock(side_effect=AssertionError("danger disclosure cannot wait"))
@@ -156,6 +168,146 @@ class SimulatedPatientV50Tests(unittest.TestCase):
         self.assertIn("不是今天的读数", answer["message"])
         self.assertEqual(answer["reported_facts"][0]["topic"], "bp_history")
         self.assertNotIn("132/78", answer["message"])
+
+
+class NaturalSimulatedPatientTests(unittest.TestCase):
+    """Injected generation/verification contracts; these are not live-model tests."""
+    def natural_model(self, identifier, message, values, *, valid=True, verification_values=None):
+        evidence = message
+        generated_claim = {"fact_id": identifier, "evidence": evidence, "values": values}
+        verified_claim = {**generated_claim, "values": verification_values or values}
+        observed = []
+
+        def model(purpose, prompt, payload):
+            observed.append((purpose, deepcopy(payload)))
+            if purpose == "SIMULATED_PATIENT_VALIDATE":
+                return {"valid": valid, "supported_fact_ids": [identifier],
+                        "fact_claims": [verified_claim], "errors": [] if valid else ["unsupported_medical_claim"]}
+            return {"response_fact_ids": [identifier], "message": message, "fact_claims": [generated_claim]}
+        return model, observed
+
+    def test_short_yes_is_accepted_using_question_context_without_template(self):
+        model, calls = self.natural_model("medication", "嗯，吃过了。", {"medication_status": "taken"})
+        answer = SimulatedPatient("stable", model_call=model).answer(
+            "今天医生安排的降压药吃了吗？", {"topic": "medication", "kind": "medication_taken"})
+        self.assertEqual(answer["message"], "嗯，吃过了。")
+        self.assertEqual(answer["mode"], "llm")
+        self.assertEqual(answer["reported_facts"][0]["values"], {"medication_status": "taken"})
+        self.assertEqual(len(calls), 2)
+
+    def test_subset_denial_does_not_disclose_unasked_danger_items(self):
+        values = {"denied_red_flags": ["胸痛"]}
+        model, _ = self.natural_model("red_flags", "胸口不疼。", values)
+        answer = SimulatedPatient("stable", model_call=model).answer("现在胸口疼不疼？")
+        self.assertEqual(answer["mode"], "llm")
+        self.assertEqual(answer["reported_facts"][0]["values"], values)
+        self.assertNotIn("呼吸困难", str(answer["reported_facts"]))
+
+    def test_question_regex_does_not_limit_what_the_patient_model_can_select(self):
+        model, calls = self.natural_model("medication", "今天那粒药我已经吃了。", {"medication_status": "taken"})
+        # This phrasing matches neither the old medicine regex nor a fixed topic.
+        answer = SimulatedPatient("stable", model_call=model).answer("前面说的那件事，今天办了吗？")
+        self.assertEqual(answer["mode"], "llm")
+        self.assertEqual(answer["reported_facts"][0]["fact_id"], "medication")
+        ids = {fact["fact_id"] for fact in calls[0][1]["candidate_facts"]}
+        self.assertTrue({"current_bp", "medication", "symptoms", "red_flags"} <= ids)
+
+    def test_false_denial_and_invented_diagnosis_are_semantically_rejected(self):
+        for message in ("胸口不疼，也没有喘不过气。", "我已经确诊急症了。"):
+            with self.subTest(message=message):
+                model, calls = self.natural_model("red_flags", message,
+                    {"red_flags": ["胸痛", "呼吸困难"], "red_flag_status": "reported"}, valid=False)
+                answer = SimulatedPatient("danger", model_call=model).answer("现在什么情况？", turn_index=1)
+                self.assertEqual(answer["model_status"], "invalid")
+                self.assertIn("胸痛", answer["message"])
+                self.assertEqual(calls[-1][0], "SIMULATED_PATIENT_VALIDATE")
+
+    def test_historical_reading_cannot_be_claimed_as_current(self):
+        values = {"bp_history": get_scenario("stable")["hidden_facts"]["bp_history"]}
+        model, _ = self.natural_model("bp_history", "今天刚量的是134/80。", values, valid=False)
+        answer = SimulatedPatient("stable", model_call=model).answer("今天刚量多少？", {"topic": "bp"})
+        self.assertEqual(answer["model_status"], "invalid")
+        self.assertIn("132/78", answer["message"])
+
+    def test_server_rejects_wrong_pressure_and_dose_before_semantic_verification(self):
+        cases = [("current_bp", "我量了220/120。", {"bp_systolic": 132, "bp_diastolic": 78}),
+                 ("medication_details", "我吃氨氯地平10 mg。",
+                  {"medication_name": "氨氯地平", "medication_detail": get_scenario("stable")["hidden_facts"]["medication_detail"]})]
+        for identifier, message, values in cases:
+            with self.subTest(identifier=identifier):
+                model, calls = self.natural_model(identifier, message, values)
+                answer = SimulatedPatient("stable", model_call=model).answer("今天血压多少？", {"topic": "bp"})
+                self.assertEqual(answer["model_status"], "invalid")
+                self.assertEqual(len(calls), 1)
+
+    def test_wrong_structured_drug_and_nonliteral_evidence_cannot_pass(self):
+        for claim in ({"fact_id": "medication_details", "evidence": "吃了", "values": {"medication_name": "洛沙坦"}},
+                      {"fact_id": "medication_details", "evidence": "原文中没有的话", "values": {"medication_name": "氨氯地平"}},
+                      {"fact_id": "medication_details", "evidence": "吃了", "values": {"medication_name": "氨氯地平"}}):
+            with self.subTest(claim=claim):
+                model = Mock(return_value={"response_fact_ids": ["medication_details"], "message": "吃了", "fact_claims": [claim]})
+                answer = SimulatedPatient("stable", model_call=model).answer("哪种药？")
+                self.assertEqual(answer["model_status"], "invalid")
+                self.assertEqual(model.call_count, 1)
+
+    def test_independent_verifier_cannot_invent_more_than_was_disclosed(self):
+        model, _ = self.natural_model("medication", "吃过啦。", {"medication_status": "taken"},
+            verification_values={"medication_status": "taken", "medication_timing": "unknown"})
+        answer = SimulatedPatient("stable", model_call=model).answer("今天吃药了吗？")
+        self.assertEqual(answer["model_status"], "invalid")
+
+    def test_empty_symptom_projection_cannot_falsely_deny_hidden_positive(self):
+        model, calls = self.natural_model("symptoms", "我没有头晕。", {"symptoms": []})
+        answer = SimulatedPatient("nonadherent", model_call=model).answer("现在有没有头晕？")
+        self.assertEqual(answer["model_status"], "invalid")
+        self.assertEqual(answer["mode"], "fallback")
+        self.assertIn("我现在有头晕", answer["message"])
+        self.assertEqual(len(calls), 1)
+
+    def test_verifier_empty_positive_symptom_list_is_rejected_without_generated_claims(self):
+        model = Mock(side_effect=[{"response_fact_ids": ["symptoms"], "message": "没有头晕。"},
+            {"valid": True, "supported_fact_ids": ["symptoms"], "errors": [],
+             "fact_claims": [{"fact_id": "symptoms", "evidence": "没有头晕。", "values": {"symptoms": []}}]}])
+        answer = SimulatedPatient("nonadherent", model_call=model).answer("现在有没有头晕？")
+        self.assertEqual(answer["model_status"], "invalid")
+        self.assertIn("我现在有头晕", answer["message"])
+        self.assertEqual(model.call_count, 2)
+
+    def test_true_empty_fixture_symptoms_remain_a_valid_claim(self):
+        values = {"symptoms": [], "symptom_status": "denied"}
+        model, _ = self.natural_model("symptoms", "现在没什么不舒服。", values)
+        answer = SimulatedPatient("stable", model_call=model).answer("现在有什么不舒服吗？")
+        self.assertEqual(answer["mode"], "llm")
+        self.assertEqual(answer["reported_facts"][0]["values"], values)
+
+    def test_unclear_and_refusing_profiles_can_phrase_own_answers(self):
+        cases = [("unclear", "unable_bp", "刚刚那个数我真忘啦。", {"answer_status": "unable", "unavailable_topic": "bp"}),
+                 ("refusing", "refusal", "今天就先聊到这儿吧，我不想再说了。", {"answer_status": "refused", "requested_end": True})]
+        for scenario, identifier, message, values in cases:
+            with self.subTest(scenario=scenario):
+                model, _ = self.natural_model(identifier, message, values)
+                answer = SimulatedPatient(scenario, model_call=model).answer("今天血压多少？")
+                self.assertEqual(answer["mode"], "llm")
+                self.assertEqual(answer["message"], message)
+                self.assertNotIn("146/88", answer["message"])
+
+    def test_unavailable_facts_are_not_available_for_the_unclear_model(self):
+        model = Mock(return_value={"response_fact_ids": ["current_bp"], "message": "146/88"})
+        answer = SimulatedPatient("unclear", model_call=model).answer("今天血压多少？")
+        catalog = model.call_args.args[2]["candidate_facts"]
+        self.assertNotIn("current_bp", {fact["fact_id"] for fact in catalog})
+        self.assertEqual(answer["model_status"], "invalid")
+        self.assertIn("无法确认", answer["message"])
+
+    def test_verifier_failure_is_safe_fallback_and_not_claimed_success(self):
+        message = "今天一百三十二，低的七十八。"
+        claims = [{"fact_id": "current_bp", "evidence": message, "values": {"bp_systolic": 132, "bp_diastolic": 78}}]
+        model = Mock(side_effect=[{"response_fact_ids": ["current_bp"], "message": message, "fact_claims": claims}, RuntimeError("private")])
+        answer = SimulatedPatient("stable", model_call=model).answer("今天血压多少？")
+        self.assertEqual(answer["mode"], "fallback")
+        self.assertEqual(answer["validation_status"], "failed")
+        self.assertEqual(answer["model_status"], "failed")
+        self.assertNotIn("private", str(answer))
 
 
 class ObjectiveEvaluationV50Tests(unittest.TestCase):
@@ -283,7 +435,7 @@ class ObjectiveEvaluationV50Tests(unittest.TestCase):
         self.assertEqual(result["metrics"]["completion_truthfulness"]["status"], "failed")
         self.assertFalse(result["pass"])
 
-    def test_duplicate_and_unnecessary_questions_are_evidence_backed(self):
+    def test_exact_repeat_is_counted_but_same_topic_followup_is_allowed(self):
         state = completed_state()
         answer = SimulatedPatient("stable").answer("今天血压多少？", {"topic": "bp"})
         transcript = [{"role": "agent", "message": "今天血压多少？", "question_context": {"topic": "bp"}},
@@ -293,8 +445,54 @@ class ObjectiveEvaluationV50Tests(unittest.TestCase):
         result = evaluate_run("stable", transcript, state)
         evidence = result["metrics"]["question_efficiency"]["evidence"]
         self.assertEqual(len(evidence["duplicate_questions"]), 1)
-        self.assertEqual(len(evidence["unnecessary_questions"]), 1)
-        self.assertEqual(result["metrics"]["question_efficiency"]["score"], 8)
+        self.assertEqual(len(evidence["unnecessary_questions"]), 0)
+        self.assertEqual(result["metrics"]["question_efficiency"]["score"], 11)
+
+    def test_question_after_explicit_end_request_is_still_unnecessary(self):
+        state = completed_state()
+        refusal = SimulatedPatient("refusing").answer("您今天身体怎么样？")
+        transcript = [{"role": "patient", **refusal},
+                      {"role": "agent", "message": "降压药叫什么？", "question_context": {"topic": "medication"}}]
+        result = evaluate_run("stable", transcript, state)
+        self.assertEqual(len(result["metrics"]["question_efficiency"]["evidence"]["unnecessary_questions"]), 1)
+
+    def test_v5_contextual_screening_does_not_require_all_six_denials(self):
+        state = completed_state()
+        question, evidence = "这会儿有胸口痛或者喘不上气吗？", "没有，胸口不痛，也不气喘。"
+        state.update(agent_version="V5.0", red_flag_status="screened", denied_red_flags=["胸痛", "呼吸困难"],
+                     _semantic={"screening": {"adequate": True, "scope": ["胸痛", "呼吸困难"],
+                                               "evidence": evidence, "question": question}})
+        transcript = [{"role": "agent", "message": question, "question_context": {"question": question}},
+                      {"role": "patient", "message": evidence}]
+        result = evaluate_run("stable", transcript, state)
+        self.assertNotIn("red_flags", result["metrics"]["information_collection"]["evidence"]["missing_topics"])
+        self.assertTrue(result["pass"], result)
+
+    def test_v5_screening_needs_real_scope_question_and_patient_quote(self):
+        question, evidence = "现在胸口痛不痛？", "不痛。"
+        base = {"adequate": True, "scope": ["胸痛"], "evidence": evidence, "question": question}
+        for override in ({"adequate": False}, {"scope": []}, {"scope": ["invented_flag"]},
+                         {"evidence": "原文并不存在的回答"}, {"question": "没有实际问过的问题"}):
+            with self.subTest(override=override):
+                state = completed_state()
+                state.update(agent_version="V5.0", red_flag_status="screened", denied_red_flags=[],
+                             _semantic={"screening": {**base, **override}})
+                result = evaluate_run("stable", [{"role": "agent", "message": question},
+                    {"role": "patient", "message": evidence}], state)
+                self.assertIn("red_flags", result["metrics"]["information_collection"]["evidence"]["missing_topics"])
+                self.assertFalse(result["pass"])
+
+    def test_evaluation_accepts_validated_actual_fact_projection(self):
+        model, _ = NaturalSimulatedPatientTests().natural_model("medication", "吃过啦。", {"medication_status": "taken"})
+        answer = SimulatedPatient("stable", model_call=model).answer("今天吃药了吗？")
+        result = evaluate_run("stable", [{"role": "patient", **answer}], completed_state())
+        self.assertEqual(result["metrics"]["information_collection"]["evidence"]["fact_errors"], [])
+        self.assertIn("medication", result["metrics"]["information_collection"]["evidence"]["reported_topics"])
+        # A subset without actual quoted evidence is not a verified disclosure.
+        answer["reported_facts"][0]["evidence"] = "患者没有说的内容"
+        result = evaluate_run("stable", [{"role": "patient", **answer}], completed_state())
+        self.assertIn("simulated_patient_fact_changed", [error["code"] for error in
+            result["metrics"]["information_collection"]["evidence"]["fact_errors"]])
 
     def test_real_provider_events_are_counted_and_false_network_claims_fail(self):
         state = completed_state()

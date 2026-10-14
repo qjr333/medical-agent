@@ -1,0 +1,202 @@
+{
+  "scenario_id": "stable",
+  "status": "failed",
+  "followup_status": null,
+  "evaluation": null,
+  "error_type": "RuntimeError",
+  "error": "本次模拟执行未完成；记录已保存，请核对运行状态后重新开始。",
+  "model_mode": "live",
+  "real_model_requests": 6,
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-14T05:08:09.321864+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "scheduled",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-14T05:08:09.802627+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 478.8,
+        "provider_request_count": 2
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-14T05:08:09.802679+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted"
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-14T05:08:09.802684+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    },
+    {
+      "id": 9,
+      "time": "2026-10-14T05:08:09.810639+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 1.8,
+        "provider_request_count": 2
+      }
+    },
+    {
+      "id": 10,
+      "time": "2026-10-14T05:08:09.810657+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted"
+      }
+    },
+    {
+      "id": 12,
+      "time": "2026-10-14T05:08:09.810661+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-14T05:08:09.816848+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 1.5,
+        "provider_request_count": 2
+      }
+    },
+    {
+      "id": 16,
+      "time": "2026-10-14T05:08:09.816861+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted"
+      }
+    },
+    {
+      "id": 18,
+      "time": "2026-10-14T05:08:09.816864+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    }
+  ],
+  "transcript": [],
+  "task": null,
+  "doctor_handled": false,
+  "family_read": false,
+  "diagnostics": [
+    {
+      "time": "2026-10-14T05:08:09.802679+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_unavailable",
+        "next_status": "interrupted",
+        "next_action": "",
+        "pending_tasks": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags",
+          "resume_planning"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-14T05:08:09.810657+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_unavailable",
+        "next_status": "interrupted",
+        "next_action": "",
+        "pending_tasks": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags",
+          "resume_planning"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-14T05:08:09.816861+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_unavailable",
+        "next_status": "interrupted",
+        "next_action": "",
+        "pending_tasks": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags",
+          "resume_planning"
+        ]
+      }
+    }
+  ],
+  "final_facts": {
+    "bp_systolic": null,
+    "bp_diastolic": null,
+    "medication_status": "unknown",
+    "medication_timing": "unknown",
+    "symptoms": [],
+    "denied_symptoms": [],
+    "red_flags": [],
+    "denied_red_flags": [],
+    "symptom_status": "unknown",
+    "red_flag_status": "unknown",
+    "coverage": {
+      "bp": false,
+      "medication": false,
+      "current_symptoms": false,
+      "red_flags": false,
+      "measurement_context": false
+    },
+    "topic_status": {
+      "bp": "unanswered",
+      "medication": "unanswered",
+      "current_symptoms": "unanswered",
+      "red_flags": "unanswered",
+      "measurement_context": "unanswered"
+    },
+    "_semantic": null
+  }
+}

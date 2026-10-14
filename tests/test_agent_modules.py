@@ -211,7 +211,11 @@ with contextlib.redirect_stdout(io.StringIO()):
             result = {"session_id":sid,"status":body["state"]["followup_status"]}
 print(json.dumps(result))
 '''
-        environment = dict(os.environ, DEEPSEEK_API_KEY="", RAG_DISABLE_EMBEDDING="1")
+        # This regression exercises the original V3 session-restoration chain.
+        # Pin its mode so a developer's .env opting into V5 cannot switch the
+        # subprocess to a live semantic engine with no configured model key.
+        environment = dict(os.environ, DEEPSEEK_API_KEY="", RAG_DISABLE_EMBEDDING="1",
+                           LLM_AGENT_V4="0", LLM_AGENT_V42="0", LLM_AGENT_V50="0")
         with tempfile.TemporaryDirectory() as directory:
             path = str(Path(directory) / "restart.db")
             first = subprocess.run([sys.executable, "-c", code, path, "create"],

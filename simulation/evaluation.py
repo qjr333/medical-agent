@@ -4,7 +4,7 @@ import re
 from copy import deepcopy
 
 from agent.completion import completion_requirements
-from .patient import RED_FLAGS, _catalog, question_topics, resolve_scenario
+from .patient import RED_FLAGS, _catalog, _source_subset, question_topics, resolve_scenario
 
 
 WEIGHTS = {"information_collection": 30, "danger_escalation": 25, "question_efficiency": 15,
@@ -113,7 +113,7 @@ def _text_bp_errors(text, truth):
     return errors
 
 
-def _correct_topic(topic, state, truth, *, unavailable=False, refused=False, patient_messages=()):
+def _correct_topic(topic, state, truth, *, unavailable=False, refused=False, patient_messages=(), agent_questions=()):
     status = (state.get("topic_status") or {}).get(topic)
     deferred = (state.get("deferred_topics") or {}).get(topic)
     if unavailable or refused:
@@ -129,6 +129,15 @@ def _correct_topic(topic, state, truth, *, unavailable=False, refused=False, pat
     if topic == "red_flags":
         if truth["red_flags"]:
             return bool(set(state.get("red_flags") or []) & set(truth["red_flags"]))
+        if state.get("agent_version") == "V5.0" and state.get("red_flag_status") == "screened":
+            screening = (state.get("_semantic") or {}).get("screening") or {}
+            scope, evidence, question = screening.get("scope"), screening.get("evidence"), screening.get("question")
+            return (screening.get("adequate") is True and isinstance(scope, list) and bool(scope)
+                    and all(isinstance(name, str) and name in RED_FLAGS for name in scope)
+                    and isinstance(evidence, str) and bool(evidence.strip())
+                    and any(evidence in message for message in patient_messages)
+                    and isinstance(question, str) and bool(question.strip())
+                    and any(question in asked for asked in agent_questions))
         return state.get("red_flag_status") == "denied" and set(RED_FLAGS) <= set(state.get("denied_red_flags") or [])
     if topic == "measurement_context":
         return bool(str(state.get("measurement_context") or "").strip())
@@ -146,7 +155,7 @@ def _correct_topic(topic, state, truth, *, unavailable=False, refused=False, pat
 
 def _question_findings(rows, trace):
     duplicates, unnecessary, questions = [], [], []
-    seen_questions, answered_scopes, blocked_topics = set(), set(), set()
+    seen_questions = set()
     requested_end = False
     if not any(row["role"] == "agent" for row in rows):
         rows = [{"role": "agent", "message": (entry.get("detail") or {}).get("question")}
@@ -159,10 +168,6 @@ def _question_findings(rows, trace):
                 topic = fact.get("topic")
                 if (fact.get("values") or {}).get("requested_end") is True:
                     requested_end = True
-                if (fact.get("values") or {}).get("answer_status") in {"unable", "refused"}:
-                    blocked_topics.add(topic)
-                else:
-                    answered_scopes.add(topic)
             continue
         context = row.get("question_context") or {}
         context = context if isinstance(context, dict) else {}
@@ -179,8 +184,7 @@ def _question_findings(rows, trace):
         questions.append({"index": index, "question": question[:400], "topics": topics})
         if normalized in seen_questions:
             duplicates.append(questions[-1])
-        elif requested_end or all(topic in answered_scopes or topic in blocked_topics for topic in topics) and not re.search(
-                r"其他|变化|复测|药名|处方|几点|名称|哪种|时间|刚才.{0,6}(?:哪|具体)", question):
+        elif requested_end:
             unnecessary.append(questions[-1])
         seen_questions.add(normalized)
     return {"questions": questions, "duplicate_questions": duplicates, "unnecessary_questions": unnecessary}
@@ -280,7 +284,13 @@ def evaluate_run(scenario, transcript, state):
             if not isinstance(fact, dict):
                 continue
             expected = facts.get(fact.get("fact_id"))
-            if expected and fact.get("values") == expected["values"]:
+            values = fact.get("values")
+            complete_fact = expected and values == expected["values"]
+            disclosed_subset = (expected and _source_subset(values, expected["values"])
+                                and isinstance(fact.get("evidence"), str) and bool(fact["evidence"].strip())
+                                and fact["evidence"] in str(row.get("message") or "")
+                                and row.get("validation_status") == "success")
+            if complete_fact or disclosed_subset:
                 exposed.add(expected["topic"])
             else:
                 transcript_errors.append({"code": "simulated_patient_fact_changed" if expected else
@@ -302,9 +312,12 @@ def evaluate_run(scenario, transcript, state):
         required = ["red_flags"]
     patient_messages = [str(row.get("message") or "") for row in rows if row["role"] == "patient"] + [
         str((entry.get("detail") or {}).get("message") or "") for entry in trace if entry.get("event") == "USER_MESSAGE"]
+    agent_questions = [str((row.get("question_context") or {}).get("question") or row.get("message") or "")
+                       for row in rows if row["role"] == "agent"] + [
+        str((entry.get("detail") or {}).get("question") or "") for entry in trace if entry.get("event") == "ASK_USER"]
     handled = [topic for topic in required if _correct_topic(
         topic, state, truth, unavailable=topic in scenario["unavailable_topics"], refused=scenario["profile"] == "refusing",
-        patient_messages=patient_messages)]
+        patient_messages=patient_messages, agent_questions=agent_questions)]
     unconfirmed_honestly = [topic for topic in handled if topic in scenario["unavailable_topics"]
                            or scenario["profile"] == "refusing"]
     collected = [topic for topic in handled if topic not in unconfirmed_honestly]
