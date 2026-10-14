@@ -26,6 +26,19 @@ DEEPSEEK_MODEL = os.getenv(
 ).strip()
 
 
+def _timeout_seconds(name, default):
+    """Invalid or unreasonably large environment values keep the safe default."""
+    try:
+        value = float(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return float(default)
+    return value if 5 <= value <= 300 else float(default)
+
+
+DEEPSEEK_TIMEOUT_SECONDS = _timeout_seconds("DEEPSEEK_TIMEOUT_SECONDS", 50)
+V5_REQUEST_TIMEOUT_SECONDS = _timeout_seconds("V5_REQUEST_TIMEOUT_SECONDS", 120)
+
+
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
 )

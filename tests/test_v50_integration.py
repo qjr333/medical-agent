@@ -19,7 +19,8 @@ from backend.runtime_v5 import AgentRuntime
 from backend.simulation_v5 import SimulationManager
 from database import collaboration, connection, repository, tasks
 from medical_tools import guidance
-from simulation.patient import get_scenario
+from simulation.patient import get_scenario, SimulatedPatient
+from simulation.scripted import ScriptedDemoModel
 
 
 EVIDENCE = [{"block_id": "integration-fixture", "source_id": "integration-source",
@@ -77,6 +78,64 @@ class V50IntegrationTests(unittest.TestCase):
         self.assertEqual((state["bp_systolic"], state["bp_diastolic"]), (facts["bp_systolic"], facts["bp_diastolic"]))
         self.assertEqual(state["medication_status"], "taken")
         self.assertTrue(result["evaluation"]["pass"], result["evaluation"])
+
+    def test_patient_gets_the_current_question_while_transcript_keeps_full_response(self):
+        scripted = ScriptedDemoModel()
+        questions = []
+        original_answer = SimulatedPatient.answer
+
+        def model(*, system_prompt, user_prompt, temperature=0.1):
+            result = scripted(system_prompt=system_prompt, user_prompt=user_prompt, temperature=temperature)
+            if result and result.get("action") == "ASK_USER":
+                result["reply"] = "谢谢，已经收到。"
+            return result
+
+        def answer(patient, question, question_context=None, turn_index=0):
+            questions.append((question, question_context))
+            return original_answer(patient, question, question_context, turn_index)
+
+        created = self.manager.create("stable", model_mode="scripted", delay_seconds=0,
+                                      max_turns=20, background=False)
+        with patch.object(SimulatedPatient, "answer", answer):
+            result = self.manager.execute(created["run_id"], model_override=model)
+        self.assertEqual(result["status"], "completed", result)
+        agent_turns = [row for row in result["transcript"] if row["role"] == "agent" and row.get("question")]
+        self.assertEqual(len(questions), len(agent_turns))
+        self.assertTrue(any("谢谢，已经收到。" in row["message"] for row in agent_turns))
+        for (question, context), row in zip(questions, agent_turns):
+            self.assertEqual(question, row["question"])
+            self.assertEqual(question, context["question"])
+            self.assertNotIn("谢谢，已经收到。", question)
+
+    def test_patient_verification_timeout_category_survives_shared_call_boundary(self):
+        original_call = AgentRuntime.model_call
+        patient_calls = []
+
+        def model_call(runtime, state, purpose, prompt, payload):
+            if purpose == "SIMULATED_PATIENT" and not patient_calls:
+                patient_calls.append(purpose)
+                message = "胸口不疼，也不气喘。"
+                return {"response_fact_ids": ["red_flags"], "message": message,
+                        "fact_claims": [{"fact_id": "red_flags", "evidence": message,
+                                         "values": {"denied_red_flags": ["胸痛", "呼吸困难"]}}]}
+            if purpose == "SIMULATED_PATIENT_VALIDATE":
+                patient_calls.append(purpose)
+                state["trace"].append({"event": "LLM_CALL", "detail": {
+                    "purpose": purpose, "failure_kind": "timeout", "status": "error"}})
+                return None
+            return original_call(runtime, state, purpose, prompt, payload)
+
+        created = self.manager.create("stable", model_mode="scripted", delay_seconds=0,
+                                      max_turns=20, background=False)
+        with patch.object(AgentRuntime, "model_call", model_call):
+            result = self.manager.execute(created["run_id"])
+        self.assertEqual(result["status"], "completed", result)
+        patient_turn = next(row for row in result["transcript"] if row["role"] == "patient")
+        self.assertEqual(patient_calls, ["SIMULATED_PATIENT", "SIMULATED_PATIENT_VALIDATE"])
+        self.assertEqual(patient_turn["validation_status"], "timeout")
+        self.assertEqual(patient_turn["failure_stage"], "validation_timeout")
+        self.assertIn("我现在没有胸痛", patient_turn["message"])
+        self.assertEqual(patient_turn["reported_facts"][0]["fact_id"], "red_flags")
 
     def test_high_bp_scenario_uses_the_real_trigger_measurement_and_measurement_context(self):
         created, result, state = self.run_scenario("high_bp")

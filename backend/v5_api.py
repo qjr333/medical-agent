@@ -297,7 +297,7 @@ def recover_pending_sessions():
     """Resume durable execution/report work after crashes; no synthetic patient input."""
     conn = get_connection()
     try:
-        rows = conn.execute("SELECT session_id,state_json FROM followup_sessions WHERE status IN ('processing','completed','partially_completed','escalated') ORDER BY updated_at DESC LIMIT 200").fetchall()
+        rows = conn.execute("SELECT session_id,state_json FROM followup_sessions WHERE status IN ('processing','interrupted','completed','partially_completed','escalated') ORDER BY updated_at DESC LIMIT 200").fetchall()
     finally:
         conn.close()
     import json
@@ -305,7 +305,9 @@ def recover_pending_sessions():
         state = json.loads(row["state_json"])
         if state.get("agent_version") != "V5.0":
             continue
-        pending = state.get("followup_status") == "processing" or (state.get("report_generation") or {}).get("status") in {"pending", "summary_pending", "failed"}
+        verification_pending = (state.get("followup_status") == "interrupted"
+                                and (state.get("extraction_pending") or {}).get("status") == "awaiting_verification")
+        pending = verification_pending or state.get("followup_status") == "processing" or (state.get("report_generation") or {}).get("status") in {"pending", "summary_pending", "failed"}
         if not pending or state.get("background_recovery_attempts", 0) >= 3:
             continue
         sid = row["session_id"]
@@ -314,11 +316,13 @@ def recover_pending_sessions():
                 fresh = repository.read_session(session_id)
                 if not fresh or fresh.get("background_recovery_attempts", 0) >= 3:
                     return
-                if fresh.get("followup_status") == "processing" or (fresh.get("report_generation") or {}).get("status") in {"pending", "summary_pending", "failed"}:
+                verifying = (fresh.get("followup_status") == "interrupted"
+                             and (fresh.get("extraction_pending") or {}).get("status") == "awaiting_verification")
+                if verifying or fresh.get("followup_status") == "processing" or (fresh.get("report_generation") or {}).get("status") in {"pending", "summary_pending", "failed"}:
                     fresh["background_recovery_attempts"] = fresh.get("background_recovery_attempts", 0) + 1
                     repository.persist_session(session_id, fresh)
                     runtime = AgentRuntime()
-                    if fresh["followup_status"] == "processing":
+                    if verifying or fresh["followup_status"] == "processing":
                         runtime.turn(session_id)
                     else:
                         runtime.finalize(session_id)

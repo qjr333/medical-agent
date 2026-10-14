@@ -434,8 +434,8 @@ class AgentV50Tests(unittest.TestCase):
         with patch.object(llm_v4, "_bounded_call", side_effect=bounded):
             self.extract("今天按时吃降压药", {"answer_status": "answered"}, state)
         self.assertEqual(len(captured), 1)
-        self.assertLessEqual(captured[0], 45)
-        self.assertGreater(captured[0], 44)
+        self.assertLessEqual(captured[0], 50)
+        self.assertGreater(captured[0], 49)
 
     def test_late_tool_timeout_remains_processing_and_cannot_publish_late_state(self):
         state = make_state()

@@ -169,6 +169,77 @@ class SimulatedPatientV50Tests(unittest.TestCase):
         self.assertEqual(answer["reported_facts"][0]["topic"], "bp_history")
         self.assertNotIn("132/78", answer["message"])
 
+    def test_failed_generation_uses_the_current_symptom_question(self):
+        model = Mock(side_effect=RuntimeError("private provider detail"))
+        answer = SimulatedPatient("nonadherent", model_call=model).answer(
+            "现在有没有什么不舒服？", {"topic": "current_symptoms"})
+        self.assertEqual(answer["mode"], "fallback")
+        self.assertEqual(answer["failure_stage"], "generation_failed")
+        self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["symptoms"])
+        self.assertIn("我现在有头晕", answer["message"])
+        self.assertNotIn("private provider detail", str(answer))
+
+    def test_failed_generation_uses_the_current_bp_question(self):
+        answer = SimulatedPatient("stable", model_call=Mock(return_value=None)).answer(
+            "这次量的是多少？", {"topic": "bp"})
+        self.assertEqual(answer["mode"], "fallback")
+        self.assertEqual(answer["message"], "我今天刚测的血压是132/78。")
+        self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["current_bp"])
+
+    def test_medication_acknowledgement_cannot_override_symptom_context(self):
+        full_response = "我记下您按时服用了降压药。现在有没有不舒服？"
+        current_question = "现在有没有不舒服？"
+        model = Mock(return_value=None)
+        answer = SimulatedPatient("nonadherent", model_call=model).answer(full_response, {
+            "topic": "current_symptoms", "question": current_question})
+        self.assertEqual(model.call_args.args[2]["question"], current_question)
+        self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["symptoms"])
+        self.assertNotIn("吃降压药", answer["message"])
+        self.assertIn("头晕", answer["message"])
+
+    def test_direct_legacy_response_uses_only_the_interrogative_sentence(self):
+        answer = SimulatedPatient("stable", model_call=Mock(return_value=None)).answer(
+            "按时服用降压药的情况已经记录。现在有没有不舒服？")
+        self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["symptoms"])
+
+    def test_unknown_question_failure_clarifies_without_selecting_a_fact(self):
+        answer = SimulatedPatient("stable", model_call=Mock(return_value=None)).answer(
+            "这件事您怎么看？", {"topic": "additional_information"})
+        self.assertEqual(answer["reported_facts"], [])
+        self.assertEqual(answer["fallback_reason"], "unrecognized_current_question")
+        self.assertIn("换个说法", answer["message"])
+        self.assertNotIn("没有不舒服", answer["message"])
+        self.assertNotIn("132", answer["message"])
+
+    def test_context_metadata_determines_fallback_without_text_keyword_order(self):
+        answer = SimulatedPatient("stable", model_call=Mock(return_value=None)).answer(
+            "吃药已经确认，接下来想再问您今天的读数。", {"topic": "bp"})
+        self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["current_bp"])
+
+    def test_validation_timeout_has_a_distinct_trace_reason_and_truthful_fallback(self):
+        message = "这会儿没什么不舒服。"
+        claims = [{"fact_id": "symptoms", "evidence": message, "values": {"symptom_status": "denied"}}]
+        model = Mock(side_effect=[{"response_fact_ids": ["symptoms"], "message": message, "fact_claims": claims},
+                                  TimeoutError("private provider detail")])
+        answer = SimulatedPatient("stable", model_call=model).answer("现在有没有不舒服？", {
+            "topic": "current_symptoms"})
+        self.assertEqual(answer["mode"], "fallback")
+        self.assertEqual(answer["model_status"], "failed")
+        self.assertEqual(answer["validation_status"], "timeout")
+        self.assertEqual(answer["failure_stage"], "validation_timeout")
+        self.assertEqual([fact["fact_id"] for fact in answer["reported_facts"]], ["symptoms"])
+        self.assertNotIn("private provider detail", str(answer))
+
+    def test_semantic_rejection_is_distinguished_from_generation_failure(self):
+        message = "今天是132/78。"
+        claims = [{"fact_id": "current_bp", "evidence": message, "values": {"bp_systolic": 132, "bp_diastolic": 78}}]
+        model = Mock(side_effect=[{"response_fact_ids": ["current_bp"], "message": message, "fact_claims": claims},
+                                  {"valid": False, "errors": ["unverified_context"]}])
+        answer = SimulatedPatient("stable", model_call=model).answer("今天血压多少？", {"topic": "bp"})
+        self.assertEqual(answer["failure_stage"], "validation_rejected")
+        self.assertEqual(answer["validation_status"], "rejected")
+        self.assertEqual(answer["message"], "我今天刚测的血压是132/78。")
+
 
 class NaturalSimulatedPatientTests(unittest.TestCase):
     """Injected generation/verification contracts; these are not live-model tests."""

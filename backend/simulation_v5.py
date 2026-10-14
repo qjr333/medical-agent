@@ -119,8 +119,26 @@ class SimulationManager:
                     task = tasks.get_task(task["task_id"])
                     if task["status"] not in {"waiting_for_user", "completed"}:
                         raise RuntimeError("Proactive execution remains pending")
-                patient = SimulatedPatient(payload["scenario_id"], model_call=lambda purpose, prompt, data:
-                                           runtime.model_call(call_state, purpose, prompt, data))
+                def patient_model_call(purpose, prompt, data):
+                    result = runtime.model_call(call_state, purpose, prompt, data)
+                    if result is None:
+                        # The shared model boundary already performs finite
+                        # retries and logs errors. Preserve its timeout category
+                        # for the patient's fallback without starting more calls.
+                        last_call = next((entry.get("detail") or {} for entry in reversed(call_state.get("trace") or [])
+                                          if entry.get("event") == "LLM_CALL"
+                                          and (entry.get("detail") or {}).get("purpose") == purpose), {})
+                        if last_call.get("failure_kind") == "timeout":
+                            raise TimeoutError("simulated_patient_model_timeout")
+                    return result
+
+                patient = SimulatedPatient(payload["scenario_id"], model_call=patient_model_call)
+                saved_state = repository.read_session(sid)
+                if (saved_state.get("followup_status") == "interrupted"
+                        and (saved_state.get("extraction_pending") or {}).get("status") == "awaiting_verification"):
+                    # An explicit restart/resume validates the original saved
+                    # answer before generating another simulated patient turn.
+                    runtime.turn(sid)
                 patient_turns = sum(t.get("role") == "patient" and t.get("execution") == "completed" for t in payload["transcript"])
                 for index in range(patient_turns, payload["options"]["max_turns"]):
                     state = repository.read_session(sid)
@@ -136,19 +154,24 @@ class SimulationManager:
                         state = runtime.turn(sid)
                     if state["followup_status"] != "waiting_for_user":
                         break
-                    question = state.get("last_agent_response", "")
                     context = copy.deepcopy(state.get("question_context") or {})
+                    response = state.get("last_agent_response", "")
+                    question = state.get("last_agent_question") or context.get("question") or ""
+                    if question:
+                        context["question"] = question
                     # A persisted patient entry awaiting execution is replayed once after restart.
                     waiting = payload["transcript"][-1] if payload["transcript"] else {}
                     if waiting.get("role") == "patient" and waiting.get("execution") == "pending":
                         answer = waiting
                     else:
-                        payload["transcript"].append({"role": "agent", "message": question, "question_context": context})
+                        payload["transcript"].append({"role": "agent", "message": response, "question": question,
+                                                      "question_context": context})
                         call_state = copy.deepcopy(state)
                         answer = patient.answer(question, context, turn_index=index)
                         for entry in call_state["trace"][len(state["trace"]):]:
                             state["trace"].append(entry)
-                        add_trace(state, "SIMULATED_PATIENT", {"mode": answer["mode"], "model_status": answer["model_status"]})
+                        add_trace(state, "SIMULATED_PATIENT", {key: answer[key] for key in (
+                            "mode", "model_status", "validation_status", "failure_stage", "fallback_reason") if key in answer})
                         repository.persist_session(sid, state)
                         payload["transcript"].append({"role": "patient", **answer, "execution": "pending"})
                         self.store.save(payload, owner=owner)

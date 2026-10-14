@@ -6,6 +6,7 @@ from time import monotonic
 from agent.llm_v4 import _call, extract_user_patch_v4, run_agent_v4
 from agent.state_manager import add_trace, create_patient_state, merge_user_patch
 from agent.reporting_v42 import build_report_v42
+from backend.utils import today_local_date
 from database.connection import get_connection
 from database import repository, tasks
 from memory.patient_memory import refresh_patient_memory
@@ -23,7 +24,7 @@ class AgentRuntime:
         self.model = model
 
     def model_call(self, state, purpose, prompt, payload):
-        return _call(self.model, state, purpose, prompt, payload, deadline=monotonic() + 45)
+        return _call(self.model, state, purpose, prompt, payload)
 
     def start_task(self, task):
         sid = task["session_id"]
@@ -72,13 +73,30 @@ class AgentRuntime:
                     raise ValueError("Follow-up already ended")
                 return state
             state["agent_version"] = "V5.0"
+            pending = state.get("extraction_pending") or {}
+            resuming_extraction = message is None and pending.get("status") == "awaiting_verification"
+            if resuming_extraction:
+                original = pending.get("context") or {}
+                if (pending.get("date") != today_local_date()
+                        or original.get("last_agent_question") != state.get("last_agent_question", "")
+                        or original.get("question_context") != (state.get("question_context") or {})):
+                    pending["status"] = "stale_context"
+                    state.update(followup_status="interrupted", interruption_reason="stale_extraction_context",
+                                 last_agent_response="先前回答的日期或问题语境已变化，请重新提供本次实际情况，再继续核实。")
+                    state.pop("execution_pending", None)
+                    add_trace(state, "SAFETY_PAUSE", {"purpose": "VERIFY_EXTRACT", "status": "stale_context",
+                              "recoverable": False, "next_action": "WAIT_FOR_NEW_INPUT"})
+                    repository.persist_session(sid, state)
+                    return state
+                message = pending.get("patient_message")
             if message is not None:
                 message = message.strip()
                 if not message:
                     raise ValueError("Patient message required")
                 before = execution_fingerprint(state, "PATIENT_FACTS", query="")
                 state["followup_status"] = "active"
-                add_trace(state, "USER_MESSAGE", {"message": message})
+                if not resuming_extraction:
+                    add_trace(state, "USER_MESSAGE", {"message": message})
                 patch = extract_user_patch_v4(message, state, call_json_model=self.model, enable_v50=True)
                 bp = None
                 if valid_bp_measurement(patch.get("bp_systolic"), patch.get("bp_diastolic")):

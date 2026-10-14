@@ -8,9 +8,15 @@ STAGES = {"USER_MESSAGE": "patient_input", "STATE_UPDATE": "information_extracti
           "SAFETY_OVERRIDE": "safety", "TRIGGER_ENGINE": "trigger", "EXECUTION_RESUMED": "resume"}
 STAGES["LLM_VALIDATION_ERROR"] = "planner"
 STAGES["TASK_INTERRUPTED"] = "execution_error"
+STAGES.update({"MODEL_RETRY": "model_retry", "MODEL_RETRY_EXHAUSTED": "execution_error",
+               "SEMANTIC_VALIDATION_PENDING": "information_validation", "SEMANTIC_VALIDATION_REJECTED": "information_validation",
+               "EXTRACTION_RESUMED": "resume", "EXTRACTION_DISCARDED": "information_validation",
+               "SAFETY_PAUSE": "safety", "SIMULATED_PATIENT": "simulated_patient"})
 KEYS = {"action", "topic", "tool", "status", "purpose", "ok", "called", "deepseek_called", "duration_ms",
         "risk_level", "next_status", "outcome", "ai_status", "recipient_count", "channel", "external_delivery",
-        "trigger_type", "automatic", "cache_hit", "executed", "count", "source_count", "retrieved_count"}
+        "trigger_type", "automatic", "cache_hit", "executed", "count", "source_count", "retrieved_count",
+        "attempt", "max_attempts", "failure_stage", "failure_kind", "error_type", "candidate_count",
+        "accepted_count", "recoverable", "next_action", "validation_status", "model_status", "fallback_reason", "mode"}
 
 
 def present_trace(state, *, fictional=False):
@@ -22,8 +28,10 @@ def present_trace(state, *, fictional=False):
             continue
         stage = STAGES.get(event)
         if event == "LLM_CALL":
-            stage = {"EXTRACT": "information_extraction", "PLAN": "planner", "COMPLETE": "completion",
-                     "REPORT_SUMMARY": "report", "SIMULATED_PATIENT": "simulated_patient"}.get(detail.get("purpose"), "model")
+            stage = {"EXTRACT": "information_extraction", "VERIFY_EXTRACT": "information_validation",
+                     "VERIFY_RESPONSE": "response_validation", "PLAN": "planner", "COMPLETE": "completion",
+                     "REPORT_SUMMARY": "report", "SIMULATED_PATIENT": "simulated_patient",
+                     "SIMULATED_PATIENT_VALIDATE": "information_validation"}.get(detail.get("purpose"), "model")
         if stage is None:
             continue
         safe = {k: deepcopy(v) for k, v in detail.items() if k in KEYS and isinstance(v, (str, int, float, bool, type(None)))}

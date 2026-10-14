@@ -1,0 +1,13 @@
+{
+  "regression_tests": 603,
+  "regression_status": "passed",
+  "baseline_tests": 564,
+  "new_tests": 39,
+  "mock_stable_status": "completed",
+  "mock_stable_evaluation_pass": true,
+  "mock_real_model_requests": 0,
+  "live_status": "failed",
+  "live_error": "APIConnectionError",
+  "protected_files_checked": 34,
+  "protected_files_changed": []
+}

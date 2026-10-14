@@ -90,11 +90,38 @@ def resolve_scenario(value):
     return get_scenario(identifier)
 
 
-def question_topics(question, context=None):
-    question = str(question or "")
+def _current_question(question, context=None):
+    """Use the recorded question, never a preceding medical summary."""
     context = context if isinstance(context, dict) else {}
+    recorded = context.get("question")
+    if isinstance(recorded, str) and recorded.strip():
+        return recorded.strip()
+    text = str(question or "").strip()
+    # Backwards-compatible direct callers may still supply a response with an
+    # acknowledgement. Sentence boundaries isolate its actual interrogative.
+    sentences = re.split(r"[。！!\n]", text)
+    questions = [sentence.strip() for sentence in sentences if "？" in sentence or "?" in sentence]
+    return questions[-1] if questions else text
+
+
+def question_topics(question, context=None):
+    context = context if isinstance(context, dict) else {}
+    question = _current_question(question, context)
     topics = []
     kind = context.get("kind") or ""
+    topic = context.get("topic")
+    # Planner metadata refers to this question. Acknowledgements about earlier
+    # medication must not override an explicit symptom/BP question.
+    if topic in {"bp", "medication", "current_symptoms", "red_flags", "measurement_context",
+                 "monitoring_plan", "bp_history", "medication_details", "patient_question"}:
+        if topic == "medication" and kind == "medication_details":
+            return ["medication_details"]
+        topics = [topic]
+        if context.get("asked_red_flags") and "red_flags" not in topics:
+            topics.append("red_flags")
+        if context.get("asked_symptoms") and "current_symptoms" not in topics:
+            topics.append("current_symptoms")
+        return topics
     if kind == "medication_details" or re.search(r"药名|什么药|哪种药|叫什么|原来.{0,5}(?:安排|医嘱)|服用方案", question):
         topics.append("medication_details")
     elif context.get("topic") == "medication" or re.search(r"吃药|服药|降压药|漏服|服用|药吃|服下", question):
@@ -114,7 +141,7 @@ def question_topics(question, context=None):
         topics.append("bp")
     if re.search(r"想问|疑问|问题|想了解", question):
         topics.append("patient_question")
-    return list(dict.fromkeys(topics)) or ["current_symptoms"]
+    return list(dict.fromkeys(topics))
 
 
 def _catalog(scenario):
@@ -256,7 +283,7 @@ class SimulatedPatient:
         if self._scenario["profile"] == "refusing":
             return [self._facts["refusal"]], ["refusal"], True
         topics = question_topics(question, context)
-        forced = ["red_flags"] if self._scenario["id"] == "danger" and turn_index == 0 else []
+        forced = ["red_flags"] if self._scenario["id"] == "danger" else []
         candidates = [self._facts[identifier] for identifier in forced]
         # A fixed danger disclosure must not wait for a slow patient model.
         fixed_profile = bool(forced)
@@ -267,9 +294,7 @@ class SimulatedPatient:
                 fixed_profile = True
             if identifier in self._facts and identifier not in {fact["fact_id"] for fact in candidates}:
                 candidates.append(self._facts[identifier])
-            if len(candidates) >= 2:
-                break
-        return candidates[:2], forced, fixed_profile
+        return candidates, forced, fixed_profile
 
     def _available_facts(self):
         unavailable = self._scenario["unavailable_topics"]
@@ -314,10 +339,10 @@ class SimulatedPatient:
                                         for fact in allowed.values()],
                 "profile": self._scenario["profile"],
             })
-        except Exception:
-            return None, "failed"
+        except Exception as error:
+            return None, "timeout" if isinstance(error, TimeoutError) or "Timeout" in type(error).__name__ else "failed"
         if not isinstance(verified, dict) or verified.get("valid") is not True or verified.get("errors") != []:
-            return None, "invalid" if verified else "failed"
+            return None, "rejected" if verified else "failed"
         supported = verified.get("supported_fact_ids")
         if (not isinstance(supported, list) or any(not isinstance(identifier, str) for identifier in supported)
                 or len(supported) != len(ids) or set(supported) != set(ids)):
@@ -334,6 +359,8 @@ class SimulatedPatient:
         return {"message": message, "reported_facts": projected}, "success"
 
     def answer(self, question, question_context=None, turn_index=0):
+        question_context = deepcopy(question_context) if isinstance(question_context, dict) else {}
+        question = _current_question(question, question_context)
         # Clinical urgency is the sole profile that bypasses model latency.
         if self._scenario["id"] == "danger" and turn_index == 0:
             selected = [self._facts["red_flags"]]
@@ -341,6 +368,7 @@ class SimulatedPatient:
             return {"message": selected[0]["render"], "reported_facts": deepcopy(selected),
                     "mode": "profile", "model_status": "not_requested", "validation_status": "not_requested"}
         status, validation_status = "not_requested", "not_requested"
+        failure_stage = "model_unavailable"
         if self.model_call is not None:
             allowed = self._available_facts()
             try:
@@ -354,23 +382,33 @@ class SimulatedPatient:
                     "unavailable_topics": list(self._scenario["unavailable_topics"]),
                     "already_reported_fact_ids": sorted(self._reported), "turn_index": turn_index,
                 })
-            except Exception:
+            except Exception as error:
                 result = None
+                failure_stage = "generation_timeout" if isinstance(error, TimeoutError) or "Timeout" in type(error).__name__ else "generation_failed"
             if result:
                 answer, validation_status = self._validate_response(result, question, question_context, allowed)
                 if answer:
                     self._reported.update(fact["fact_id"] for fact in answer["reported_facts"])
                     return {**answer, "mode": "llm", "model_status": "success",
                             "validation_status": validation_status}
-                status = "failed" if validation_status == "failed" else "invalid"
+                failure_stage = {"timeout": "validation_timeout", "failed": "validation_failed"}.get(
+                    validation_status, "validation_rejected")
+                status = "failed" if validation_status in {"failed", "timeout"} else "invalid"
             else:
                 status = "failed"
+                if failure_stage == "model_unavailable":
+                    failure_stage = "generation_failed"
         # Only unavailable/invalid models use the conservative old catalog
         # renderer. It remains a fallback, not a constraint on normal dialogue.
         candidates, required, profile_answer = self._candidates(question, question_context, turn_index)
-        candidates = candidates or [self._facts["symptoms"]]
-        selected = candidates if profile_answer else [self._facts[identifier] for identifier in required] or [candidates[0]]
+        # No clinical answer can be inferred from an unknown question. Multiple
+        # explicitly requested topics may be answered; catalog order is irrelevant.
+        selected = candidates if profile_answer else [self._facts[identifier] for identifier in required] or candidates
+        if not selected:
+            return {"message": "刚才这个问题我没听明白，您能换个说法再问一下吗？", "reported_facts": [],
+                    "mode": "fallback", "model_status": status, "validation_status": validation_status,
+                    "failure_stage": failure_stage, "fallback_reason": "unrecognized_current_question"}
         self._reported.update(fact["fact_id"] for fact in selected)
         return {"message": "".join(fact["render"] for fact in selected), "reported_facts": deepcopy(selected),
                 "mode": "profile" if profile_answer else "fallback", "model_status": status,
-                "validation_status": validation_status}
+                "validation_status": validation_status, "failure_stage": failure_stage, "fallback_reason": failure_stage}

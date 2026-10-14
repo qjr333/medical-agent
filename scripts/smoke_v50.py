@@ -36,7 +36,9 @@ def main():
             state = repository.read_session(result.get("session_id")) or {}
             summary["diagnostics"] = [entry for entry in state.get("trace", []) if entry.get("event") in {
                 "OUTPUT_VALIDATION", "OUTPUT_REJECTED", "LLM_VALIDATION_ERROR", "LLM_EXTRACTION_RESULT",
-                "TASK_COMPLETION_EVALUATED", "STATE_UPDATE", "TASK_INTERRUPTED"}]
+                "TASK_COMPLETION_EVALUATED", "STATE_UPDATE", "TASK_INTERRUPTED", "MODEL_RETRY",
+                "MODEL_RETRY_EXHAUSTED", "SEMANTIC_VALIDATION_PENDING", "SEMANTIC_VALIDATION_REJECTED",
+                "EXTRACTION_RESUMED", "EXTRACTION_DISCARDED", "SAFETY_PAUSE", "SIMULATED_PATIENT"}]
             summary["final_facts"] = {key: state.get(key) for key in (
                 "bp_systolic", "bp_diastolic", "medication_status", "medication_timing", "symptoms",
                 "denied_symptoms", "red_flags", "denied_red_flags", "symptom_status", "red_flag_status",

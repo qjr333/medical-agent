@@ -1,0 +1,35 @@
+{
+  "configured_key": true,
+  "model": "deepseek-flash",
+  "http_timeout_seconds": 50.0,
+  "status": "failed",
+  "error_type": "APIConnectionError",
+  "causes": [
+    {
+      "type": "APIConnectionError",
+      "errno": null
+    },
+    {
+      "type": "ConnectError",
+      "errno": null
+    },
+    {
+      "type": "ConnectError",
+      "errno": null
+    }
+  ],
+  "provider_events": [
+    {
+      "provider": "deepseek",
+      "mode": "json",
+      "status": "started",
+      "error_type": null
+    },
+    {
+      "provider": "deepseek",
+      "mode": "json",
+      "status": "connection_error",
+      "error_type": "APIConnectionError"
+    }
+  ]
+}

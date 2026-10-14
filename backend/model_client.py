@@ -3,6 +3,7 @@
 import json
 import re
 from contextvars import ContextVar
+import openai as _sdk
 from openai import OpenAI
 from backend import config
 from backend.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL
@@ -10,6 +11,53 @@ from backend.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL
 client = None
 model_failure_observer = ContextVar("medical_agent_model_failure_observer", default=None)
 model_call_observer = ContextVar("medical_agent_model_call_observer", default=None)
+
+
+def is_temporary_model_error(error):
+    """The Agent owns retry limits; the SDK must never retry independently."""
+    sdk_types = tuple(kind for kind in (
+        getattr(_sdk, "APITimeoutError", None),
+        getattr(_sdk, "APIConnectionError", None),
+        getattr(_sdk, "RateLimitError", None),
+        getattr(_sdk, "InternalServerError", None),
+    ) if isinstance(kind, type))
+    if isinstance(error, (TimeoutError, ConnectionError) + sdk_types):
+        return True
+    status_code = getattr(error, "status_code", None)
+    return isinstance(status_code, int) and (status_code == 429 or 500 <= status_code < 600)
+
+
+def _error_status(error):
+    sdk_timeout = getattr(_sdk, "APITimeoutError", None)
+    if isinstance(error, TimeoutError) or (
+        isinstance(sdk_timeout, type) and isinstance(error, sdk_timeout)
+    ):
+        return "timeout"
+    sdk_connection = getattr(_sdk, "APIConnectionError", None)
+    if isinstance(error, ConnectionError) or (
+        isinstance(sdk_connection, type) and isinstance(error, sdk_connection)
+    ):
+        return "connection_error"
+    return "temporary_error" if is_temporary_model_error(error) else "error"
+
+
+def _json_mode_unsupported(error):
+    # Only provider/SDK format compatibility errors merit switching protocols.
+    # The message is inspected locally and never included in logs or Trace.
+    description = str(error).lower()
+    format_named = any(word in description for word in (
+        "response_format", "json_object", "json mode", "json_mode",
+    ))
+    unsupported = any(word in description for word in (
+        "unsupported", "not supported", "unavailable", "unknown", "unexpected keyword",
+    ))
+    return format_named and unsupported
+
+
+def _notify_failure(error):
+    observer = model_failure_observer.get()
+    if observer is not None:
+        observer(error)
 
 
 def _notify_call(mode, status, error=None):
@@ -25,7 +73,7 @@ if DEEPSEEK_API_KEY:
         client = OpenAI(
             api_key=DEEPSEEK_API_KEY,
             base_url=DEEPSEEK_BASE_URL,
-            timeout=20.0,
+            timeout=getattr(config, "DEEPSEEK_TIMEOUT_SECONDS", 50.0),
             max_retries=0,
         )
 
@@ -126,6 +174,8 @@ def call_json_model(
     *,
     client_override=_USE_CONFIGURED_CLIENT,
     model_name=None,
+    raise_transient_errors=False,
+    request_mode="json",
 ):
 
     client = (_configured_client() if client_override is _USE_CONFIGURED_CLIENT
@@ -136,6 +186,8 @@ def call_json_model(
 
         return {}
 
+    if request_mode not in ("json", "plain"):
+        raise ValueError("request_mode must be json or plain")
 
     messages = [
 
@@ -161,56 +213,66 @@ def call_json_model(
     # 优先JSON mode
     # -----------------------------------------------------
 
-    try:
+    if request_mode == "json":
+        try:
 
-        _notify_call("json", "started")
+            _notify_call("json", "started")
 
-        response = (
-            client
-            .chat
-            .completions
-            .create(
+            response = (
+                client
+                .chat
+                .completions
+                .create(
 
-                model=
-                    DEEPSEEK_MODEL,
+                    model=
+                        DEEPSEEK_MODEL,
 
-                messages=
-                    messages,
+                    messages=
+                        messages,
 
-                temperature=
-                    temperature,
+                    temperature=
+                        temperature,
 
-                response_format={
-                    "type":
-                        "json_object"
-                },
+                    response_format={
+                        "type":
+                            "json_object"
+                    },
+                )
             )
-        )
 
 
-        content = (
-            response
-            .choices[0]
-            .message
-            .content
-        )
+            content = (
+                response
+                .choices[0]
+                .message
+                .content
+            )
 
-        _notify_call("json", "success")
-
-
-        return parse_json_text(
-            content
-        )
+            _notify_call("json", "success")
 
 
-    except Exception as first_error:
+            return parse_json_text(
+                content
+            )
 
-        _notify_call("json", "error", first_error)
 
-        print(
-            "[MODEL] JSON mode调用失败，尝试普通模式：",
-            type(first_error).__name__
-        )
+        except Exception as first_error:
+
+            _notify_call("json", _error_status(first_error) if raise_transient_errors else "error", first_error)
+
+            if raise_transient_errors:
+                if is_temporary_model_error(first_error):
+                    first_error.model_request_mode = "json"
+                    _notify_failure(first_error)
+                    raise
+                if not _json_mode_unsupported(first_error):
+                    _notify_failure(first_error)
+                    return {}
+
+            print(
+                "[MODEL] JSON mode调用失败，尝试普通模式：",
+                type(first_error).__name__
+            )
 
 
     # -----------------------------------------------------
@@ -256,16 +318,19 @@ def call_json_model(
 
     except Exception as error:
 
-        _notify_call("plain", "error", error)
+        _notify_call("plain", _error_status(error) if raise_transient_errors else "error", error)
+
+        if raise_transient_errors and is_temporary_model_error(error):
+            error.model_request_mode = "plain"
+            _notify_failure(error)
+            raise
 
         print(
             "[MODEL] 调用失败：",
             type(error).__name__
         )
 
-        observer = model_failure_observer.get()
-        if observer is not None:
-            observer(error)
+        _notify_failure(error)
 
 
         return {}
