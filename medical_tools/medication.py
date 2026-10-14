@@ -81,6 +81,15 @@ def contains_unsafe_medication_instruction(
                              r".{0,6}(?:是否|能否|要不要|需不需要|怎么|怎样)$", prefix):
                     continue
                 suffix = clause[match.end():]
+                # Asking what the patient already did is ordinary adherence
+                # history, not an instruction to change a prescription.
+                context = prefix[-28:] + suffix[:28]
+                directive = re.search(r"建议|应该|应当|必须|需要你|需要您|请(?:您)?(?!问)|"
+                                      r"可以(?:再|立即|马上)?|立即|马上|务必|一定要|记得", context)
+                retrospective = re.search(r"有没有|是否|曾经|曾否|做过|发生过|情况|"
+                                          r"过去|之前|自行|自己(?:加|减|停|换)", context)
+                if retrospective and not directive:
+                    continue
                 if re.search(r"(?:应|须|必须|需要|只能).{0,4}(?:由|经).{0,4}"
                              r"(?:医生|药师).{0,8}(?:确认|评估|决定|指导|判断)", suffix):
                     continue

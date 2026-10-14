@@ -1,4 +1,8 @@
-"""按本轮已确认的主题生成问题，并保存供下一轮提取使用的上下文。"""
+"""Store actual question context; retain legacy questions for the older Agent.
+
+V5 questions are chosen and written by the LLM, including supplementary
+questions on a previously answered topic. Coverage does not veto that choice.
+"""
 
 from medical_tools.safety import DANGER_PATTERNS
 from .state_manager import add_trace, ensure_dialogue_state
@@ -49,9 +53,25 @@ def _remember_question(state, question, goal, topic, kind, *, symptoms=(), red_f
     )
 
 
-def generate_question(state: dict, goal=None):
-    """历史记录仅调整追问表述，不自动填补本次症状/用药答案。"""
+def generate_question(state: dict, goal=None, *, model_proposal=None):
+    """V5 records a model question; older flows use their compatibility policy."""
     ensure_dialogue_state(state)
+    if state.get("agent_version") == "V5.0":
+        if not isinstance(model_proposal, dict):
+            raise ValueError("v5_requires_model_question")
+        question = model_proposal.get("question")
+        topic = model_proposal.get("topic")
+        next_goal = model_proposal.get("goal") or goal
+        if (not isinstance(question, str) or not question.strip()
+                or not isinstance(topic, str) or not topic.strip()
+                or not isinstance(next_goal, str) or not next_goal.strip()):
+            raise ValueError("invalid_model_question")
+        return record_question(
+            state, question, topic=topic,
+            kind=model_proposal.get("kind") or topic, goal=next_goal,
+            asked_symptoms=model_proposal.get("asked_symptoms") or [],
+            asked_red_flags=model_proposal.get("asked_red_flags") or [],
+        )
     memory = state.get("patient_memory") or {}
     med_7d = (memory.get("medication") or {}).get("last_7_days") or {}
     bp_7d = (memory.get("blood_pressure") or {}).get("last_7_days") or {}

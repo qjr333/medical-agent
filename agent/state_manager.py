@@ -409,7 +409,7 @@ def _record_answer_progress(state, patch, pending_topics):
         elif answer_status == "unclear" and topic not in progressed:
             attempts[topic] = min(MAX_UNCLEAR_ANSWERS, attempts.get(topic, 0) + 1)
             state["topic_status"][topic] = "clarification_needed"
-            if attempts[topic] >= MAX_UNCLEAR_ANSWERS:
+            if state.get("agent_version") != "V5.0" and attempts[topic] >= MAX_UNCLEAR_ANSWERS:
                 deferred[topic] = "unclear_limit"
 
 
@@ -421,7 +421,7 @@ def merge_user_patch(state: dict, patch: dict, raw_text: str):
     state["latest_patient_message"] = raw_text
     pending_topics = _pending_answer_topics(state)
     # 兼容旧调试接口/调用者提供的稀疏 patch；上下文推断仍由统一提取器执行。
-    if "topic_status" not in patch:
+    if "topic_status" not in patch and state.get("agent_version") != "V5.0":
         fallback = extract_user_patch(raw_text, state, call_json_model=lambda **kwargs: {})
         patch = {**fallback, **patch}
         patch["topic_status"] = fallback["topic_status"]
@@ -471,13 +471,31 @@ def merge_user_patch(state: dict, patch: dict, raw_text: str):
 
     positives = patch.get("symptoms") or []
     denials = patch.get("denied_symptoms") or []
-    state["symptoms"] = unique_list((state.get("symptoms") or []) + positives)
+    verified_v5 = (state.get("agent_version") == "V5.0" and patch.get("_llm_v4_verified") is True
+                   and patch.get("semantic_validated") is True)
+    # Current, independently verified denials may resolve an ordinary symptom.
+    # Prior emergency reports remain escalated; a later denial never undoes them.
+    prior_symptoms = state.get("symptoms") or []
+    if verified_v5:
+        prior_symptoms = [item for item in prior_symptoms if item not in denials]
+        semantic = patch.get("_semantic") or {}
+        stored = state.setdefault("_semantic", {})
+        stored["patient_requested_end"] = semantic.get("patient_requested_end") or {"confirmed": False}
+        for key in ("screening", "monitoring_plan"):
+            value = semantic.get(key)
+            if isinstance(value, dict) and value.get("evidence") and value["evidence"] in raw_text:
+                stored[key] = value
+    state["symptoms"] = unique_list(prior_symptoms + positives)
     state["denied_symptoms"] = [item for item in unique_list(
         (state.get("denied_symptoms") or []) + denials
     ) if item not in state["symptoms"]]
     # 调用原安全规则，但限定每个分句的否定范围，避免前句“没有”吞掉转折后红旗。
-    dangers = unique_list([flag for clause in split_answer_clauses(raw_text)
-                           for flag in detect_danger_signs(clause)])
+    # V5's extraction already ran the independent emergency backstop and a
+    # semantic review of time/subject/negation. Re-parsing raw text here would
+    # incorrectly turn historical or hypothetical symptoms into current ones.
+    dangers = ([] if state.get("agent_version") == "V5.0" else
+               unique_list([flag for clause in split_answer_clauses(raw_text)
+                            for flag in detect_danger_signs(clause)]))
     # V4 prevalidates model-extracted red flags against patient utterance / previous question.
     if patch.get("_llm_v4_verified"):
         for item in patch.get("red_flags") or []:
@@ -495,6 +513,9 @@ def merge_user_patch(state: dict, patch: dict, raw_text: str):
         state["red_flag_status"] = "reported"
     elif set(DANGER_PATTERNS).issubset(state["denied_red_flags"]):
         state["red_flag_status"] = "denied"
+    elif verified_v5 and ((state.get("_semantic") or {}).get("screening") or {}).get("adequate") is True:
+        # A scoped interview is not a claim that every unasked symptom was denied.
+        state["red_flag_status"] = "screened"
     else:
         state.setdefault("red_flag_status", "unknown")
     state.setdefault("symptom_status", "unknown")

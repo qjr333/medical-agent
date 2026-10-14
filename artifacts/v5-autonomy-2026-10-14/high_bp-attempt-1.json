@@ -1,0 +1,1067 @@
+{
+  "scenario_id": "high_bp",
+  "status": "failed",
+  "followup_status": null,
+  "evaluation": null,
+  "error_type": "RuntimeError",
+  "error": "本次模拟执行未完成；记录已保存，请核对运行状态后重新开始。",
+  "model_mode": "live",
+  "real_model_requests": 41,
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-14T04:57:28.127659+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "high_bp",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-14T04:57:34.387251+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 6255.4,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-14T04:57:34.387293+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-14T04:57:48.137217+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 13747.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 11,
+      "time": "2026-10-14T04:57:48.137465+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 12,
+      "time": "2026-10-14T04:57:48.141556+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-14T04:57:54.367859+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 6226.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 16,
+      "time": "2026-10-14T04:57:54.367965+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 18,
+      "time": "2026-10-14T04:58:08.147961+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 13779.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 23,
+      "time": "2026-10-14T04:58:08.148145+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 24,
+      "time": "2026-10-14T04:58:08.152750+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 27,
+      "time": "2026-10-14T04:58:13.267317+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5114.2,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 28,
+      "time": "2026-10-14T04:58:13.267403+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 30,
+      "time": "2026-10-14T04:58:21.606082+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 8338.4,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 33,
+      "time": "2026-10-14T04:58:24.919457+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 3313.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 34,
+      "time": "2026-10-14T04:58:24.919554+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 36,
+      "time": "2026-10-14T04:58:28.155451+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 3235.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 41,
+      "time": "2026-10-14T04:58:28.155489+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 42,
+      "time": "2026-10-14T04:58:28.156388+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 45,
+      "time": "2026-10-14T04:58:32.694353+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4537.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 46,
+      "time": "2026-10-14T04:58:32.694429+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 48,
+      "time": "2026-10-14T04:58:42.839894+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 10145.2,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 51,
+      "time": "2026-10-14T04:58:47.619573+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4779.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 52,
+      "time": "2026-10-14T04:58:47.619684+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 54,
+      "time": "2026-10-14T04:58:48.162841+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 542.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 59,
+      "time": "2026-10-14T04:58:48.162881+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 60,
+      "time": "2026-10-14T04:58:48.165070+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted"
+      }
+    },
+    {
+      "id": 63,
+      "time": "2026-10-14T04:58:52.541077+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4369.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 64,
+      "time": "2026-10-14T04:58:52.541197+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 66,
+      "time": "2026-10-14T04:59:08.177274+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 15635.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 71,
+      "time": "2026-10-14T04:59:08.177579+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 72,
+      "time": "2026-10-14T04:59:08.181538+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 75,
+      "time": "2026-10-14T04:59:12.718178+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4536.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 76,
+      "time": "2026-10-14T04:59:12.718286+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 78,
+      "time": "2026-10-14T04:59:17.466669+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4747.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 81,
+      "time": "2026-10-14T04:59:22.058024+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4591.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 82,
+      "time": "2026-10-14T04:59:22.058112+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 86,
+      "time": "2026-10-14T04:59:26.922043+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4862.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 87,
+      "time": "2026-10-14T04:59:26.922094+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 89,
+      "time": "2026-10-14T04:59:28.187488+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 1265.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 94,
+      "time": "2026-10-14T04:59:28.187655+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 95,
+      "time": "2026-10-14T04:59:28.191103+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 98,
+      "time": "2026-10-14T04:59:33.276256+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5084.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 99,
+      "time": "2026-10-14T04:59:33.276347+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 101,
+      "time": "2026-10-14T04:59:42.945433+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 9668.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 104,
+      "time": "2026-10-14T04:59:46.658444+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 3712.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 105,
+      "time": "2026-10-14T04:59:46.658538+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 107,
+      "time": "2026-10-14T04:59:48.197083+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 1538.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 112,
+      "time": "2026-10-14T04:59:48.197130+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 113,
+      "time": "2026-10-14T04:59:48.198679+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 116,
+      "time": "2026-10-14T04:59:54.969157+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 6770.4,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 117,
+      "time": "2026-10-14T04:59:54.969259+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 119,
+      "time": "2026-10-14T05:00:00.283803+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5313.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 122,
+      "time": "2026-10-14T05:00:05.438121+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5154.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 123,
+      "time": "2026-10-14T05:00:05.438208+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 127,
+      "time": "2026-10-14T05:00:08.202444+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 2763.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 130,
+      "time": "2026-10-14T05:00:08.202643+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 131,
+      "time": "2026-10-14T05:00:08.206812+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted"
+      }
+    },
+    {
+      "id": 134,
+      "time": "2026-10-14T05:00:12.148107+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 3924.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 135,
+      "time": "2026-10-14T05:00:12.148132+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 137,
+      "time": "2026-10-14T05:00:21.467002+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 9318.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 140,
+      "time": "2026-10-14T05:00:26.620485+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5153.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 141,
+      "time": "2026-10-14T05:00:26.620606+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 143,
+      "time": "2026-10-14T05:00:28.227499+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 1606.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 148,
+      "time": "2026-10-14T05:00:28.227657+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 149,
+      "time": "2026-10-14T05:00:28.232389+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 152,
+      "time": "2026-10-14T05:00:32.084095+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 3851.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 153,
+      "time": "2026-10-14T05:00:32.084218+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 155,
+      "time": "2026-10-14T05:00:37.515850+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5431.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 158,
+      "time": "2026-10-14T05:00:42.572954+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5056.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 159,
+      "time": "2026-10-14T05:00:42.573034+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 161,
+      "time": "2026-10-14T05:00:48.238921+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 5665.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 166,
+      "time": "2026-10-14T05:00:48.238979+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 167,
+      "time": "2026-10-14T05:00:48.241084+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 170,
+      "time": "2026-10-14T05:00:53.784965+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5543.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 171,
+      "time": "2026-10-14T05:00:53.785067+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 173,
+      "time": "2026-10-14T05:01:08.247494+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 14462.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 178,
+      "time": "2026-10-14T05:01:08.247676+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 179,
+      "time": "2026-10-14T05:01:08.252803+00:00",
+      "event": "EXECUTION_RESUMED",
+      "stage": "resume",
+      "detail": {
+        "automatic": true
+      }
+    },
+    {
+      "id": 182,
+      "time": "2026-10-14T05:01:13.109660+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4856.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 183,
+      "time": "2026-10-14T05:01:13.109747+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 185,
+      "time": "2026-10-14T05:01:18.638545+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 5528.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 188,
+      "time": "2026-10-14T05:01:23.339936+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "deepseek_called": true,
+        "duration_ms": 4701.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 189,
+      "time": "2026-10-14T05:01:23.340034+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 191,
+      "time": "2026-10-14T05:01:28.259193+00:00",
+      "event": "LLM_CALL",
+      "stage": "model",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "deepseek_called": true,
+        "duration_ms": 4918.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 196,
+      "time": "2026-10-14T05:01:28.259407+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "正在整理本轮信息，系统会自动继续处理，稍后更新结果。"
+      }
+    },
+    {
+      "id": 197,
+      "time": "2026-10-14T05:01:28.265163+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted"
+      }
+    }
+  ],
+  "transcript": [],
+  "task": null,
+  "doctor_handled": false,
+  "family_read": false
+}

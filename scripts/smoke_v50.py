@@ -33,6 +33,14 @@ def main():
         summary.update(model_mode=args.mode, real_model_requests=view["real_model_requests"], trace=view.get("trace", []),
                        transcript=result["transcript"], task=result.get("task"), doctor_handled=False, family_read=False)
         with using_database(manager.store.database(created["run_id"])):
+            state = repository.read_session(result.get("session_id")) or {}
+            summary["diagnostics"] = [entry for entry in state.get("trace", []) if entry.get("event") in {
+                "OUTPUT_VALIDATION", "OUTPUT_REJECTED", "LLM_VALIDATION_ERROR", "LLM_EXTRACTION_RESULT",
+                "TASK_COMPLETION_EVALUATED", "STATE_UPDATE", "TASK_INTERRUPTED"}]
+            summary["final_facts"] = {key: state.get(key) for key in (
+                "bp_systolic", "bp_diastolic", "medication_status", "medication_timing", "symptoms",
+                "denied_symptoms", "red_flags", "denied_red_flags", "symptom_status", "red_flag_status",
+                "coverage", "topic_status", "_semantic")}
             doctor = collaboration.authenticate_token(created["doctor_token"])
             family = collaboration.authenticate_token(created["family_token"])
             reports = collaboration.list_reports(doctor)

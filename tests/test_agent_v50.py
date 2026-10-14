@@ -14,6 +14,7 @@ from agent import llm_v4, state_manager
 from agent.completion import evaluate_completion
 from medical_tools import bp_trend, guidance
 from medical_tools.safety import DANGER_PATTERNS, detect_danger_signs
+from tests.test_semantic_refactor import SemanticModel, fact
 
 
 EVIDENCE = [{"block_id": "v50-fixture", "source_id": "fixture",
@@ -54,6 +55,16 @@ class Model:
 
     def __call__(self, *, system_prompt, user_prompt, temperature=0.15):
         payload = json.loads(user_prompt)
+        if "proposal" in payload:
+            self.purposes.append("VERIFY_RESPONSE")
+            decision = payload["proposal"]
+            context = payload.get("verified_context") or {}
+            question = decision.get("question") or ""
+            flags = decision.get("asked_red_flags") or [name for name in DANGER_PATTERNS if name in question]
+            return {"valid": True, "violations": [],
+                    "patient_question_resolved": bool(decision.get("reply")) or not context.get("patient_question"),
+                    "asked_red_flags": flags, "asked_symptoms": decision.get("asked_symptoms") or [],
+                    "bp_claims": []}
         if "trigger_event" in payload:
             self.purposes.append("PLAN")
             self.inputs.append(payload)
@@ -81,11 +92,22 @@ class AgentV50Tests(unittest.TestCase):
         state.update(agent_version="V5.0", retrieved_guidance=deepcopy(EVIDENCE), last_guidance_query="模拟医学依据")
         state["guidance_fingerprint"] = guidance.execution_fingerprint(state, "RETRIEVE_MEDICAL_GUIDANCE", state["last_guidance_query"])
 
+    def review(self, state, decision, *, claims=None, valid=True, violations=None):
+        reviewer = Mock(return_value={"valid": valid, "violations": violations or [],
+                                     "patient_question_resolved": True,
+                                     "asked_red_flags": [], "asked_symptoms": [],
+                                     "bp_claims": claims or []})
+        result = llm_v4._review_v50_response(
+            state, decision, [], call_json_model=reviewer, deadline=llm_v4.monotonic() + 20,
+        )
+        return result, reviewer
+
     def extract(self, text, answer, state=None):
         state = state or make_state()
         state["question_context"] = {"kind": "medication_taken", "topic": "medication",
                                      "question": "今天服药了吗？", "goal": "check_medication"}
-        return llm_v4.extract_user_patch_v4(text, state, call_json_model=Mock(return_value=answer), enable_v50=True)
+        model = SemanticModel(answer) if "claims" in answer else Mock(return_value=answer)
+        return llm_v4.extract_user_patch_v4(text, state, call_json_model=model, enable_v50=True)
 
     def test_budget_exhaustion_is_processing_and_resume_needs_no_user_message(self):
         state = make_state()
@@ -220,7 +242,7 @@ class AgentV50Tests(unittest.TestCase):
         response = self.run_v50(state, model)
         self.assertEqual(state["agent_version"], "V5.0")
         self.assertEqual(state["followup_status"], "completed")
-        self.assertEqual(model.purposes, ["PLAN", "COMPLETE"])
+        self.assertEqual(model.purposes, ["PLAN", "VERIFY_RESPONSE", "COMPLETE"])
         self.assertTrue(response["report"])
         self.assertEqual(state["report_generation"], {"status": "summary_pending", "fact_report_ready": True})
         self.assertNotIn("execution_pending", state)
@@ -260,7 +282,10 @@ class AgentV50Tests(unittest.TestCase):
     def test_coordinated_denial_does_not_turn_a_later_label_into_a_false_danger(self):
         text = "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。"
         state = make_state()
-        data = self.extract(text, {"red_flags": [{"name": "晕厥", "evidence": "晕厥"}], "answer_status": "answered"}, state)
+        data = self.extract(text, {"claims": [fact("symptom", {"name": name, "red_flag": True}, text,
+                                                       claim_id="c%d" % index, polarity="denied")
+                                                for index, name in enumerate(DANGER_PATTERNS)],
+                                   "answer_status": "answered"}, state)
         self.assertEqual(detect_danger_signs(text), [])
         self.assertFalse(data["red_flags"])
         state_manager.merge_user_patch(state, data, text)
@@ -303,36 +328,74 @@ class AgentV50Tests(unittest.TestCase):
         state = make_state()
         self.seed_evidence(state)
         reply = "一般管理目标示例为150/90，实际目标应由医生结合个人情况确定。"
-        result = llm_v4._grounded_reply(state, {"reply": reply, "reply_sources": ["v50-fixture"]}, [])
-        self.assertEqual(result, reply)
+        decision = {"reply": reply, "reply_sources": ["v50-fixture"]}
+        result, reviewer = self.review(state, decision, claims=[{
+            "systolic": 150, "diastolic": 90, "kind": "guideline", "evidence": "150/90",
+            "source_id": "v50-fixture",
+        }])
+        self.assertTrue(result["valid"])
+        self.assertEqual(decision["reply"], reply)
+        reviewer.assert_called_once()
 
     def test_history_reading_cannot_be_presented_as_todays_reading(self):
         state = make_state()
         state["agent_version"] = "V5.0"
         state["bp_history"].append({"systolic": 165, "diastolic": 100})
-        reply = llm_v4._grounded_reply(state, {"reply": "您今天的血压为165/100。"}, [])
-        self.assertNotIn("165/100", reply)
-        self.assertTrue(any(event["event"] == "OUTPUT_GROUNDING_OVERRIDE" for event in state["trace"]))
+        decision = {"reply": "您今天的血压为165/100。"}
+        result, _ = self.review(state, decision, claims=[{
+            "systolic": 165, "diastolic": 100, "kind": "current", "evidence": "165/100", "source_id": "",
+        }])
+        self.assertFalse(result["valid"])
+        self.assertEqual(result["violations"][0]["code"], "unverified_bp_record")
+        # Reject the candidate with feedback, without replacing the whole reply.
+        self.assertEqual(decision["reply"], "您今天的血压为165/100。")
+        self.assertFalse(any(event["event"] == "OUTPUT_GROUNDING_OVERRIDE" for event in state["trace"]))
 
     def test_conditional_negative_symptom_guidance_is_not_a_claim_about_unknown_symptoms(self):
         state = make_state()
         state["agent_version"] = "V5.0"
         reply = "如果没有不适，也应继续记录身体变化。"
-        self.assertEqual(llm_v4._grounded_reply(state, {"reply": reply}, []), reply)
-        self.assertIn("尚未完整确认", llm_v4._grounded_reply(state, {"reply": "您没有任何不适。"}, []))
+        result, _ = self.review(state, {"reply": reply})
+        self.assertTrue(result["valid"])
+        decision = {"reply": "您没有任何不适。"}
+        result, _ = self.review(state, decision, valid=False, violations=[{
+            "code": "unverified_symptom_denial", "evidence": decision["reply"],
+            "reason": "当前症状未知，不能编造明确否认。",
+        }])
+        self.assertFalse(result["valid"])
+        self.assertEqual(result["violations"][0]["code"], "unverified_symptom_denial")
+        self.assertEqual(decision["reply"], "您没有任何不适。")
 
     def test_nonmedical_end_confirmation_does_not_force_an_unrelated_rag_warning(self):
         state = make_state()
         state.update(agent_version="V5.0", latest_patient_question="今天可以先结束吗？")
         reply = "好的，无法确认的信息会保留在记录中。"
-        self.assertEqual(llm_v4._grounded_reply(state, {"reply": reply}, []), reply)
+        decision = {"reply": reply}
+        result, reviewer = self.review(state, decision)
+        self.assertTrue(result["valid"])
+        self.assertTrue(result["patient_question_resolved"])
+        self.assertEqual(decision["reply"], reply)
+        payload = json.loads(reviewer.call_args.kwargs["user_prompt"])
+        self.assertEqual(payload["proposal"]["reply"], reply)
 
-    def test_model_question_cannot_repeat_an_already_answered_current_topic(self):
+    def test_model_can_supplement_an_answered_topic_for_new_information(self):
         state = make_state(complete=True)
-        model = Model(ask(), ask("您还需要补充其他信息吗？", "additional_information", "collect_more_information"))
+        state["latest_patient_message"] = "今天吃完药后有点头晕"
+        question = "您刚说服药后头晕，今天实际服下的是原来哪一种药？"
+        model = Model(ask(question, "medication", "核实新出现的服药后不适"))
         response = self.run_v50(state, model)
-        self.assertNotIn("今天降压药服用了吗", response["message"])
-        self.assertTrue(any(event["event"] == "ANSWERED_QUESTION_SKIPPED" for event in state["trace"]))
+        self.assertEqual(response["message"], question)
+        self.assertEqual(state["question_context"]["topic"], "medication")
+        self.assertFalse(any(event["event"] == "ANSWERED_QUESTION_SKIPPED" for event in state["trace"]))
+
+    def test_exact_previous_question_still_receives_replanning_feedback(self):
+        state = make_state(complete=True)
+        state["last_agent_question"] = "今天降压药服用了吗？"
+        question = "您刚才已经确认服药，还有什么新情况需要补充吗？"
+        model = Model(ask(), ask(question, "additional_information", "了解新的患者信息"))
+        response = self.run_v50(state, model)
+        self.assertEqual(response["message"], question)
+        self.assertTrue(any(event["event"] == "V4_REPEAT_DETECTED" for event in state["trace"]))
 
     def test_yesterday_and_future_medication_cannot_be_written_as_todays_dose(self):
         for text in ("昨天忘记吃降压药了", "明天会按时吃降压药", "最近一周老是忘记吃降压药"):
@@ -345,18 +408,21 @@ class AgentV50Tests(unittest.TestCase):
 
     def test_todays_taken_and_yesterdays_missed_keep_two_real_dates(self):
         text = "昨天忘记吃降压药了，今天已经按时吃降压药"
-        data = self.extract(text, {"medication_status": "missed", "medication_evidence": "昨天忘记吃降压药了"})
-        self.assertEqual(data["medication_status"], "taken")
         today = llm_v4.today_local_date()
         yesterday = (date.fromisoformat(today) - timedelta(days=1)).isoformat()
+        data = self.extract(text, {"claims": [fact("medication", {"status": "missed"}, "昨天忘记吃降压药了",
+                                                    temporal="history", date=yesterday),
+                                             fact("medication", {"status": "taken"}, "今天已经按时吃降压药", claim_id="c2")]})
+        self.assertEqual(data["medication_status"], "taken")
         self.assertEqual({(row["date"], row["status"]) for row in data["medication_observations"]},
                          {(today, "taken"), (yesterday, "missed")})
 
     def test_temporal_bp_evidence_selects_current_reading_and_ignores_model_historical_override(self):
         text = "昨天血压165/100，今天血压135/85"
-        data = self.extract(text, {"bp_systolic": 165, "bp_diastolic": 100, "bp_evidence": "昨天血压165/100"})
+        data = self.extract(text, {"claims": [fact("bp", {"systolic": 165, "diastolic": 100}, "昨天血压165/100", temporal="history"),
+                                             fact("bp", {"systolic": 135, "diastolic": 85}, "今天血压135/85", claim_id="c2")]})
         self.assertEqual((data["bp_systolic"], data["bp_diastolic"]), (135, 85))
-        data = self.extract("昨天血压165/100", {"bp_systolic": 165, "bp_diastolic": 100, "bp_evidence": "165/100"})
+        data = self.extract("昨天血压165/100", {"claims": [fact("bp", {"systolic": 165, "diastolic": 100}, "165/100", temporal="history")]})
         self.assertEqual((data["bp_systolic"], data["bp_diastolic"]), (None, None))
 
     def test_v50_extraction_uses_the_same_short_model_deadline(self):
@@ -368,8 +434,8 @@ class AgentV50Tests(unittest.TestCase):
         with patch.object(llm_v4, "_bounded_call", side_effect=bounded):
             self.extract("今天按时吃降压药", {"answer_status": "answered"}, state)
         self.assertEqual(len(captured), 1)
-        self.assertLessEqual(captured[0], 20)
-        self.assertGreater(captured[0], 19)
+        self.assertLessEqual(captured[0], 45)
+        self.assertGreater(captured[0], 44)
 
     def test_late_tool_timeout_remains_processing_and_cannot_publish_late_state(self):
         state = make_state()

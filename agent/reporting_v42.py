@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from agent.completion import _monitoring_plan_confirmed, _patient_messages
+from agent.completion import _monitoring_plan_confirmed, _patient_messages, _verified_monitoring_plan
 from agent.reporting import generate_report
 from medical_tools.guidance import execution_fingerprint
 from medical_tools.safety import valid_bp_measurement
@@ -50,7 +50,10 @@ def _completion_metadata(state, outcome):
                 "next_goal": evaluation.get("next_goal") or "",
                 "model_status": evaluation.get("model_status") or "not_requested"}
     evidence = (evaluation.get("objective_evidence") or {}).get("monitoring_plan")
-    if _monitoring_plan_confirmed(evidence, _patient_messages(state)):
+    confirmed = (_verified_monitoring_plan(state, _patient_messages(state)) == evidence and bool(evidence)
+                 if state.get("agent_version") == "V5.0" else
+                 _monitoring_plan_confirmed(evidence, _patient_messages(state)))
+    if confirmed:
         metadata["objective_evidence"] = {"monitoring_plan": evidence}
     return metadata
 
@@ -178,6 +181,11 @@ def _fact_catalog(state, outcome, tools, unconfirmed, sources):
             add(key, "患者本次明确否认：" + "、".join(denied) + "。")
         elif key == "symptoms" and state.get(status_key) == "denied":
             add(key, "患者本次否认当前不适。")
+        elif key == "red_flags" and state.get(status_key) == "screened":
+            screening = (state.get("_semantic") or {}).get("screening") or {}
+            scope = screening.get("scope") or []
+            add(key, "本次结合问答上下文核实了" + "、".join(scope)
+                + "；未询问的表现不作否认推断。")
         else:
             add(key, label + "尚未完整确认，不能将空记录解释为没有症状。",
                 attention=True, required=True)

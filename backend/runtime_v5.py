@@ -23,7 +23,7 @@ class AgentRuntime:
         self.model = model
 
     def model_call(self, state, purpose, prompt, payload):
-        return _call(self.model, state, purpose, prompt, payload, deadline=monotonic() + 20)
+        return _call(self.model, state, purpose, prompt, payload, deadline=monotonic() + 45)
 
     def start_task(self, task):
         sid = task["session_id"]
