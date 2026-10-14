@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 
 
 with patch.dict(os.environ, {"RAG_DISABLE_EMBEDDING": "1"}), contextlib.redirect_stdout(io.StringIO()):
-    reporting = importlib.import_module("agent.reporting_v42")
+    reporting = importlib.import_module("agent.clinical_report")
 
 
 def fixture_fingerprint(state, action, query=None):
@@ -65,7 +65,7 @@ class ReportingV42Tests(unittest.TestCase):
         source = {"block_id": "current-guide", "source_id": "guide", "source_title": "本次实际指南", "year": 2024}
         add_tool(self.state, "RETRIEVE_MEDICAL_GUIDANCE", {"results": [{**source, "text": "实际检索片段"}]}, query="家庭血压")
         add_tool(self.state, "GENERATE_VISIT_ADVICE", {"level": "contact_clinician", "advice": "请保留近期记录供医生评估。"}, sources=[source])
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         self.assertEqual(report["schema_version"], "4.2")
         self.assertEqual(report["completion_outcome"], "completed")
         self.assertTrue({"patient", "trigger", "blood_pressure", "medication", "symptoms", "risk",
@@ -90,7 +90,7 @@ class ReportingV42Tests(unittest.TestCase):
             selection["summary_fact_ids"].reverse()
             return selection
 
-        report = reporting.build_report_v42(self.state, model_call=model)
+        report = reporting.build_clinical_report(self.state, model_call=model)
         self.assertEqual(report["ai_summary"]["status"], "success")
         self.assertIn("150/90 mmHg", report["ai_summary"]["summary"])
         self.assertIn("患者报告当前不适：头晕", report["ai_summary"]["summary"])
@@ -103,7 +103,7 @@ class ReportingV42Tests(unittest.TestCase):
                          {"summary_fact_ids": [], "doctor_attention_fact_ids": [], "family_assistance_fact_ids": [],
                           "summary": "已确诊高血压急症，应增加药量。"}):
             with self.subTest(returned=returned):
-                report = reporting.build_report_v42(complete_state(), model_call=lambda *_: returned)
+                report = reporting.build_clinical_report(complete_state(), model_call=lambda *_: returned)
                 self.assertEqual(report["ai_summary"]["status"], "invalid")
                 self.assertNotIn("已确诊", report["ai_summary"]["summary"])
                 self.assertNotIn("增加药量", json.dumps(report, ensure_ascii=False))
@@ -115,7 +115,7 @@ class ReportingV42Tests(unittest.TestCase):
             result["family_assistance_fact_ids"] = ["medication_status"]
             return result
 
-        report = reporting.build_report_v42(self.state, model_call=model)
+        report = reporting.build_clinical_report(self.state, model_call=model)
         self.assertEqual(report["ai_summary"]["status"], "invalid")
         family = json.dumps(report["family_view"], ensure_ascii=False)
         self.assertNotIn("处方隐私标记", family)
@@ -127,12 +127,12 @@ class ReportingV42Tests(unittest.TestCase):
     def test_failed_model_has_deterministic_summary_and_explicit_failed_status(self):
         for result in (None, {}):
             with self.subTest(result=result):
-                report = reporting.build_report_v42(complete_state(), model_call=lambda *_: result)
+                report = reporting.build_clinical_report(complete_state(), model_call=lambda *_: result)
                 self.assertEqual(report["ai_summary"]["status"], "failed")
                 self.assertIn("150/90", report["ai_summary"]["summary"])
                 self.assertEqual(report["doctor_view"]["summary_kind"], "recorded_facts")
         model = Mock(side_effect=ValueError("private API key and patient text"))
-        report = reporting.build_report_v42(complete_state(), model_call=model)
+        report = reporting.build_clinical_report(complete_state(), model_call=model)
         self.assertEqual(report["ai_summary"]["status"], "failed")
         self.assertNotIn("private API", json.dumps(report))
 
@@ -144,7 +144,7 @@ class ReportingV42Tests(unittest.TestCase):
             "outcome": "partial", "pending_items": ["patient_question"],
             "reason": "仍有信息未确认", "next_goal": "clarify_question", "model_status": "success",
         }
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         self.assertEqual(report["completion_outcome"], "partial")
         self.assertTrue({"current_symptoms", "medication", "patient_question"} <= set(report["unconfirmed_items"]))
         self.assertFalse(report["task_completion"]["all_required_information_confirmed"])
@@ -160,15 +160,15 @@ class ReportingV42Tests(unittest.TestCase):
             result["summary_fact_ids"].remove("symptoms")
             return result
 
-        report = reporting.build_report_v42(self.state, model_call=model)
+        report = reporting.build_clinical_report(self.state, model_call=model)
         self.assertEqual(report["ai_summary"]["status"], "invalid")
         self.assertIn("尚未完整确认", report["ai_summary"]["summary"])
 
     def test_emergency_report_never_waits_for_model_and_is_idempotent(self):
         self.state.update(followup_status="escalated", risk_level="high", red_flags=["胸痛"])
         model = Mock(side_effect=AssertionError("emergency must not wait for a model"))
-        first = reporting.build_report_v42(self.state, model_call=model)
-        second = reporting.build_report_v42(self.state, model_call=model)
+        first = reporting.build_clinical_report(self.state, model_call=model)
+        second = reporting.build_clinical_report(self.state, model_call=model)
         model.assert_not_called()
         self.assertIs(first, second)
         self.assertIs(self.state["report"], first)
@@ -186,7 +186,7 @@ class ReportingV42Tests(unittest.TestCase):
         self.state["medication_guidance"] = {"message": "过期用药建议"}
         self.state["visit_advice"] = {"advice": "过期就医建议"}
         self.state["bp_systolic"] = 155
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         self.assertEqual(report["tool_analysis"], [])
         self.assertEqual(report["knowledge"], {"queries": [], "sources": []})
         self.assertEqual(report["blood_pressure"]["trend"], "unknown")
@@ -197,10 +197,10 @@ class ReportingV42Tests(unittest.TestCase):
 
     def test_completed_report_is_generated_once_and_snapshots_do_not_mutate(self):
         model = Mock(side_effect=select_all_facts)
-        report = reporting.build_report_v42(self.state, model_call=model)
+        report = reporting.build_clinical_report(self.state, model_call=model)
         timestamp = report["generated_at"]
         self.state["bp_history"].append({"systolic": 160, "diastolic": 95})
-        again = reporting.build_report_v42(self.state, model_call=model)
+        again = reporting.build_clinical_report(self.state, model_call=model)
         self.assertIs(report, again)
         self.assertEqual(again["generated_at"], timestamp)
         self.assertEqual(len(report["blood_pressure"]["history"]), 2)
@@ -209,7 +209,7 @@ class ReportingV42Tests(unittest.TestCase):
     def test_no_model_request_is_explicit_and_only_retrieved_evidence_is_labeled(self):
         source = {"block_id": "retrieved-only", "source_id": "guide", "source_title": "仅检索来源"}
         add_tool(self.state, "RETRIEVE_MEDICAL_GUIDANCE", {"results": [source]}, query="家庭监测")
-        report = reporting.build_report_v42(self.state)
+        report = reporting.build_clinical_report(self.state)
         self.assertEqual(report["ai_summary"]["status"], "not_requested")
         self.assertEqual(report["ai_summary"]["reason"], "model_not_requested")
         self.assertEqual(report["knowledge"]["sources"][0]["usage"], "retrieved")
@@ -221,7 +221,7 @@ class ReportingV42Tests(unittest.TestCase):
         add_tool(self.state, "GENERATE_VISIT_ADVICE", {
             "level": "contact_clinician", "advice": "医生备注私密标记：请核对处方细节。",
         })
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         family = report["family_view"]
         self.assertIn("150/90 mmHg", family["summary"])
         self.assertIn("漏服", family["summary"])
@@ -240,7 +240,7 @@ class ReportingV42Tests(unittest.TestCase):
     def test_family_alerts_do_not_invent_thresholds_or_label_not_due_as_missed(self):
         self.state.update(risk_level="normal", symptoms=[], denied_symptoms=["头晕"],
                           symptom_status="denied", medication_status="not_taken_yet", medication_timing="not_due")
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         self.assertEqual(report["family_view"]["abnormal_alerts"], [])
         self.assertIn("尚未到服药时间", report["family_view"]["summary"])
         self.assertNotIn("漏服", report["family_view"]["summary"])
@@ -253,7 +253,7 @@ class ReportingV42Tests(unittest.TestCase):
             "pending_items": ["monitoring_plan", "medication_details", "tool:RETRIEVE_MEDICAL_GUIDANCE", private_note],
             "next_goal": "review_unconfirmed_information", "model_status": "success",
         }
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         self.assertEqual(report["family_view"]["unconfirmed_items"], [
             "恢复血压监测的计划", "药物名称与原医嘱核对", "医学依据检索尚未完成",
         ])
@@ -276,7 +276,7 @@ class ReportingV42Tests(unittest.TestCase):
             "pending_items": [], "next_goal": "", "model_status": "success",
             "objective_evidence": {"monitoring_plan": quote, "unregistered": "额外模型内容"},
         }
-        report = reporting.build_report_v42(self.state)
+        report = reporting.build_clinical_report(self.state)
         self.assertEqual(report["completion_evaluation"], {
             "outcome": "completed", "pending_items": [], "next_goal": "", "model_status": "success",
             "objective_evidence": {"monitoring_plan": quote},
@@ -294,13 +294,13 @@ class ReportingV42Tests(unittest.TestCase):
                 state["completion_evaluation"] = {
                     "outcome": "completed", "objective_evidence": {"monitoring_plan": evidence},
                 }
-                report = reporting.build_report_v42(state)
+                report = reporting.build_clinical_report(state)
                 self.assertNotIn("objective_evidence", report["completion_evaluation"])
 
     def test_explicit_current_symptom_denial_does_not_require_named_denial_items(self):
         self.state.update(symptoms=[], denied_symptoms=[], symptom_status="denied",
                           red_flags=[], denied_red_flags=[], red_flag_status="denied")
-        report = reporting.build_report_v42(self.state, model_call=select_all_facts)
+        report = reporting.build_clinical_report(self.state, model_call=select_all_facts)
         summary = report["ai_summary"]["summary"]
         self.assertIn("患者本次否认当前不适", summary)
         self.assertNotIn("当前不适尚未完整确认", summary)

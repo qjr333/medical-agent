@@ -58,7 +58,7 @@ class AgentV41APIRegressionTests(unittest.TestCase):
         cls.database = importlib.import_module("database.connection")
         cls.rag = importlib.import_module("rag")
         cls.guidance = importlib.import_module("medical_tools.guidance")
-        cls.llm = importlib.import_module("agent.llm_v4")
+        cls.llm = importlib.import_module("agent.followup_agent")
 
     def setUp(self):
         self.stack = contextlib.ExitStack()
@@ -238,7 +238,7 @@ class AgentV41APIRegressionTests(unittest.TestCase):
         })
 
         def one_step(state):
-            return self.llm.run_agent_v4(state, call_json_model=self.backend.call_json_model,
+            return self.llm.run_followup_agent(state, call_json_model=self.backend.call_json_model,
                                          max_steps=1)
 
         with patch.object(self.backend, "run_agent", side_effect=one_step):

@@ -1,7 +1,8 @@
-"""LLM-driven follow-up Agent V4.1 (opt-in via the existing LLM_AGENT_V4=1).
+"""LLM-driven follow-up agent for V5, with legacy V4.1/V4.2 session modes.
 
 DeepSeek handles extraction, planning, question phrasing and grounding RAG answers.
 Existing tools remain responsible for risk decisions, retrieval, reports and alerts.
+Persisted version identifiers and state keys remain compatible with older sessions.
 This is an experimental competition demo, not a validated clinical device.
 """
 import json
@@ -590,7 +591,7 @@ def _extract_v50_semantic(text, state, call_json_model):
     return patch
 
 
-def extract_user_patch_v4(text, patient_state=None, *, call_json_model=None, enable_v50=False):
+def extract_patient_information(text, patient_state=None, *, call_json_model=None, enable_v50=False):
     """V5 semantic extraction; older explicitly selected Agent modes retain compatibility."""
     state = patient_state if patient_state is not None else {}
     ensure_dialogue_state(state)
@@ -1285,7 +1286,7 @@ def _grounded_reply(state, result, tool_results):
     return reply
 
 
-def run_agent_v4(state, *, call_json_model=None, tool_registry=None,
+def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
                  max_steps=MAX_AGENT_STEPS, max_seconds=None,
                  enable_v42=False, enable_v50=False):
     """One patient turn: safety -> model plan -> registered tool -> result -> replan.
@@ -1340,9 +1341,9 @@ def run_agent_v4(state, *, call_json_model=None, tool_registry=None,
         return _pause(state, "llm_extraction_failed", interrupted=True)
     if (enable_v50 and state.get("completion_outcome") in {"completed", "partial"}
             and not state.get("report") and (state.get("execution_pending") or {}).get("reason") == "report_generation_failed"):
-        from agent.reporting_v42 import build_report_v42
+        from agent.clinical_report import build_clinical_report
         try:
-            build_report_v42(state)
+            build_clinical_report(state)
         except Exception as error:
             add_trace(state, "TOOL_ERROR", {"tool": "GENERATE_REPORT", "status": "error",
                       "error_type": type(error).__name__})
@@ -1503,7 +1504,7 @@ def run_agent_v4(state, *, call_json_model=None, tool_registry=None,
             state["loop_state"]["steps"] += 1
         if enable_v42 and action == "FINISH":
             from agent.completion import evaluate_completion
-            from agent.reporting_v42 import build_report_v42
+            from agent.clinical_report import build_clinical_report
             context = _planner_payload(state, tool_results)
             context.update(planner_decision=decision, grounded_reply=reply,
                            patient_question_resolved=(review["patient_question_resolved"] if review is not None
@@ -1539,7 +1540,7 @@ def run_agent_v4(state, *, call_json_model=None, tool_registry=None,
             # Optional AI summary shares the same request deadline. Failure still
             # produces a truthful fact report with an explicit failed AI status.
             try:
-                build_report_v42(state, model_call=None if enable_v50 else completion_model)
+                build_clinical_report(state, model_call=None if enable_v50 else completion_model)
                 state["report_generation"] = ({"status": "summary_pending", "fact_report_ready": True}
                                                if enable_v50 else {"status": "generated"})
             except Exception as error:

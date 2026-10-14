@@ -6,7 +6,7 @@ from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch, Mock
 
-from agent import llm_v4
+from agent import followup_agent
 from agent.state_manager import create_patient_state, merge_user_patch, add_trace
 from agent.trace_view import present_trace
 from backend import config, runtime_v5
@@ -57,12 +57,12 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
     def test_first_validation_timeout_retries_once_without_regenerating(self):
         patient = state()
         model = ExtractionModel(timeouts=1)
-        extracted = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=model, enable_v50=True)
+        extracted = followup_agent.extract_patient_information(TEXT, patient, call_json_model=model, enable_v50=True)
         self.assertEqual((model.extractions, model.verifications), (1, 2))
         self.assertEqual(extracted["bp_systolic"], 132)
         self.assertNotIn("extraction_pending", patient)
         merge_user_patch(patient, extracted, TEXT)
-        response = llm_v4.run_agent_v4(patient, call_json_model=model, enable_v50=True)
+        response = followup_agent.run_followup_agent(patient, call_json_model=model, enable_v50=True)
         self.assertEqual(patient["followup_status"], "waiting_for_user")
         self.assertIn("？", response["message"])
         retries = [row for row in patient["trace"] if row["event"] == "MODEL_RETRY"]
@@ -72,12 +72,12 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
     def test_permanent_validation_timeout_keeps_candidate_unconfirmed_and_pauses(self):
         patient = state()
         model = ExtractionModel(timeouts=10)
-        extracted = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=model, enable_v50=True)
+        extracted = followup_agent.extract_patient_information(TEXT, patient, call_json_model=model, enable_v50=True)
         merge_user_patch(patient, extracted, TEXT)
         self.assertIsNone(patient["bp_systolic"])
         self.assertFalse(patient["coverage"]["bp"])
         self.assertEqual(patient["extraction_pending"]["model"], CANDIDATE)
-        llm_v4.run_agent_v4(patient, call_json_model=model, enable_v50=True)
+        followup_agent.run_followup_agent(patient, call_json_model=model, enable_v50=True)
         self.assertEqual(patient["followup_status"], "interrupted")
         self.assertEqual(patient["execution_pending"]["next_action"], "VERIFY_EXTRACT")
         self.assertEqual((model.extractions, model.verifications), (1, 2))
@@ -90,11 +90,11 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
     def test_verified_candidate_restores_from_json_and_skips_extract(self):
         patient = state()
         first = ExtractionModel(timeouts=10)
-        result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=first, enable_v50=True)
+        result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=first, enable_v50=True)
         merge_user_patch(patient, result, TEXT)
         patient = json.loads(json.dumps(patient))
         resumed = ExtractionModel()
-        result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=resumed, enable_v50=True)
+        result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=resumed, enable_v50=True)
         self.assertEqual((resumed.extractions, resumed.verifications), (0, 1))
         self.assertTrue(result["semantic_validated"])
         self.assertEqual(result["bp_systolic"], 132)
@@ -102,9 +102,9 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
 
     def test_new_patient_message_does_not_reuse_an_old_candidate(self):
         patient = state()
-        llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
+        followup_agent.extract_patient_information(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
         model = Mock(return_value={"claims": [], "answer_status": "unclear"})
-        result = llm_v4.extract_user_patch_v4("刚才记错了，还没量", patient, call_json_model=model, enable_v50=True)
+        result = followup_agent.extract_patient_information("刚才记错了，还没量", patient, call_json_model=model, enable_v50=True)
         self.assertIsNone(result["bp_systolic"])
         self.assertNotIn("extraction_pending", patient)
         self.assertIn("EXTRACTION_DISCARDED", [row["event"] for row in patient["trace"]])
@@ -112,7 +112,7 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
     def test_semantic_rejection_is_not_retried_as_a_transport_timeout(self):
         patient = state()
         model = ExtractionModel(reject=True)
-        result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=model, enable_v50=True)
+        result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=model, enable_v50=True)
         self.assertEqual(model.verifications, 1)
         self.assertIsNone(result["bp_systolic"])
         self.assertNotIn("extraction_pending", patient)
@@ -121,7 +121,7 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
     def test_non_temporary_generation_failure_has_no_retry(self):
         patient = state()
         model = Mock(side_effect=RuntimeError("offline invalid input"))
-        result = llm_v4._call(model, patient, "EXTRACT", "test", {})
+        result = followup_agent._call(model, patient, "EXTRACT", "test", {})
         self.assertIsNone(result)
         self.assertEqual(model.call_count, 1)
         self.assertNotIn("MODEL_RETRY", [row["event"] for row in patient["trace"]])
@@ -134,7 +134,7 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
         sdk = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
         patient = state()
         with patch.object(model_client, "client", sdk):
-            result = llm_v4._call(None, patient, "VERIFY_EXTRACT", "test", {})
+            result = followup_agent._call(None, patient, "VERIFY_EXTRACT", "test", {})
         self.assertEqual(result, {"ok": True})
         self.assertEqual(create.call_count, 3)
         self.assertNotIn("response_format", create.call_args_list[-1].kwargs)
@@ -151,18 +151,18 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
             answer = function()
             clock[0] += 45
             return answer
-        with patch.object(llm_v4, "monotonic", side_effect=lambda: clock[0]), \
-                patch.object(llm_v4, "_bounded_call", side_effect=bounded), \
+        with patch.object(followup_agent, "monotonic", side_effect=lambda: clock[0]), \
+                patch.object(followup_agent, "_bounded_call", side_effect=bounded), \
                 patch.object(config, "DEEPSEEK_TIMEOUT_SECONDS", 50):
-            result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=model, enable_v50=True)
+            result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=model, enable_v50=True)
         self.assertEqual(windows, [50, 50])
         self.assertEqual(result["bp_systolic"], 132)
 
     def test_trace_shows_timeout_retry_rejection_and_pause_without_candidate_leak(self):
         patient = state()
-        result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
+        result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
         merge_user_patch(patient, result, TEXT)
-        llm_v4.run_agent_v4(patient, enable_v50=True)
+        followup_agent.run_followup_agent(patient, enable_v50=True)
         shown = present_trace(patient)
         self.assertIn("MODEL_RETRY_EXHAUSTED", [entry["event"] for entry in shown])
         timeouts = [entry for entry in shown if entry["event"] == "LLM_CALL" and entry["detail"].get("failure_kind") == "timeout"]
@@ -178,9 +178,9 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
             patient["session_id"] = sid
             repository.seed_demo_patient({key: patient[key] for key in ("patient_id", "patient_name", "age", "conditions")}, [])
             add_trace(patient, "USER_MESSAGE", {"message": TEXT})
-            result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
+            result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
             merge_user_patch(patient, result, TEXT)
-            llm_v4.run_agent_v4(patient, enable_v50=True)
+            followup_agent.run_followup_agent(patient, enable_v50=True)
             repository.persist_session(sid, patient)
             with connection.get_connection() as conn:
                 self.assertEqual(conn.execute("SELECT COUNT(*) FROM bp_records").fetchone()[0], 0)
@@ -203,7 +203,7 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
                 patient = state()
                 patient["session_id"] = "stale-recovery"
                 repository.seed_demo_patient({key: patient[key] for key in ("patient_id", "patient_name", "age", "conditions")}, [])
-                llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
+                followup_agent.extract_patient_information(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
                 if change == "date":
                     patient["extraction_pending"]["date"] = "2000-01-01"
                 else:
@@ -225,9 +225,9 @@ class ValidationRecoveryV5Tests(unittest.TestCase):
             patient = state()
             patient["session_id"] = "background-recovery"
             repository.seed_demo_patient({key: patient[key] for key in ("patient_id", "patient_name", "age", "conditions")}, [])
-            result = llm_v4.extract_user_patch_v4(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
+            result = followup_agent.extract_patient_information(TEXT, patient, call_json_model=ExtractionModel(10), enable_v50=True)
             merge_user_patch(patient, result, TEXT)
-            llm_v4.run_agent_v4(patient, enable_v50=True)
+            followup_agent.run_followup_agent(patient, enable_v50=True)
             repository.persist_session(patient["session_id"], patient)
             model = ExtractionModel()
             runtime = runtime_v5.AgentRuntime(model)

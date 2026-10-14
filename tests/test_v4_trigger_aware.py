@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-from agent.llm_v4 import PLANNING_PROMPT, _planner_payload, run_agent_v4
+from agent.followup_agent import PLANNING_PROMPT, _planner_payload, run_followup_agent
 from agent.state_manager import create_patient_state
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,7 +57,7 @@ class TriggerAwareV4Tests(unittest.TestCase):
                         "question": "现在身体有没有不舒服？",
                         "reason": "模拟LLM收到完整的触发上下文",
                     }
-                response = run_agent_v4(state, call_json_model=fake_model)
+                response = run_followup_agent(state, call_json_model=fake_model)
                 self.assertTrue(response["message"])
                 self.assertEqual(observed[0]["type"], kind)
                 self.assertTrue(any(e["event"] == "LLM_CALL" and e["detail"].get("ok")

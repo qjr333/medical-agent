@@ -39,7 +39,7 @@ class ModelObservabilityV41Tests(unittest.TestCase):
         # The embedding dependency stays disabled throughout these fixtures.
         with patch.dict(os.environ, {"RAG_DISABLE_EMBEDDING": "1"}), \
                 contextlib.redirect_stdout(io.StringIO()):
-            cls.llm = importlib.import_module("agent.llm_v4")
+            cls.llm = importlib.import_module("agent.followup_agent")
 
     def setUp(self):
         self.module, _ = self.load_client_module()

@@ -29,7 +29,7 @@ class V50RuntimeConcurrencyTests(unittest.TestCase):
             conn.execute("INSERT INTO patients(patient_id,patient_name,age,conditions_json) VALUES(?,?,?,?)",
                          ("runtime-fictional", "虚构并发患者", 72, '["高血压"]'))
         self.stack.enter_context(patch.object(runtime_v5, "refresh_patient_memory"))
-        self.extract = self.stack.enter_context(patch.object(runtime_v5, "extract_user_patch_v4",
+        self.extract = self.stack.enter_context(patch.object(runtime_v5, "extract_patient_information",
                                                             return_value={"topic_status": {}}))
         self.runtime = runtime_v5.AgentRuntime(model=lambda **kwargs: {})
         self.threads = []
@@ -83,7 +83,7 @@ class V50RuntimeConcurrencyTests(unittest.TestCase):
             return self.waiting(state)
 
         try:
-            with patch.object(runtime_v5, "run_agent_v4", side_effect=planner):
+            with patch.object(runtime_v5, "run_followup_agent", side_effect=planner):
                 self.spawn(lambda: self.runtime.turn("slow-session", "第一位患者回答"))
                 self.assertTrue(slow_entered.wait(1))
                 self.spawn(lambda: (self.runtime.turn("independent-session", "第二位患者回答"), independent_done.set()))
@@ -118,8 +118,8 @@ class V50RuntimeConcurrencyTests(unittest.TestCase):
             self.runtime.turn("shared-session", "第二条患者回答")
 
         try:
-            with patch.object(runtime_v5, "run_agent_v4", side_effect=planner), \
-                    patch.object(runtime_v5, "extract_user_patch_v4", side_effect=extraction):
+            with patch.object(runtime_v5, "run_followup_agent", side_effect=planner), \
+                    patch.object(runtime_v5, "extract_patient_information", side_effect=extraction):
                 self.spawn(lambda: self.runtime.turn("shared-session", "第一条患者回答"))
                 self.assertTrue(first_entered.wait(1))
                 self.spawn(second)
@@ -143,7 +143,7 @@ class V50RuntimeConcurrencyTests(unittest.TestCase):
             state["followup_status"] = "processing" if len(calls) == 1 else "waiting_for_user"
             return {"message": "处理记录中。" if len(calls) == 1 else "请确认今天的服药情况。"}
 
-        with patch.object(runtime_v5, "run_agent_v4", side_effect=planner):
+        with patch.object(runtime_v5, "run_followup_agent", side_effect=planner):
             result = self.runtime.turn("resume-session", "这是本次患者的回答")
         self.assertEqual(len(calls), 2)
         self.extract.assert_called_once()
@@ -161,7 +161,7 @@ class V50RuntimeConcurrencyTests(unittest.TestCase):
             state["followup_status"] = "processing"
             return {"message": "处理记录中。"}
 
-        with patch.object(runtime_v5, "run_agent_v4", side_effect=planner) as run:
+        with patch.object(runtime_v5, "run_followup_agent", side_effect=planner) as run:
             result = self.runtime.turn("limited-session")
         self.assertEqual(run.call_count, 4)
         self.assertEqual(result["followup_status"], "interrupted")

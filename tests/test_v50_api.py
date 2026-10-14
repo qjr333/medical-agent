@@ -491,7 +491,7 @@ class V50APIIntegrationTests(unittest.TestCase):
         repository.sessions.pop(sid, None)
         runtime = self.runtime.AgentRuntime(self.scripted.ScriptedDemoModel())
         with patch.object(self.v5_api, "AgentRuntime", return_value=runtime), \
-                patch.object(self.runtime, "extract_user_patch_v4") as extraction:
+                patch.object(self.runtime, "extract_patient_information") as extraction:
             self.v5_api.recover_pending_sessions()
             self.drain_background()
             self.v5_api.recover_pending_sessions()

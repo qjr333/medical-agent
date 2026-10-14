@@ -13,7 +13,7 @@ from copy import deepcopy
 from threading import Event
 from unittest.mock import Mock, patch
 
-from agent import llm_v4, state_manager
+from agent import followup_agent, state_manager
 from medical_tools import bp_trend, guidance, medication, registry
 
 
@@ -37,7 +37,7 @@ def make_state(*, complete=False):
     )
     if complete:
         state.update(medication_status="taken", symptom_status="denied", red_flag_status="denied",
-                     denied_red_flags=list(llm_v4.DANGER_LABELS),
+                     denied_red_flags=list(followup_agent.DANGER_LABELS),
                      measurement_context="安静休息后测量", latest_patient_message="今天按时服药，没有不舒服")
         state["coverage"] = dict.fromkeys(state["coverage"], True)
         state["topic_status"] = dict.fromkeys(state["coverage"], "answered")
@@ -97,7 +97,7 @@ class AgentV41ToolsTests(unittest.TestCase):
         self.stack.enter_context(patch.object(guidance, "knowledge_revision", return_value="fixture-rev-1"))
 
     def run_model(self, state, model, **kwargs):
-        return llm_v4.run_agent_v4(state, call_json_model=model, **kwargs)
+        return followup_agent.run_followup_agent(state, call_json_model=model, **kwargs)
 
     def seed_evidence(self, state):
         state.update(retrieved_guidance=deepcopy(EVIDENCE), last_guidance_query="用药依从性管理")

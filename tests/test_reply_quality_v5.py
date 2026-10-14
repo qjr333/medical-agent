@@ -2,13 +2,13 @@
 
 import unittest
 
-from agent import llm_v4
+from agent import followup_agent
 from tests.test_llm_autonomy import Model, ask, patient_state, valid_review
 
 
 class ReplyQualityV5Tests(unittest.TestCase):
     def run_agent(self, state, model):
-        return llm_v4.run_agent_v4(state, call_json_model=model, enable_v50=True)
+        return followup_agent.run_followup_agent(state, call_json_model=model, enable_v50=True)
 
     def plans(self, model):
         return [payload for payload in model.payloads if "trigger_event" in payload]

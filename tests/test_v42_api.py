@@ -197,20 +197,20 @@ class V42APIIntegrationTests(unittest.TestCase):
         self.assertIsNone(self.doctor_reports()[0]['report']['blood_pressure']['systolic'])
 
     def test_semantic_measurement_answer_is_grounded_and_persisted(self):
-        from agent.llm_v4 import extract_user_patch_v4
+        from agent.followup_agent import extract_patient_information
         from agent.state_manager import merge_user_patch
         from medical_tools.guidance import execution_fingerprint
         state = self.seed(kind='high_bp')
         state.update(agent_version='V4.2', measurement_context='')
         text = '我是刚从菜场回来就量的'
         before = execution_fingerprint(state, 'RETRIEVE_MEDICAL_GUIDANCE', '测量条件')
-        patch = extract_user_patch_v4(text, state, call_json_model=lambda **kw: {
+        patch = extract_patient_information(text, state, call_json_model=lambda **kw: {
             'answer_status': 'answered', 'measurement_context': text, 'measurement_context_evidence': text})
         merge_user_patch(state, patch, text)
         self.assertEqual(state['measurement_context'], text)
         self.assertTrue(state['coverage']['measurement_context'])
         self.assertNotEqual(before, execution_fingerprint(state, 'RETRIEVE_MEDICAL_GUIDANCE', '测量条件'))
-        invalid = extract_user_patch_v4('不知道', state, call_json_model=lambda **kw: {
+        invalid = extract_patient_information('不知道', state, call_json_model=lambda **kw: {
             'answer_status': 'unable', 'measurement_context': '已静坐五分钟', 'measurement_context_evidence': '已静坐五分钟'})
         self.assertNotEqual(invalid.get('measurement_context'), '已静坐五分钟')
 

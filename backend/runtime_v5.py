@@ -3,9 +3,9 @@ import copy
 import json
 from time import monotonic
 
-from agent.llm_v4 import _call, extract_user_patch_v4, run_agent_v4
+from agent.followup_agent import _call, extract_patient_information, run_followup_agent
 from agent.state_manager import add_trace, create_patient_state, merge_user_patch
-from agent.reporting_v42 import build_report_v42
+from agent.clinical_report import build_clinical_report
 from backend.utils import today_local_date
 from database.connection import get_connection
 from database import repository, tasks
@@ -97,7 +97,7 @@ class AgentRuntime:
                 state["followup_status"] = "active"
                 if not resuming_extraction:
                     add_trace(state, "USER_MESSAGE", {"message": message})
-                patch = extract_user_patch_v4(message, state, call_json_model=self.model, enable_v50=True)
+                patch = extract_patient_information(message, state, call_json_model=self.model, enable_v50=True)
                 bp = None
                 if valid_bp_measurement(patch.get("bp_systolic"), patch.get("bp_diastolic")):
                     bp = {"systolic": patch["bp_systolic"], "diastolic": patch["bp_diastolic"], "source": "patient_chat"}
@@ -111,7 +111,7 @@ class AgentRuntime:
                     state.update(simulation_turn_index=turn_index, simulation_turn_stage="input_saved")
                 repository.persist_session(sid, state, new_bp=bp, new_medication=med)
             refresh_patient_memory(state, sid)
-            response = run_agent_v4(state, call_json_model=self.model, enable_v50=True)
+            response = run_followup_agent(state, call_json_model=self.model, enable_v50=True)
             state["last_agent_response"] = response["message"]
             add_trace(state, "AGENT_RESPONSE", {"message": response["message"], "followup_status": state["followup_status"]})
             repository.persist_session(sid, state)
@@ -120,7 +120,7 @@ class AgentRuntime:
                 if state.get("followup_status") != "processing":
                     break
                 add_trace(state, "EXECUTION_RESUMED", {"automatic": True})
-                response = run_agent_v4(state, call_json_model=self.model, enable_v50=True)
+                response = run_followup_agent(state, call_json_model=self.model, enable_v50=True)
                 state["last_agent_response"] = response["message"]
                 add_trace(state, "AGENT_RESPONSE", {"message": response["message"], "followup_status": state["followup_status"]})
                 repository.persist_session(sid, state)
@@ -154,7 +154,7 @@ class AgentRuntime:
             old_report = state.get("report")
             state["report"] = None
             callback = None if state.get("followup_status") == "escalated" else lambda purpose, prompt, payload: self.model_call(state, purpose, prompt, payload)
-            report = build_report_v42(state, model_call=callback)
+            report = build_clinical_report(state, model_call=callback)
             if old_report:
                 report["generated_at"] = old_report["generated_at"]
                 report["doctor_view"]["generated_at"] = old_report["generated_at"]

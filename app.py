@@ -45,7 +45,7 @@ from agent.planner import get_available_actions, select_next_action
 from agent.question_planner import generate_question
 from agent.reporting import build_urgent_message, generate_report, build_finish_message
 from agent.runner import run_agent as _run_agent
-from agent.llm_v4 import extract_user_patch_v4, run_agent_v4
+from agent.followup_agent import extract_patient_information, run_followup_agent
 from medical_tools.safety import (
     HIGH_BP_SYS, HIGH_BP_DIA, ATTENTION_BP_SYS, ATTENTION_BP_DIA, DANGER_PATTERNS,
     phrase_is_negated, detect_danger_signs, contains_red_flag_language,
@@ -91,7 +91,7 @@ def create_patient_state(trigger_type: str):
 
 def extract_user_patch(text: str, patient_state=None):
     if any(os.getenv(flag, "0") == "1" for flag in ("LLM_AGENT_V50", "LLM_AGENT_V42", "LLM_AGENT_V4")):
-        return extract_user_patch_v4(text, patient_state, call_json_model=call_json_model, enable_v50=os.getenv("LLM_AGENT_V50", "0") == "1")
+        return extract_patient_information(text, patient_state, call_json_model=call_json_model, enable_v50=os.getenv("LLM_AGENT_V50", "0") == "1")
     return _extract_user_patch(
         text, patient_state, call_json_model=call_json_model,
         contains_red_flag_language=contains_red_flag_language,
@@ -108,12 +108,12 @@ def tool_generate_visit_advice(state: dict):
 
 def run_agent(state: dict):
     if os.getenv("LLM_AGENT_V50", "0") == "1":
-        return run_agent_v4(state, call_json_model=call_json_model, enable_v50=True)
+        return run_followup_agent(state, call_json_model=call_json_model, enable_v50=True)
     if os.getenv("LLM_AGENT_V42", "0") == "1":
-        return run_agent_v4(state, call_json_model=call_json_model, enable_v42=True)
+        return run_followup_agent(state, call_json_model=call_json_model, enable_v42=True)
     if os.getenv("LLM_AGENT_V4", "0") == "1":
         print("[AGENT] Running LLM-driven Agent V4", flush=True)
-        return run_agent_v4(state, call_json_model=call_json_model)
+        return run_followup_agent(state, call_json_model=call_json_model)
 
     print("[AGENT] Running rule-based Agent V3", flush=True)
     return _run_agent(state, call_json_model=call_json_model)
@@ -226,14 +226,14 @@ class ChatRequest(
 
 def _finalize_urgent_report(session_id):
     """Executed after the response is sent; an urgent report never calls an LLM."""
-    from agent.reporting_v42 import build_report_v42
+    from agent.clinical_report import build_clinical_report
     with session_lock(session_id):
         try:
             state = read_session(session_id)
             if not state or state.get("completion_outcome") != "escalated":
                 return
             state = copy.deepcopy(state)
-            build_report_v42(state)
+            build_clinical_report(state)
             state["report_generation"] = {"status": "generated"}
             add_trace(state, "REPORT_GENERATED", {"version": "4.2", "outcome": "escalated",
                       "ai_called": False})
@@ -420,7 +420,7 @@ def chat(request: ChatRequest, background_tasks: BackgroundTasks):
             danger = unique_list([label for clause in split_answer_clauses(message)
                                   for label in detect_danger_signs(clause)])
             if os.getenv("LLM_AGENT_V42", "0") == "1" or os.getenv("LLM_AGENT_V50", "0") == "1":
-                from agent.llm_v4 import _minimal_safety_signals
+                from agent.followup_agent import _minimal_safety_signals
                 danger = unique_list(danger + _minimal_safety_signals(message, cached or {}))
             emergency_state = {"bp_systolic": systolic, "bp_diastolic": diastolic,
                                "red_flags": danger, "symptoms": [], "trace": []}

@@ -1,4 +1,4 @@
-"""Grounded V4.2 reports with separate clinician and family views."""
+"""Evidence-grounded clinical reports with doctor/family views and schema 4.2 compatibility."""
 
 from copy import deepcopy
 
@@ -272,7 +272,7 @@ def _family_view(state, outcome, tools, facts, selected, unconfirmed, assistance
     }
 
 
-def build_report_v42(state, *, model_call=None):
+def build_clinical_report(state, *, model_call=None):
     """Create one terminal report. The model only orders backend-grounded facts."""
     outcome = _completion_outcome(state)
     existing = state.get("report")

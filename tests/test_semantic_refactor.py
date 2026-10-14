@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import date, timedelta
 from unittest.mock import Mock, patch
 
-from agent import extractor, llm_v4
+from agent import extractor, followup_agent
 from agent.state_manager import merge_user_patch
 from backend.utils import today_local_date
 
@@ -48,7 +48,7 @@ def current_state(topic="medication", question="今天已经服用降压药了�
             "question_context": {"question": question, "topic": topic, "goal": "确认患者本轮信息",
                                  "kind": "medication_taken" if topic == "medication" else "symptoms",
                                  "asked_red_flags": flags or [], "asked_symptoms": []},
-            "coverage": {key: False for key in llm_v4.TOPICS}, "trace": [], "followup_status": "active"}
+            "coverage": {key: False for key in followup_agent.TOPICS}, "trace": [], "followup_status": "active"}
 
 
 class SemanticExtractionTests(unittest.TestCase):
@@ -56,11 +56,11 @@ class SemanticExtractionTests(unittest.TestCase):
         model = SemanticModel({"claims": claims or [], "answer_status": "answered",
                                "screening": screening or {"adequate": False}, **answer},
                               reviews=reviews, screening_review=screening_review)
-        result = llm_v4.extract_user_patch_v4(text, state or current_state(), call_json_model=model, enable_v50=True)
+        result = followup_agent.extract_patient_information(text, state or current_state(), call_json_model=model, enable_v50=True)
         return result, model
 
     def test_v5_does_not_use_legacy_regex_extraction(self):
-        with patch.object(llm_v4, "legacy_extract", side_effect=AssertionError("Legacy parser is not V5 semantic engine")):
+        with patch.object(followup_agent, "legacy_extract", side_effect=AssertionError("Legacy parser is not V5 semantic engine")):
             data, model = self.extract("今天量的是138/84", [fact("bp", {"systolic": 138, "diastolic": 84}, "今天量的是138/84")])
         self.assertEqual((data["bp_systolic"], data["bp_diastolic"]), (138, 84))
         self.assertEqual(len(model.inputs), 2)
@@ -201,7 +201,7 @@ class SemanticExtractionTests(unittest.TestCase):
     def test_review_failure_is_visible_and_does_not_publish_facts(self):
         model = Mock(side_effect=[{"claims": [fact("medication", {"status": "taken"}, "吃了")]}, {}])
         state = current_state()
-        data = llm_v4.extract_user_patch_v4("吃了", state, call_json_model=model, enable_v50=True)
+        data = followup_agent.extract_patient_information("吃了", state, call_json_model=model, enable_v50=True)
         self.assertEqual(data["medication_status"], "unknown")
         self.assertFalse(data["semantic_validated"])
         self.assertFalse(state["llm_v4_last_extraction_ok"])
@@ -210,7 +210,7 @@ class SemanticExtractionTests(unittest.TestCase):
         for text in ("我现在喘不上气", "没有胸痛，但是呼吸困难", "我现在有突发肢体无力和突发言语异常", "我快死了"):
             with self.subTest(text=text):
                 model = Mock(side_effect=AssertionError("Immediate safety handling must not wait for a model"))
-                data = llm_v4.extract_user_patch_v4(text, current_state(), call_json_model=model, enable_v50=True)
+                data = followup_agent.extract_patient_information(text, current_state(), call_json_model=model, enable_v50=True)
                 self.assertTrue(data["red_flags"])
                 model.assert_not_called()
 
@@ -221,7 +221,7 @@ class SemanticExtractionTests(unittest.TestCase):
         for response in responses:
             with self.subTest(response=response):
                 model = Mock(return_value=response)
-                data = llm_v4.extract_user_patch_v4("吃了", current_state(), call_json_model=model, enable_v50=True)
+                data = followup_agent.extract_patient_information("吃了", current_state(), call_json_model=model, enable_v50=True)
                 self.assertEqual(data["medication_status"], "unknown")
                 self.assertFalse(data["medication_observations"])
 
@@ -243,7 +243,7 @@ class SemanticExtractionTests(unittest.TestCase):
                        {"claims": [fact("medication", {"status": "taken"}, "编造原话")], "answer_status": "answered"}):
             with self.subTest(answer=answer):
                 state = current_state()
-                data = llm_v4.extract_user_patch_v4("从刚刚开始感觉身体明显变坏", state,
+                data = followup_agent.extract_patient_information("从刚刚开始感觉身体明显变坏", state,
                                                   call_json_model=Mock(return_value=answer), enable_v50=True)
                 self.assertFalse(state["llm_v4_last_extraction_ok"])
                 self.assertFalse(data["medication_observations"])

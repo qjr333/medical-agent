@@ -85,11 +85,11 @@ def retry_report(session_id: str, user=Depends(authenticated_user)):
         if state.get("agent_version") not in {"V4.2", "V5.0"} or state.get("followup_status") not in {
                 "completed", "partially_completed", "escalated"}:
             raise HTTPException(status_code=409, detail="随访尚未达到报告生成条件")
-        from agent.reporting_v42 import build_report_v42
+        from agent.clinical_report import build_clinical_report
         state = deepcopy(state)
         # Retries recover missing fact reports; they never rerun an urgent LLM.
         # Existing generated reports remain identical and delivery is idempotent.
-        build_report_v42(state)
+        build_clinical_report(state)
         state["report_generation"] = {"status": "generated"}
         repository.persist_session(session_id, state)
         rows = _operation(collaboration.list_reports, user, patient_id=state["patient_id"], limit=200)

@@ -10,7 +10,7 @@ from datetime import date, timedelta
 from threading import Event
 from unittest.mock import Mock, patch
 
-from agent import llm_v4, state_manager
+from agent import followup_agent, state_manager
 from agent.completion import evaluate_completion
 from medical_tools import bp_trend, guidance
 from medical_tools.safety import DANGER_PATTERNS, detect_danger_signs
@@ -86,7 +86,7 @@ class AgentV50Tests(unittest.TestCase):
         self.retrieval = self.stack.enter_context(patch.object(guidance, "retrieve_medical_guidance", return_value=deepcopy(EVIDENCE)))
 
     def run_v50(self, state, model, **kwargs):
-        return llm_v4.run_agent_v4(state, call_json_model=model, enable_v50=True, **kwargs)
+        return followup_agent.run_followup_agent(state, call_json_model=model, enable_v50=True, **kwargs)
 
     def seed_evidence(self, state):
         state.update(agent_version="V5.0", retrieved_guidance=deepcopy(EVIDENCE), last_guidance_query="模拟医学依据")
@@ -97,8 +97,8 @@ class AgentV50Tests(unittest.TestCase):
                                      "patient_question_resolved": True,
                                      "asked_red_flags": [], "asked_symptoms": [],
                                      "bp_claims": claims or []})
-        result = llm_v4._review_v50_response(
-            state, decision, [], call_json_model=reviewer, deadline=llm_v4.monotonic() + 20,
+        result = followup_agent._review_v50_response(
+            state, decision, [], call_json_model=reviewer, deadline=followup_agent.monotonic() + 20,
         )
         return result, reviewer
 
@@ -107,7 +107,7 @@ class AgentV50Tests(unittest.TestCase):
         state["question_context"] = {"kind": "medication_taken", "topic": "medication",
                                      "question": "今天服药了吗？", "goal": "check_medication"}
         model = SemanticModel(answer) if "claims" in answer else Mock(return_value=answer)
-        return llm_v4.extract_user_patch_v4(text, state, call_json_model=model, enable_v50=True)
+        return followup_agent.extract_patient_information(text, state, call_json_model=model, enable_v50=True)
 
     def test_budget_exhaustion_is_processing_and_resume_needs_no_user_message(self):
         state = make_state()
@@ -216,14 +216,14 @@ class AgentV50Tests(unittest.TestCase):
     def test_v42_valid_planning_keeps_its_existing_payload_contract(self):
         state = make_state()
         model = Model(ask("现在有没有胸痛？", "red_flags", "screen_danger", asked_red_flags=["胸痛"]))
-        llm_v4.run_agent_v4(state, call_json_model=model, enable_v42=True)
+        followup_agent.run_followup_agent(state, call_json_model=model, enable_v42=True)
         self.assertEqual(state["followup_status"], "waiting_for_user")
         self.assertNotIn("backend_schema", model.inputs[0])
         self.assertNotIn("planner_validation_feedback", model.inputs[0])
 
     def test_v41_budget_pause_contract_stays_compatible(self):
         state = make_state()
-        response = llm_v4.run_agent_v4(state, call_json_model=Model(tool()), max_steps=1)
+        response = followup_agent.run_followup_agent(state, call_json_model=Model(tool()), max_steps=1)
         self.assertEqual(state["agent_version"], "V4.1")
         self.assertEqual(state["followup_status"], "waiting_for_user")
         self.assertNotIn("execution_pending", state)
@@ -231,7 +231,7 @@ class AgentV50Tests(unittest.TestCase):
 
     def test_v42_budget_pause_contract_stays_compatible(self):
         state = make_state()
-        llm_v4.run_agent_v4(state, call_json_model=Model(tool()), max_steps=1, enable_v42=True)
+        followup_agent.run_followup_agent(state, call_json_model=Model(tool()), max_steps=1, enable_v42=True)
         self.assertEqual(state["agent_version"], "V4.2")
         self.assertEqual(state["followup_status"], "waiting_for_user")
         self.assertNotIn("execution_pending", state)
@@ -248,8 +248,8 @@ class AgentV50Tests(unittest.TestCase):
         self.assertNotIn("execution_pending", state)
 
     def test_report_build_failure_can_resume_without_another_planning_or_completion_call(self):
-        from agent import reporting_v42
-        original = reporting_v42.build_report_v42
+        from agent import clinical_report
+        original = clinical_report.build_clinical_report
         called = []
         def build(state, **kwargs):
             called.append(1)
@@ -257,7 +257,7 @@ class AgentV50Tests(unittest.TestCase):
                 raise RuntimeError("temporary report failure")
             return original(state, **kwargs)
         state = make_state(complete=True)
-        with patch.object(reporting_v42, "build_report_v42", side_effect=build):
+        with patch.object(clinical_report, "build_clinical_report", side_effect=build):
             self.run_v50(state, Model({"action": "FINISH"}))
             self.assertEqual(state["followup_status"], "processing")
             never_model = Mock(side_effect=AssertionError("Report retry must not redo the medical conversation"))
@@ -403,12 +403,12 @@ class AgentV50Tests(unittest.TestCase):
                 patch_data = self.extract(text, {"medication_status": "missed", "medication_evidence": text,
                                                  "answer_status": "answered"})
                 self.assertEqual(patch_data["medication_status"], "unknown")
-                self.assertFalse(any(row["date"] == llm_v4.today_local_date() for row in patch_data["medication_observations"]))
-                self.assertFalse(any(row["date"] > llm_v4.today_local_date() for row in patch_data["medication_observations"]))
+                self.assertFalse(any(row["date"] == followup_agent.today_local_date() for row in patch_data["medication_observations"]))
+                self.assertFalse(any(row["date"] > followup_agent.today_local_date() for row in patch_data["medication_observations"]))
 
     def test_todays_taken_and_yesterdays_missed_keep_two_real_dates(self):
         text = "昨天忘记吃降压药了，今天已经按时吃降压药"
-        today = llm_v4.today_local_date()
+        today = followup_agent.today_local_date()
         yesterday = (date.fromisoformat(today) - timedelta(days=1)).isoformat()
         data = self.extract(text, {"claims": [fact("medication", {"status": "missed"}, "昨天忘记吃降压药了",
                                                     temporal="history", date=yesterday),
@@ -429,9 +429,9 @@ class AgentV50Tests(unittest.TestCase):
         state = make_state()
         captured = []
         def bounded(function, deadline):
-            captured.append(deadline - llm_v4.monotonic())
+            captured.append(deadline - followup_agent.monotonic())
             return function()
-        with patch.object(llm_v4, "_bounded_call", side_effect=bounded):
+        with patch.object(followup_agent, "_bounded_call", side_effect=bounded):
             self.extract("今天按时吃降压药", {"answer_status": "answered"}, state)
         self.assertEqual(len(captured), 1)
         self.assertLessEqual(captured[0], 50)

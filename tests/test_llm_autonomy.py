@@ -7,7 +7,7 @@ from collections import deque
 from time import monotonic
 from unittest.mock import patch
 
-from agent import llm_v4, state_manager
+from agent import followup_agent, state_manager
 from medical_tools.safety import DANGER_PATTERNS
 
 
@@ -50,7 +50,7 @@ class Model:
 
 class LLMAutonomyTests(unittest.TestCase):
     def run_agent(self, state, model, **kwargs):
-        return llm_v4.run_agent_v4(state, call_json_model=model, enable_v50=True, **kwargs)
+        return followup_agent.run_followup_agent(state, call_json_model=model, enable_v50=True, **kwargs)
 
     def test_prescription_violation_is_feedback_then_regeneration(self):
         state = patient_state()
@@ -171,8 +171,8 @@ class LLMAutonomyTests(unittest.TestCase):
         def registry(**kwargs):
             wrapper.update(kwargs)
             return {"MEDICATION_GUIDANCE": tool}
-        with patch.object(llm_v4, "get_tool_registry", side_effect=registry):
-            result = llm_v4._execute_tool(state, "MEDICATION_GUIDANCE", {}, call_json_model=model,
+        with patch.object(followup_agent, "get_tool_registry", side_effect=registry):
+            result = followup_agent._execute_tool(state, "MEDICATION_GUIDANCE", {}, call_json_model=model,
                                          tool_registry=None, deadline=monotonic() + 2)
         self.assertEqual(result["data"]["message"], "请先核实原医嘱。")
         self.assertEqual(calls[1]["validation_feedback"]["violations"][0]["code"], "prescription_safety")
@@ -196,8 +196,8 @@ class LLMAutonomyTests(unittest.TestCase):
         def registry(**kwargs):
             wrapper.update(kwargs)
             return {"MEDICATION_GUIDANCE": tool}
-        with patch.object(llm_v4, "get_tool_registry", side_effect=registry):
-            result = llm_v4._execute_tool(state, "MEDICATION_GUIDANCE", {}, call_json_model=model,
+        with patch.object(followup_agent, "get_tool_registry", side_effect=registry):
+            result = followup_agent._execute_tool(state, "MEDICATION_GUIDANCE", {}, call_json_model=model,
                                          tool_registry=None, deadline=monotonic() + 2)
         self.assertNotIn("190/130", result["data"]["message"])
         self.assertEqual(calls[1]["validation_feedback"]["violations"][0]["code"], "unverified_bp_record")
