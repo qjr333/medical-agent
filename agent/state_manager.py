@@ -1,6 +1,7 @@
 """Patient State 创建、更新和 Trace 管理。"""
 
 from datetime import date
+from copy import deepcopy
 from typing import Any
 
 from backend.utils import now_iso, today_local_date, local_date_from_timestamp, unique_list
@@ -258,7 +259,7 @@ def add_trace(
             event,
 
         "detail":
-            detail,
+            deepcopy(detail),
     }
 
 

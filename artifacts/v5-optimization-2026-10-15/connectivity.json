@@ -1,0 +1,32 @@
+{
+  "checked_at_utc": "2026-10-15T03:06:10.270258+00:00",
+  "configuration": {
+    "api_key_configured": true,
+    "hostname": "api.deepseek.com",
+    "model": "deepseek-flash",
+    "configured_timeout_seconds": 50.0,
+    "diagnostic_timeout_seconds": 15,
+    "sdk_max_retries": 0
+  },
+  "environment": {
+    "proxy_environment_present": false
+  },
+  "public_connectivity": {
+    "status": "reachable",
+    "http_status_code": 401,
+    "tls_verification_enabled": true,
+    "duration_seconds": 0.265
+  },
+  "minimal_generation": {
+    "status": "failed",
+    "error_type": "APITimeoutError",
+    "cause_types": [
+      "ReadTimeout",
+      "ReadTimeout",
+      "timeout"
+    ],
+    "category": "timeout",
+    "duration_seconds": 15.463
+  },
+  "limitations": "One tiny generation only; no patient scenario. Public reachability does not prove model availability."
+}

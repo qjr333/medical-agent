@@ -32,6 +32,7 @@ from medical_tools.guidance import execution_fingerprint
 
 AGENT_VERSION = "V4.1"
 MAX_AGENT_STEPS = 8
+MAX_V50_EXECUTION_PLANS = 24
 MAX_REQUEST_SECONDS = 60.0
 MAX_V50_REQUEST_SECONDS = 120.0
 
@@ -425,7 +426,7 @@ def _validated_claims(text, model):
     return candidates
 
 
-def _extract_v50_semantic(text, state, call_json_model):
+def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
     patch = _empty_semantic_patch()
     context = _context_for_model(state)
     danger = _minimal_safety_signals(text, state)
@@ -450,13 +451,17 @@ def _extract_v50_semantic(text, state, call_json_model):
         add_trace(state, "EXTRACTION_RESUMED", {"purpose": "VERIFY_EXTRACT", "status": "resumed",
                   "candidate_count": len(model.get("claims") or []), "called": False})
     else:
-        if pending:
+        if pending and pending.get("status") != "awaiting_extraction":
             add_trace(state, "EXTRACTION_DISCARDED", {"purpose": "VERIFY_EXTRACT", "status": "stale_context"})
         state.pop("extraction_pending", None)
         model = _call(call_json_model, state, "EXTRACT", EXTRACTION_PROMPT,
                       {"patient_message": text, "today": today_local_date(), **context})
     state["llm_v4_last_extraction_ok"] = bool(model)
     if not model:
+        # Retain the actual input even when generation never produced a candidate.
+        # A later recovery may retry EXTRACT; it must not invent a patient reply.
+        state["extraction_pending"] = {"patient_message": text, "date": today_local_date(),
+            "context": deepcopy(context), "status": "awaiting_extraction", "failure_kind": "generation_failed"}
         return patch
     if (not isinstance(model.get("claims"), list) or not isinstance(model.get("answer_status"), str)
             or model["answer_status"] not in {"answered", "unclear", "unable", "refused"}
@@ -476,6 +481,10 @@ def _extract_v50_semantic(text, state, call_json_model):
         return patch
     state["extraction_pending"] = {"patient_message": text, "date": today_local_date(),
         "context": deepcopy(context), "model": deepcopy(model), "status": "awaiting_verification"}
+    # The candidate is durable before a potentially slow independent review.
+    # This callback stores only pending data; no clinical fact is confirmed here.
+    if on_checkpoint is not None:
+        on_checkpoint()
     review = _call(call_json_model, state, "VERIFY_EXTRACT", SEMANTIC_REVIEW_PROMPT,
                    {"patient_message": text, "today": today_local_date(), **context,
                     "claims": candidates, "screening": screening})
@@ -591,7 +600,7 @@ def _extract_v50_semantic(text, state, call_json_model):
     return patch
 
 
-def extract_patient_information(text, patient_state=None, *, call_json_model=None, enable_v50=False):
+def extract_patient_information(text, patient_state=None, *, call_json_model=None, enable_v50=False, on_checkpoint=None):
     """V5 semantic extraction; older explicitly selected Agent modes retain compatibility."""
     state = patient_state if patient_state is not None else {}
     ensure_dialogue_state(state)
@@ -599,7 +608,7 @@ def extract_patient_information(text, patient_state=None, *, call_json_model=Non
     if enable_v50:
         state["agent_version"] = "V5.0"
     if v50:
-        return _extract_v50_semantic(text or "", state, call_json_model)
+        return _extract_v50_semantic(text or "", state, call_json_model, on_checkpoint=on_checkpoint)
     # No second model call in the fallback. Legacy deterministic facts remain available.
     patch = legacy_extract(text, state, call_json_model=lambda **kwargs: {})
     danger = unique_list((patch.get("red_flags") or []) + _minimal_safety_signals(text, state))
@@ -721,6 +730,33 @@ planner_validation_feedback是上次真实输出的字段校验失败信息，�
 
 
 def _conversation(state):
+    if state.get("agent_version") == "V5.0":
+        # ASK_USER is an execution event; AGENT_RESPONSE is the published reply.
+        # Keep the latter once, retaining ASK_USER only for older partial traces.
+        rows, pending_question = [], None
+        for event in state.get("trace") or []:
+            detail = event.get("detail") or {}
+            if not isinstance(detail, dict):
+                continue
+            kind = event.get("event")
+            if kind == "ASK_USER":
+                pending_question = detail.get("question")
+            elif kind == "AGENT_RESPONSE":
+                if detail.get("followup_status") == "processing":
+                    continue
+                message = detail.get("message")
+                if message:
+                    rows.append({"role": "agent", "message": str(message)[:450]})
+                    pending_question = None
+            elif kind == "USER_MESSAGE":
+                if pending_question:
+                    rows.append({"role": "agent", "message": str(pending_question)[:450]})
+                    pending_question = None
+                if detail.get("message"):
+                    rows.append({"role": "patient", "message": str(detail["message"])[:450]})
+        if pending_question:
+            rows.append({"role": "agent", "message": str(pending_question)[:450]})
+        return rows[-10:]
     rows = []
     for event in reversed(state.get("trace") or []):
         if event.get("event") not in {"ASK_USER", "USER_MESSAGE", "AGENT_RESPONSE"}:
@@ -769,13 +805,22 @@ def _planner_payload(state, tool_results):
             "unit": "mmHg",
         }
     previous, seen = [], set()
+    # Current results already appear in tool_results_this_turn. Historical
+    # results remain available, but the same verified input is sent only once.
+    current_keys = set()
+    if state.get("agent_version") == "V5.0":
+        for result in tool_results:
+            if isinstance(result, dict) and isinstance(result.get("data"), dict) and result.get("tool"):
+                query = (result.get("query") or result["data"].get("query")) if result["tool"] == "RETRIEVE_MEDICAL_GUIDANCE" else None
+                current_keys.add((result["tool"], query))
     for entry in reversed((state.get("v41_tool_results") or [])[-12:]):
         try:
             result = entry["result"]
             if entry["fingerprint"] == execution_fingerprint(
                     state, result["tool"], entry.get("query")):
                 key = (result["tool"], entry.get("query"), entry["fingerprint"])
-                if key not in seen:
+                current_key = (result["tool"], entry.get("query") if result["tool"] == "RETRIEVE_MEDICAL_GUIDANCE" else None)
+                if key not in seen and current_key not in current_keys:
                     previous.append(result)
                     seen.add(key)
         except (KeyError, TypeError, ValueError):
@@ -1127,15 +1172,22 @@ def _pause(state, reason, *, interrupted=False):
     if automatic:
         state["execution_pending"] = {"reason": reason, "next_action": state.get("last_action") or "PLAN",
                                       "pending_tasks": list(state["pending_tasks"]),
-                                      "resume_attempts": state.get("v50_resume_attempts", 0)}
+                                      "resume_attempts": state.get("v50_resume_attempts", 0),
+                                      "plan_calls": state["loop_state"].get("total_plan_calls", 0),
+                                      "input_count": state["loop_state"].get("input_count", 0)}
     elif (state.get("agent_version") == "V5.0"
-          and (state.get("extraction_pending") or {}).get("status") == "awaiting_verification"):
-        state["execution_pending"] = {"reason": "semantic_verification_pending",
-                                      "next_action": "VERIFY_EXTRACT", "pending_tasks": list(state["pending_tasks"])}
-        add_trace(state, "SAFETY_PAUSE", {"purpose": "VERIFY_EXTRACT", "status": "paused",
-                  "next_action": "VERIFY_EXTRACT", "recoverable": True})
+          and (state.get("extraction_pending") or {}).get("status") in {"awaiting_extraction", "awaiting_verification"}):
+        next_action = ("VERIFY_EXTRACT" if state["extraction_pending"]["status"] == "awaiting_verification" else "EXTRACT")
+        state["execution_pending"] = {"reason": "semantic_verification_pending" if next_action == "VERIFY_EXTRACT" else "patient_input_pending",
+                                      "next_action": next_action, "pending_tasks": list(state["pending_tasks"])}
+        add_trace(state, "SAFETY_PAUSE", {"purpose": next_action, "status": "paused",
+                  "next_action": next_action, "recoverable": True})
     else:
         state.pop("execution_pending", None)
+        if reason == "execution_model_budget" and state.get("agent_version") == "V5.0":
+            state["execution_pending"] = {"reason": reason, "next_action": "WAIT_FOR_NEW_INPUT",
+                "plan_calls": state["loop_state"].get("total_plan_calls", 0),
+                "input_count": state["loop_state"].get("input_count", 0)}
         if interrupted and state.get("agent_version") == "V5.0":
             add_trace(state, "SAFETY_PAUSE", {"status": "paused", "recoverable": False,
                       "failure_kind": reason, "next_action": "WAIT_FOR_NEW_INPUT"})
@@ -1143,7 +1195,7 @@ def _pause(state, reason, *, interrupted=False):
         "reason": reason, "next_status": state["followup_status"],
         "next_action": state.get("last_action"), "pending_tasks": state["pending_tasks"]})
     if interrupted and state.get("extraction_pending"):
-        message = "本轮回答尚未通过医学信息验证，候选内容和问题上下文已保留，请稍后继续。暂不将这些内容写为已确认事实。"
+        message = "本轮回答尚未通过医学信息验证，原始回答、已有候选和问题上下文已保留，请稍后继续。暂不将这些内容写为已确认事实。"
     elif interrupted:
         message = "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
     elif automatic:
@@ -1298,8 +1350,13 @@ def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
     state["agent_version"] = "V5.0" if enable_v50 else "V4.2" if enable_v42 else AGENT_VERSION
     if max_seconds is None:
         max_seconds = _request_timeout_seconds() if enable_v50 else MAX_REQUEST_SECONDS
+    input_count = sum(event.get("event") == "USER_MESSAGE" for event in state.get("trace") or [])
+    prior_plans = 0
     if enable_v50:
         previous_pending = state.get("execution_pending") or {}
+        if (state.get("followup_status") in {"processing", "interrupted"}
+                and previous_pending.get("input_count") == input_count):
+            prior_plans = max(0, int(previous_pending.get("plan_calls", 0)))
         state["v50_resume_attempts"] = (int(previous_pending.get("resume_attempts", 0)) + 1
                                         if state.get("followup_status") == "processing" else 0)
         max_seconds = min(float(max_seconds), _request_timeout_seconds())
@@ -1309,6 +1366,9 @@ def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
     state["loop_state"] = {"max_steps": max(0, min(int(max_steps), 32)), "steps": 0,
                            "model_calls": 0, "reason": "running",
                            "started_trace_index": len(state.get("trace") or [])}
+    if enable_v50:
+        state["loop_state"].update(total_plan_calls=prior_plans, input_count=input_count,
+                                  max_execution_plans=MAX_V50_EXECUTION_PLANS)
     add_trace(state, "AGENT_START", {"version": state["agent_version"],
               "trigger_type": state.get("trigger_type"), "status": state.get("followup_status")})
     if state.get("followup_status") == "escalated":
@@ -1339,6 +1399,8 @@ def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
         return safe_response
     if state.get("llm_v4_last_extraction_ok") is False:
         return _pause(state, "llm_extraction_failed", interrupted=True)
+    if enable_v50 and prior_plans >= MAX_V50_EXECUTION_PLANS:
+        return _pause(state, "execution_model_budget", interrupted=True)
     if (enable_v50 and state.get("completion_outcome") in {"completed", "partial"}
             and not state.get("report") and (state.get("execution_pending") or {}).get("reason") == "report_generation_failed"):
         from agent.clinical_report import build_clinical_report
@@ -1358,10 +1420,10 @@ def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
     if state.get("latest_patient_question"):
         state["v41_pending_patient_question"] = state["latest_patient_question"]
     deadline = monotonic() + max(0.0, min(float(max_seconds), 300.0 if enable_v50 else 120.0))
-    tool_results = deepcopy(_planner_payload(state, [])["previous_tool_results"]) if enable_v50 else []
+    tool_results = []
     attempted, repeat_feedback = set(), set()
     errors_this_turn = set()
-    planning_limit = MAX_AGENT_STEPS if enable_v50 else state["loop_state"]["max_steps"]
+    planning_limit = min(MAX_AGENT_STEPS, MAX_V50_EXECUTION_PLANS - prior_plans) if enable_v50 else state["loop_state"]["max_steps"]
     for step in range(planning_limit):
         if not enable_v50:
             state["loop_state"]["steps"] = step + 1
@@ -1385,6 +1447,8 @@ def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
                                 "回复和问题会独立验真；有response_validation反馈时据具体违规原因重新生成，不能重复不当内容。"
                                 "明确区分指南的一般目标/阈值、患者本次实际读数及历史记录；不将昨天或未来计划写成本次事实。")
         state["loop_state"]["model_calls"] = step + 1
+        if enable_v50:
+            state["loop_state"]["total_plan_calls"] += 1
         result = _call(call_json_model, state, "PLAN", planning_prompt,
                        _planner_payload(state, tool_results), deadline=deadline)
         if result is None:
@@ -1630,4 +1694,6 @@ def run_followup_agent(state, *, call_json_model=None, tool_registry=None,
         add_trace(state, "ASK_USER", {"goal": decision["goal"], "question": question,
                   "mode": state["agent_version"], "next_status": "waiting_for_user"})
         return _response(state, "\n\n".join(part for part in (reply, question) if part))
+    if enable_v50 and state["loop_state"]["total_plan_calls"] >= MAX_V50_EXECUTION_PLANS:
+        return _pause(state, "execution_model_budget", interrupted=True)
     return _pause(state, "internal_model_budget" if enable_v50 else "internal_tool_limit")

@@ -9,6 +9,7 @@ from agent.state_manager import add_trace
 from agent.trace_view import present_trace
 from backend.proactive import ProactiveEngine
 from backend.runtime_v5 import AgentRuntime, TERMINAL
+from backend.utils import today_local_date
 from database import repository, collaboration, tasks
 from database.connection import init_db, using_database
 from database.simulation import SimulationStore
@@ -22,6 +23,30 @@ class SimulationManager:
         self._jobs = set()
         self._guard = threading.Lock()
         self._slots = threading.BoundedSemaphore(4)
+
+    @staticmethod
+    def _recoverable_state(state):
+        if state.get("followup_status") not in {"processing", "interrupted"}:
+            return False
+        execution = state.get("execution_pending") or {}
+        if execution.get("next_action") == "WAIT_FOR_NEW_INPUT":
+            return False
+        pending = state.get("extraction_pending") or {}
+        if pending:
+            context = pending.get("context") or {}
+            return (pending.get("status") in {"awaiting_extraction", "awaiting_verification"}
+                    and pending.get("date") == today_local_date()
+                    and context.get("last_agent_question") == state.get("last_agent_question", "")
+                    and context.get("question_context") == (state.get("question_context") or {}))
+        return (bool(execution.get("next_action")) and execution.get("next_action") != "WAIT_FOR_NEW_INPUT"
+                and state.get("llm_v4_last_extraction_ok") is not False)
+
+    def can_resume(self, payload):
+        """Inspect authoritative isolated state, including older failed run records."""
+        if not payload.get("session_id") or payload.get("status") in {"completed", "budget_exhausted"}:
+            return False
+        with using_database(self.store.database(payload["run_id"])):
+            return self._recoverable_state(repository.read_session(payload["session_id"]) or {})
 
     def create(self, scenario_id, *, model_mode="live", trigger_type=None, max_turns=20, delay_seconds=1, background=True):
         scenario = get_scenario(scenario_id)
@@ -93,7 +118,7 @@ class SimulationManager:
                     scenario["required_topics"] = ["medication", "current_symptoms", "red_flags", "monitoring_plan"]
                 model = model_override or (ScriptedDemoModel() if payload["options"]["model_mode"] == "scripted" else None)
                 runtime = AgentRuntime(model)
-                payload["status"] = "running"
+                payload.update(status="running", recoverable=False)
                 self.store.save(payload, owner=owner)
                 engine = ProactiveEngine(runtime.start_task, max_tasks_per_tick=1)
                 if not payload.get("session_id"):
@@ -132,16 +157,31 @@ class SimulationManager:
                             raise TimeoutError("simulated_patient_model_timeout")
                     return result
 
-                patient = SimulatedPatient(payload["scenario_id"], model_call=patient_model_call)
+                patient = SimulatedPatient(payload["scenario_id"], model_call=patient_model_call,
+                                           scripted=payload["options"]["model_mode"] == "scripted",
+                                           disclosed_answers=payload["transcript"])
                 saved_state = repository.read_session(sid)
-                if (saved_state.get("followup_status") == "interrupted"
-                        and (saved_state.get("extraction_pending") or {}).get("status") == "awaiting_verification"):
-                    # An explicit restart/resume validates the original saved
-                    # answer before generating another simulated patient turn.
-                    runtime.turn(sid)
+                if saved_state.get("followup_status") == "interrupted" and self._recoverable_state(saved_state):
+                    # An explicit resume processes the saved stage exactly once;
+                    # an outage must return control instead of looping here.
+                    payload["resume_attempts"] = payload.get("resume_attempts", 0) + 1
+                    add_trace(saved_state, "EXECUTION_RESUMED", {"automatic": False, "attempt": payload["resume_attempts"],
+                              "next_action": "VERIFY_EXTRACT" if (saved_state.get("extraction_pending") or {}).get("status") == "awaiting_verification"
+                              else (saved_state.get("execution_pending") or {}).get("next_action", "EXTRACT")})
+                    repository.persist_session(sid, saved_state)
+                    resumed = runtime.turn(sid)
+                    waiting = payload["transcript"][-1] if payload["transcript"] else {}
+                    if (resumed.get("followup_status") != "interrupted" and waiting.get("role") == "patient"
+                            and waiting.get("execution") == "pending"):
+                        waiting["execution"] = "completed"
+                        resumed["simulation_turn_stage"] = "completed"
+                        repository.persist_session(sid, resumed)
+                    self.store.save(payload, owner=owner)
                 patient_turns = sum(t.get("role") == "patient" and t.get("execution") == "completed" for t in payload["transcript"])
                 for index in range(patient_turns, payload["options"]["max_turns"]):
                     state = repository.read_session(sid)
+                    if state.get("followup_status") == "interrupted":
+                        break
                     waiting = payload["transcript"][-1] if payload["transcript"] else {}
                     if waiting.get("role") == "patient" and waiting.get("execution") == "pending":
                         runtime.turn(sid, waiting["message"], turn_index=index)
@@ -186,14 +226,33 @@ class SimulationManager:
                     payload["transcript"].append({"role": "agent", "message": state.get("last_agent_response", ""),
                                                    "question_context": state.get("question_context", {})})
                 from simulation.evaluation import evaluate_run
+                recoverable = self._recoverable_state(state)
                 payload.update(status="completed" if state["followup_status"] in TERMINAL else
-                               "failed" if state["followup_status"] == "interrupted" else "budget_exhausted",
+                               "running" if recoverable else "failed" if state["followup_status"] == "interrupted" else "budget_exhausted",
+                               recoverable=recoverable,
                                followup_status=state["followup_status"], evaluation=evaluate_run(scenario, payload["transcript"], state))
                 result = runtime.task_result(sid)
                 tasks.sync_session_status(sid, result["status"], report_generated=result["report_generated"], station_messages=result["station_messages"])
                 payload["task"] = tasks.get_task(payload["task_id"])
+                if payload["status"] == "completed":
+                    # Historical failure evidence stays in the persisted Trace;
+                    # a recovered run should not display a stale current error.
+                    payload.pop("error", None)
+                    payload.pop("error_type", None)
         except Exception as error:
-            payload.update(status="failed", error_type=type(error).__name__, error="本次模拟执行未完成；记录已保存，请核对运行状态后重新开始。")
+            payload.update(status="failed", recoverable=False, error_type=type(error).__name__, error="本次模拟执行未完成；记录已保存，请核对运行状态后重新开始。")
+            # A crash after a durable checkpoint is resumable; validation and
+            # parameter errors without saved work remain failed.
+            if payload.get("session_id"):
+                with using_database(self.store.database(run_id)):
+                    state = copy.deepcopy(repository.read_session(payload["session_id"]) or {})
+                    if self._recoverable_state(state):
+                        state.update(followup_status="interrupted", interruption_reason="simulation_execution_failed")
+                        add_trace(state, "TASK_INTERRUPTED", {"reason": "simulation_execution_failed",
+                                  "error_type": type(error).__name__, "recoverable": True})
+                        repository.persist_session(payload["session_id"], state)
+                        payload.update(status="running", followup_status="interrupted", recoverable=True,
+                                       error="本次模拟已安全暂停，记录已保存；服务恢复后可以继续。")
         finally:
             stop.set()
             self.store.save(payload, owner=owner, release=True)
@@ -212,4 +271,7 @@ class SimulationManager:
 
     def recover(self):
         for payload in self.store.pending():
-            self.launch(payload["run_id"])
+            # A saved clinical pause requires explicit resume. Startup recovery
+            # repairs abandoned work without endlessly retrying an outage.
+            if not payload.get("recoverable"):
+                self.launch(payload["run_id"])

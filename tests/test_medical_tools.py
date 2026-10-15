@@ -220,6 +220,40 @@ class VisitAdviceTests(unittest.TestCase):
         self.assertEqual(result["reason"], ["模型输出触发处方药安全限制"])
         self.assertIn("请不要", result["advice"])
 
+    def test_safe_prescription_warning_does_not_change_visit_level(self):
+        for advice in (
+            "请不要增加药物剂量，继续记录血压。",
+            "不要自行减少剂量或停用降压药。",
+            "请向医生确认是否需要调整剂量。",
+        ):
+            with self.subTest(advice=advice):
+                result = tool_generate_visit_advice(
+                    patient_state(), call_json_model=lambda **kwargs: {
+                        "level": "home_followup", "advice": advice,
+                        "professional_review": False,
+                    },
+                )
+                self.assertEqual(result["level"], "home_followup")
+                self.assertEqual(result["advice"], advice)
+                self.assertFalse(result["professional_review"])
+
+    def test_safety_warning_does_not_hide_a_later_prescription_instruction(self):
+        for advice in (
+            "不要自行增加剂量，但是今晚多吃一片降压药。",
+            "请先咨询医生。不过可以把降压药停了。",
+        ):
+            with self.subTest(advice=advice):
+                result = tool_generate_visit_advice(
+                    patient_state(), call_json_model=lambda **kwargs: {
+                        "level": "home_followup", "advice": advice,
+                        "professional_review": False,
+                    },
+                )
+                self.assertEqual(result["level"], "contact_clinician")
+                self.assertTrue(result["professional_review"])
+                self.assertEqual(result["reason"], ["模型输出触发处方药安全限制"])
+                self.assertFalse(contains_unsafe_medication_instruction(result["advice"]))
+
     def test_unavailable_model_uses_existing_triage_fallback(self):
         for risk, expected in [("normal", "home_followup"), ("attention", "contact_clinician")]:
             with self.subTest(risk=risk):

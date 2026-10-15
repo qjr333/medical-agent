@@ -5,6 +5,8 @@ patient quotations remain authoritative. There is no conversation-turn limit.
 """
 
 import re
+import hashlib
+import json
 from copy import deepcopy
 
 from medical_tools.safety import DANGER_PATTERNS, valid_bp_measurement
@@ -259,7 +261,47 @@ def _validate_model_result(value):
     return value
 
 
+def _completion_signature(state, context):
+    """Identify the same verified evidence, not similar generated sentences."""
+    fields = ("agent_version", "trigger_type", "followup_reason", "required_topics", "risk_level",
+              "bp_systolic", "bp_diastolic", "medication_status", "medication_timing", "medication_date",
+              "symptoms", "denied_symptoms", "red_flags", "denied_red_flags", "symptom_status",
+              "red_flag_status", "measurement_context", "coverage", "topic_status", "deferred_topics",
+              "_semantic", "medication_guidance", "latest_patient_message", "latest_patient_question",
+              "v41_pending_patient_question", "question_context")
+    tools = [result for key in ("previous_tool_results", "tool_results_this_turn")
+             for result in context.get(key) or [] if isinstance(result, dict) and result.get("tool")]
+    decision = context.get("planner_decision") or {}
+    data = {"facts": {key: state.get(key) for key in fields},
+            "patient_statements": _patient_messages(state),
+            "input_count": sum(event.get("event") == "USER_MESSAGE" for event in state.get("trace") or []),
+            "patient_question_resolved": context.get("patient_question_resolved"),
+            "patient_question": context.get("patient_question"), "tools": tools,
+            "planner_intent": {key: decision.get(key) for key in ("goal", "reason")}}
+    return hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+
+
 def evaluate_completion(state, context, *, model_call):
+    """Reuse only a successful 'continue' assessment on identical evidence.
+
+    New patient input, scope, intent, risk, facts, unresolved questions or tool
+    results invalidate it. Failed reviews and terminal decisions are not cached.
+    """
+    context = context if isinstance(context, dict) else {}
+    v5 = state.get("agent_version") == "V5.0"
+    signature = _completion_signature(state, context) if v5 else None
+    previous = state.get("completion_evaluation") or {}
+    if (v5 and state.get("risk_level") != "high" and not state.get("red_flags")
+            and previous.get("outcome") == "continue" and previous.get("model_status") == "success"
+            and previous.get("_context_fingerprint") == signature):
+        return {**deepcopy(previous), "cache_hit": True}
+    result = _evaluate_completion(state, context, model_call=model_call)
+    if v5 and result.get("model_status") == "success" and result.get("outcome") == "continue":
+        result["_context_fingerprint"] = signature
+    return result
+
+
+def _evaluate_completion(state, context, *, model_call):
     """Return outcome/reason/pending_items/next_goal plus model_status.
 
     model_call(purpose, system_prompt, payload) is supplied by the existing

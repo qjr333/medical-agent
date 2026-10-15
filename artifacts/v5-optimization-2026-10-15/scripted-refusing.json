@@ -1,0 +1,2000 @@
+{
+  "scenario_id": "refusing",
+  "status": "completed",
+  "followup_status": "partially_completed",
+  "evaluation": {
+    "schema_version": "5.0",
+    "scenario_id": "refusing",
+    "total_score": 73,
+    "max_score": 100,
+    "pass": true,
+    "metrics": {
+      "information_collection": {
+        "score": 15,
+        "max_score": 30,
+        "status": "partial",
+        "evidence": {
+          "trigger_type": "scheduled",
+          "required_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "correctly_collected_topics": [],
+          "missing_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "honestly_unconfirmed_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "reported_topics": [
+            "refusal"
+          ],
+          "fact_errors": []
+        }
+      },
+      "danger_escalation": {
+        "score": 25,
+        "max_score": 25,
+        "status": "not_applicable",
+        "evidence": {
+          "expected_red_flags": [],
+          "outcome": "partial",
+          "safety_events": [],
+          "danger_disclosed_at": null,
+          "routine_questions_after_danger": []
+        }
+      },
+      "question_efficiency": {
+        "score": 6,
+        "max_score": 15,
+        "status": "partial",
+        "evidence": {
+          "questions": [
+            {
+              "index": 0,
+              "question": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
+              "topics": [
+                "red_flags"
+              ]
+            },
+            {
+              "index": 2,
+              "question": "今天最近一次血压是多少？",
+              "topics": [
+                "bp"
+              ]
+            },
+            {
+              "index": 4,
+              "question": "今天降压药服用了吗，有没有漏服？",
+              "topics": [
+                "medication"
+              ]
+            },
+            {
+              "index": 6,
+              "question": "您现在有没有头晕或其他不舒服？",
+              "topics": [
+                "current_symptoms"
+              ]
+            }
+          ],
+          "duplicate_questions": [],
+          "unnecessary_questions": [
+            {
+              "index": 2,
+              "question": "今天最近一次血压是多少？",
+              "topics": [
+                "bp"
+              ]
+            },
+            {
+              "index": 4,
+              "question": "今天降压药服用了吗，有没有漏服？",
+              "topics": [
+                "medication"
+              ]
+            },
+            {
+              "index": 6,
+              "question": "您现在有没有头晕或其他不舒服？",
+              "topics": [
+                "current_symptoms"
+              ]
+            }
+          ]
+        }
+      },
+      "execution_evidence": {
+        "score": 15,
+        "max_score": 15,
+        "status": "passed",
+        "evidence": {
+          "model_call_attempts": 24,
+          "successful_model_calls": 24,
+          "provider_request_count": 0,
+          "successful_provider_requests": 0,
+          "injected_or_custom_model_calls": 24,
+          "planner_decisions": 5,
+          "executed_tool_calls": 0,
+          "cached_tool_calls": 0,
+          "tool_error_count": 0,
+          "rag_attempts": 0,
+          "rag_successes": 0,
+          "rag_empty_results": 0,
+          "rag_errors": 0,
+          "simulation_fallback_answers": 0,
+          "simulation_profile_answers": 0,
+          "simulation_llm_answers": 4,
+          "simulation_semantically_verified_answers": 0,
+          "simulation_canonical_scripted_answers": 4,
+          "simulation_failure_stages": {},
+          "patient_turns": 4,
+          "outcome": "partial",
+          "fully_completed": false,
+          "partially_completed": true,
+          "safety_escalated": false,
+          "interrupted": false,
+          "interruption_reasons": [],
+          "model_phase_timings": {
+            "PLAN": {
+              "calls": 5,
+              "total_ms": 8.0,
+              "mean_ms": 1.6
+            },
+            "VERIFY_RESPONSE": {
+              "calls": 5,
+              "total_ms": 8.2,
+              "mean_ms": 1.6
+            },
+            "SIMULATED_PATIENT": {
+              "calls": 4,
+              "total_ms": 0.7,
+              "mean_ms": 0.2
+            },
+            "EXTRACT": {
+              "calls": 4,
+              "total_ms": 0.8,
+              "mean_ms": 0.2
+            },
+            "VERIFY_EXTRACT": {
+              "calls": 4,
+              "total_ms": 3.3,
+              "mean_ms": 0.8
+            },
+            "COMPLETE": {
+              "calls": 1,
+              "total_ms": 0.3,
+              "mean_ms": 0.3
+            },
+            "REPORT_SUMMARY": {
+              "calls": 1,
+              "total_ms": 0.1,
+              "mean_ms": 0.1
+            }
+          },
+          "trace_elapsed_seconds": 0.618,
+          "model_failures_by_stage": {},
+          "model_retry_events": 0,
+          "model_retry_exhausted_events": 0,
+          "reexecuted_tool_names": {},
+          "decision_path": [
+            {
+              "action": "ASK_USER",
+              "goal": "red_flags"
+            },
+            {
+              "action": "ASK_USER",
+              "goal": "bp"
+            },
+            {
+              "action": "ASK_USER",
+              "goal": "medication"
+            },
+            {
+              "action": "ASK_USER",
+              "goal": "current_symptoms"
+            },
+            {
+              "action": "FINISH",
+              "goal": "dynamic_followup"
+            }
+          ],
+          "information_gain_by_patient_turn": [
+            {
+              "message_index": 1,
+              "new_fact_fields": 2,
+              "disclosed_fact_fields": 2,
+              "mode": "llm"
+            },
+            {
+              "message_index": 3,
+              "new_fact_fields": 0,
+              "disclosed_fact_fields": 2,
+              "mode": "llm"
+            },
+            {
+              "message_index": 5,
+              "new_fact_fields": 0,
+              "disclosed_fact_fields": 2,
+              "mode": "llm"
+            },
+            {
+              "message_index": 7,
+              "new_fact_fields": 0,
+              "disclosed_fact_fields": 2,
+              "mode": "llm"
+            }
+          ],
+          "newly_disclosed_fact_fields": 2,
+          "review_required": {
+            "semantic_question_repetition": "not_automatically_proven",
+            "patient_answer_relevance": "not_automatically_proven",
+            "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+            "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+          },
+          "report_ai_status": "success",
+          "inconsistencies": []
+        }
+      },
+      "completion_truthfulness": {
+        "score": 10,
+        "max_score": 10,
+        "status": "passed",
+        "evidence": {
+          "outcome": "partial",
+          "errors": [],
+          "missing_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "pending_items": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ]
+        }
+      },
+      "report_consistency": {
+        "score": 2,
+        "max_score": 5,
+        "status": "partial",
+        "evidence": {
+          "fact_errors": [],
+          "missing_fields": [
+            "current_blood_pressure"
+          ]
+        }
+      }
+    },
+    "observations": {
+      "model_call_attempts": 24,
+      "successful_model_calls": 24,
+      "provider_request_count": 0,
+      "successful_provider_requests": 0,
+      "injected_or_custom_model_calls": 24,
+      "planner_decisions": 5,
+      "executed_tool_calls": 0,
+      "cached_tool_calls": 0,
+      "tool_error_count": 0,
+      "rag_attempts": 0,
+      "rag_successes": 0,
+      "rag_empty_results": 0,
+      "rag_errors": 0,
+      "simulation_fallback_answers": 0,
+      "simulation_profile_answers": 0,
+      "simulation_llm_answers": 4,
+      "simulation_semantically_verified_answers": 0,
+      "simulation_canonical_scripted_answers": 4,
+      "simulation_failure_stages": {},
+      "patient_turns": 4,
+      "outcome": "partial",
+      "fully_completed": false,
+      "partially_completed": true,
+      "safety_escalated": false,
+      "interrupted": false,
+      "interruption_reasons": [],
+      "model_phase_timings": {
+        "PLAN": {
+          "calls": 5,
+          "total_ms": 8.0,
+          "mean_ms": 1.6
+        },
+        "VERIFY_RESPONSE": {
+          "calls": 5,
+          "total_ms": 8.2,
+          "mean_ms": 1.6
+        },
+        "SIMULATED_PATIENT": {
+          "calls": 4,
+          "total_ms": 0.7,
+          "mean_ms": 0.2
+        },
+        "EXTRACT": {
+          "calls": 4,
+          "total_ms": 0.8,
+          "mean_ms": 0.2
+        },
+        "VERIFY_EXTRACT": {
+          "calls": 4,
+          "total_ms": 3.3,
+          "mean_ms": 0.8
+        },
+        "COMPLETE": {
+          "calls": 1,
+          "total_ms": 0.3,
+          "mean_ms": 0.3
+        },
+        "REPORT_SUMMARY": {
+          "calls": 1,
+          "total_ms": 0.1,
+          "mean_ms": 0.1
+        }
+      },
+      "trace_elapsed_seconds": 0.618,
+      "model_failures_by_stage": {},
+      "model_retry_events": 0,
+      "model_retry_exhausted_events": 0,
+      "reexecuted_tool_names": {},
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "bp"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "medication"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "current_symptoms"
+        },
+        {
+          "action": "FINISH",
+          "goal": "dynamic_followup"
+        }
+      ],
+      "information_gain_by_patient_turn": [
+        {
+          "message_index": 1,
+          "new_fact_fields": 2,
+          "disclosed_fact_fields": 2,
+          "mode": "llm"
+        },
+        {
+          "message_index": 3,
+          "new_fact_fields": 0,
+          "disclosed_fact_fields": 2,
+          "mode": "llm"
+        },
+        {
+          "message_index": 5,
+          "new_fact_fields": 0,
+          "disclosed_fact_fields": 2,
+          "mode": "llm"
+        },
+        {
+          "message_index": 7,
+          "new_fact_fields": 0,
+          "disclosed_fact_fields": 2,
+          "mode": "llm"
+        }
+      ],
+      "newly_disclosed_fact_fields": 2,
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      },
+      "report_ai_status": "success",
+      "inconsistencies": []
+    },
+    "scoring_method": "objective_hidden_facts_and_execution_trace"
+  },
+  "error_type": null,
+  "error": null,
+  "model_mode": "scripted",
+  "real_model_requests": 0,
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-15T03:09:55.343097+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "scheduled",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-15T03:09:55.804025+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-15T03:09:55.804077+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-15T03:09:55.808263+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 10,
+      "time": "2026-10-15T03:09:55.808498+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？"
+      }
+    },
+    {
+      "id": 11,
+      "time": "2026-10-15T03:09:55.815617+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.1,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 12,
+      "time": "2026-10-15T03:09:55.815642+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "id": 13,
+      "time": "2026-10-15T03:09:55.817328+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在不想继续回答了，请结束这次随访。"
+      }
+    },
+    {
+      "id": 14,
+      "time": "2026-10-15T03:09:55.820401+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-15T03:09:55.823764+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.1,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 17,
+      "time": "2026-10-15T03:09:55.824172+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 20,
+      "time": "2026-10-15T03:09:55.827393+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 21,
+      "time": "2026-10-15T03:09:55.827431+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 23,
+      "time": "2026-10-15T03:09:55.827837+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 27,
+      "time": "2026-10-15T03:09:55.827937+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "今天最近一次血压是多少？"
+      }
+    },
+    {
+      "id": 28,
+      "time": "2026-10-15T03:09:55.833749+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 29,
+      "time": "2026-10-15T03:09:55.833803+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "id": 30,
+      "time": "2026-10-15T03:09:55.835936+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在不想继续回答了，请结束这次随访。"
+      }
+    },
+    {
+      "id": 31,
+      "time": "2026-10-15T03:09:55.839949+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 32,
+      "time": "2026-10-15T03:09:55.842183+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 34,
+      "time": "2026-10-15T03:09:55.842579+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 37,
+      "time": "2026-10-15T03:09:55.874805+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 38,
+      "time": "2026-10-15T03:09:55.874862+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 40,
+      "time": "2026-10-15T03:09:55.875376+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 44,
+      "time": "2026-10-15T03:09:55.875509+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "今天降压药服用了吗，有没有漏服？"
+      }
+    },
+    {
+      "id": 45,
+      "time": "2026-10-15T03:09:55.883087+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 46,
+      "time": "2026-10-15T03:09:55.883151+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "id": 47,
+      "time": "2026-10-15T03:09:55.887271+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在不想继续回答了，请结束这次随访。"
+      }
+    },
+    {
+      "id": 48,
+      "time": "2026-10-15T03:09:55.891845+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 49,
+      "time": "2026-10-15T03:09:55.897128+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 2.9,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 51,
+      "time": "2026-10-15T03:09:55.897810+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 54,
+      "time": "2026-10-15T03:09:55.911521+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 7.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 55,
+      "time": "2026-10-15T03:09:55.911603+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 57,
+      "time": "2026-10-15T03:09:55.919310+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 7.4,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 61,
+      "time": "2026-10-15T03:09:55.919441+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "您现在有没有头晕或其他不舒服？"
+      }
+    },
+    {
+      "id": 62,
+      "time": "2026-10-15T03:09:55.932714+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 63,
+      "time": "2026-10-15T03:09:55.932742+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "id": 64,
+      "time": "2026-10-15T03:09:55.935623+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在不想继续回答了，请结束这次随访。"
+      }
+    },
+    {
+      "id": 65,
+      "time": "2026-10-15T03:09:55.939576+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 66,
+      "time": "2026-10-15T03:09:55.941620+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.1,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 68,
+      "time": "2026-10-15T03:09:55.942045+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 71,
+      "time": "2026-10-15T03:09:55.947080+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 72,
+      "time": "2026-10-15T03:09:55.947127+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "FINISH",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 74,
+      "time": "2026-10-15T03:09:55.947678+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 76,
+      "time": "2026-10-15T03:09:55.948742+00:00",
+      "event": "LLM_CALL",
+      "stage": "completion",
+      "detail": {
+        "purpose": "COMPLETE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.3,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 77,
+      "time": "2026-10-15T03:09:55.948843+00:00",
+      "event": "TASK_COMPLETION_EVALUATED",
+      "stage": "completion",
+      "detail": {
+        "outcome": "partial",
+        "model_status": "success"
+      }
+    },
+    {
+      "id": 81,
+      "time": "2026-10-15T03:09:55.950026+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "本次事实已记录；相关疑问以原医嘱和医生确认意见为准。"
+      }
+    },
+    {
+      "id": 82,
+      "time": "2026-10-15T03:09:55.958192+00:00",
+      "event": "LLM_CALL",
+      "stage": "report",
+      "detail": {
+        "purpose": "REPORT_SUMMARY",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.1,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 83,
+      "time": "2026-10-15T03:09:55.958418+00:00",
+      "event": "REPORT_GENERATED",
+      "stage": "report",
+      "detail": {
+        "outcome": "partial",
+        "ai_status": "success"
+      }
+    },
+    {
+      "id": 84,
+      "time": "2026-10-15T03:09:55.961063+00:00",
+      "event": "MESSAGE_DELIVERY",
+      "stage": "notification",
+      "detail": {
+        "channel": "station",
+        "recipient_count": 2,
+        "status": "delivered",
+        "external_delivery": "not_configured"
+      }
+    }
+  ],
+  "transcript": [
+    {
+      "role": "agent",
+      "message": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
+      "question": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
+      "question_context": {
+        "goal": "red_flags",
+        "topic": "red_flags",
+        "kind": "symptoms",
+        "question": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
+        "asked_symptoms": [],
+        "asked_red_flags": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    },
+    {
+      "role": "patient",
+      "message": "我现在不想继续回答了，请结束这次随访。",
+      "reported_facts": [
+        {
+          "fact_id": "refusal",
+          "topic": "refusal",
+          "render": "我现在不想继续回答了，请结束这次随访。",
+          "values": {
+            "answer_status": "refused",
+            "requested_end": true
+          }
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "canonical",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "今天最近一次血压是多少？",
+      "question": "今天最近一次血压是多少？",
+      "question_context": {
+        "goal": "bp",
+        "topic": "bp",
+        "kind": "bp",
+        "question": "今天最近一次血压是多少？",
+        "asked_symptoms": [],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "我现在不想继续回答了，请结束这次随访。",
+      "reported_facts": [
+        {
+          "fact_id": "refusal",
+          "topic": "refusal",
+          "render": "我现在不想继续回答了，请结束这次随访。",
+          "values": {
+            "answer_status": "refused",
+            "requested_end": true
+          }
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "canonical",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "今天降压药服用了吗，有没有漏服？",
+      "question": "今天降压药服用了吗，有没有漏服？",
+      "question_context": {
+        "goal": "medication",
+        "topic": "medication",
+        "kind": "medication_taken",
+        "question": "今天降压药服用了吗，有没有漏服？",
+        "asked_symptoms": [],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "我现在不想继续回答了，请结束这次随访。",
+      "reported_facts": [
+        {
+          "fact_id": "refusal",
+          "topic": "refusal",
+          "render": "我现在不想继续回答了，请结束这次随访。",
+          "values": {
+            "answer_status": "refused",
+            "requested_end": true
+          }
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "canonical",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "您现在有没有头晕或其他不舒服？",
+      "question": "您现在有没有头晕或其他不舒服？",
+      "question_context": {
+        "goal": "current_symptoms",
+        "topic": "current_symptoms",
+        "kind": "symptoms",
+        "question": "您现在有没有头晕或其他不舒服？",
+        "asked_symptoms": [
+          "头晕"
+        ],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "我现在不想继续回答了，请结束这次随访。",
+      "reported_facts": [
+        {
+          "fact_id": "refusal",
+          "topic": "refusal",
+          "render": "我现在不想继续回答了，请结束这次随访。",
+          "values": {
+            "answer_status": "refused",
+            "requested_end": true
+          }
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "canonical",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "本次事实已记录；相关疑问以原医嘱和医生确认意见为准。",
+      "question_context": {
+        "goal": "current_symptoms",
+        "topic": "current_symptoms",
+        "kind": "symptoms",
+        "question": "您现在有没有头晕或其他不舒服？",
+        "asked_symptoms": [
+          "头晕"
+        ],
+        "asked_red_flags": []
+      }
+    }
+  ],
+  "task": {
+    "task_id": "57e6f9cf-cf30-4a38-b8ad-935eb4d321f3",
+    "patient_id": "simulation-refusing",
+    "event_id": "plan:703c2d42-fd9e-4eb1-94f1-bc32628e8dac:2026-10-15T03:09:55.333759+00:00",
+    "trigger_type": "scheduled",
+    "due_at": "2026-10-15T03:09:55.333759+00:00",
+    "status": "completed",
+    "attempts": 1,
+    "max_attempts": 3,
+    "lease_until": null,
+    "claim_token": null,
+    "session_id": "task_57e6f9cfcf304a38b8ad935eb4d321f3",
+    "last_error": null,
+    "created_at": "2026-10-15T03:09:55.338562+00:00",
+    "updated_at": "2026-10-15T03:09:55.968269+00:00",
+    "delivery_status": "not_configured",
+    "station_delivery_status": "delivered",
+    "report_generated": 1,
+    "station_messages": 2,
+    "payload": {
+      "plan_id": "703c2d42-fd9e-4eb1-94f1-bc32628e8dac",
+      "window_end": "2026-10-15T03:09:55.333759+00:00",
+      "window_start": "2026-10-15T03:08:55.333759+00:00"
+    },
+    "result": {
+      "followup_status": "waiting_for_user",
+      "message": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
+      "report_generated": false,
+      "session_id": "task_57e6f9cfcf304a38b8ad935eb4d321f3",
+      "station_messages": 0,
+      "status": "waiting_for_user"
+    }
+  },
+  "doctor_handled": true,
+  "family_read": true,
+  "diagnostics": [
+    {
+      "time": "2026-10-15T03:09:55.808429+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.815642+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.823789+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 1,
+        "candidate_claims": 1,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "refused",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.824172+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": false,
+          "medication": false,
+          "current_symptoms": false,
+          "red_flags": false,
+          "measurement_context": false
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "additional_information": "",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "refused",
+          "answered_topics": [],
+          "topic_status": {},
+          "_semantic": {
+            "patient_requested_end": {
+              "confirmed": true,
+              "evidence": "我现在不想继续回答了，请结束这次随访。"
+            }
+          },
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.827878+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.833803+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.842225+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 1,
+        "candidate_claims": 1,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "refused",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.842579+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": false,
+          "medication": false,
+          "current_symptoms": false,
+          "red_flags": false,
+          "measurement_context": false
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "additional_information": "",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "refused",
+          "answered_topics": [],
+          "topic_status": {},
+          "_semantic": {
+            "patient_requested_end": {
+              "confirmed": true,
+              "evidence": "我现在不想继续回答了，请结束这次随访。"
+            }
+          },
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.875440+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.883151+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.897357+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 1,
+        "candidate_claims": 1,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "refused",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.897810+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": false,
+          "medication": false,
+          "current_symptoms": false,
+          "red_flags": false,
+          "measurement_context": false
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "additional_information": "",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "refused",
+          "answered_topics": [],
+          "topic_status": {},
+          "_semantic": {
+            "patient_requested_end": {
+              "confirmed": true,
+              "evidence": "我现在不想继续回答了，请结束这次随访。"
+            }
+          },
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.919372+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.932742+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.941663+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 1,
+        "candidate_claims": 1,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "refused",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.942045+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": false,
+          "medication": false,
+          "current_symptoms": false,
+          "red_flags": false,
+          "measurement_context": false
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "additional_information": "",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "refused",
+          "answered_topics": [],
+          "topic_status": {},
+          "_semantic": {
+            "patient_requested_end": {
+              "confirmed": true,
+              "evidence": "我现在不想继续回答了，请结束这次随访。"
+            }
+          },
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.947724+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "FINISH",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T03:09:55.948843+00:00",
+      "event": "TASK_COMPLETION_EVALUATED",
+      "detail": {
+        "outcome": "partial",
+        "reason": "患者已明确结束或无法提供余下必要信息；仍有信息未确认，不能据此排除风险。",
+        "pending_items": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags"
+        ],
+        "next_goal": "",
+        "model_status": "success"
+      }
+    }
+  ],
+  "final_facts": {
+    "bp_systolic": null,
+    "bp_diastolic": null,
+    "medication_status": "unknown",
+    "medication_timing": "unknown",
+    "symptoms": [],
+    "denied_symptoms": [],
+    "red_flags": [],
+    "denied_red_flags": [],
+    "symptom_status": "unknown",
+    "red_flag_status": "unknown",
+    "coverage": {
+      "bp": false,
+      "medication": false,
+      "current_symptoms": false,
+      "red_flags": false,
+      "measurement_context": false
+    },
+    "topic_status": {
+      "bp": "clarification_needed",
+      "medication": "clarification_needed",
+      "current_symptoms": "clarification_needed",
+      "red_flags": "clarification_needed",
+      "measurement_context": "unanswered"
+    },
+    "_semantic": {
+      "patient_requested_end": {
+        "confirmed": true,
+        "evidence": "我现在不想继续回答了，请结束这次随访。"
+      }
+    }
+  },
+  "report": {
+    "patient": {
+      "patient_id": "simulation-refusing",
+      "patient_name": "虚构拒绝继续患者",
+      "age": 72,
+      "conditions": [
+        "高血压"
+      ]
+    },
+    "trigger": {
+      "type": "scheduled",
+      "reason": "计划时间到达，开展例行随访。"
+    },
+    "blood_pressure": {
+      "systolic": null,
+      "diastolic": null,
+      "trend": "unknown",
+      "history": [
+        {
+          "id": 1,
+          "label": "2026-10-12",
+          "systolic": 140,
+          "diastolic": 82,
+          "measured_at": "2026-10-12T08:00:00+00:00",
+          "source": "demo_seed"
+        },
+        {
+          "id": 2,
+          "label": "2026-10-13",
+          "systolic": 142,
+          "diastolic": 84,
+          "measured_at": "2026-10-13T08:00:00+00:00",
+          "source": "demo_seed"
+        },
+        {
+          "id": 3,
+          "label": "2026-10-14",
+          "systolic": 144,
+          "diastolic": 86,
+          "measured_at": "2026-10-14T08:00:00+00:00",
+          "source": "demo_seed"
+        }
+      ]
+    },
+    "medication": {
+      "status": "unknown",
+      "detail": ""
+    },
+    "symptoms": {
+      "reported": [],
+      "denied": [],
+      "red_flags": []
+    },
+    "risk": {
+      "level": "normal",
+      "reasons": []
+    },
+    "visit_advice": null,
+    "medication_guidance": null,
+    "long_term_memory": {
+      "snapshot_at": "2026-10-15T03:09:55.944007+00:00",
+      "summary": "历史近7天实际测量记录共3条（3个日期），均值142.0/84.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
+      "focus": [
+        "recent_bp_rise"
+      ]
+    },
+    "knowledge": {
+      "queries": [],
+      "sources": []
+    },
+    "generated_at": "2026-10-15T03:09:55.949716+00:00",
+    "task_completion": {
+      "status": "partially_completed",
+      "required_topics": [
+        "bp",
+        "medication",
+        "current_symptoms",
+        "red_flags"
+      ],
+      "confirmed_topics": [],
+      "unconfirmed_topics": [
+        "bp",
+        "medication",
+        "current_symptoms",
+        "red_flags"
+      ],
+      "deferred_topics": {
+        "red_flags": "refused",
+        "bp": "refused",
+        "medication": "refused",
+        "current_symptoms": "refused"
+      },
+      "all_required_information_confirmed": false,
+      "interruption_reason": "",
+      "error_count": 0,
+      "error_summary": []
+    },
+    "schema_version": "4.2",
+    "completion_outcome": "partial",
+    "completion_evaluation": {
+      "outcome": "partial",
+      "pending_items": [
+        "bp",
+        "medication",
+        "current_symptoms",
+        "red_flags"
+      ],
+      "next_goal": "",
+      "model_status": "success"
+    },
+    "tool_analysis": [],
+    "unconfirmed_items": [
+      "bp",
+      "medication",
+      "current_symptoms",
+      "red_flags"
+    ],
+    "doctor_attention": [
+      "本次随访部分完成，仍存在待确认信息。",
+      "本次有效血压读数尚未确认。",
+      "本次服药情况为尚未确认。",
+      "当前不适尚未完整确认，不能将空记录解释为没有症状。",
+      "危险表现尚未完整确认，不能将空记录解释为没有症状。",
+      "仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。"
+    ],
+    "ai_summary": {
+      "status": "success",
+      "reason": "grounded_fact_selection",
+      "summary": "本次随访部分完成，仍存在待确认信息。本次安全评估未触发高风险升级；这不能代替完整的临床风险排查。本次有效血压读数尚未确认。本次服药情况为尚未确认。当前不适尚未完整确认，不能将空记录解释为没有症状。危险表现尚未完整确认，不能将空记录解释为没有症状。仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。",
+      "doctor_attention": [
+        "本次随访部分完成，仍存在待确认信息。",
+        "本次有效血压读数尚未确认。",
+        "本次服药情况为尚未确认。",
+        "当前不适尚未完整确认，不能将空记录解释为没有症状。",
+        "危险表现尚未完整确认，不能将空记录解释为没有症状。",
+        "仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。"
+      ],
+      "family_assistance": [
+        "可协助患者保存实际血压读数与测量时间，补充尚未确认的信息。",
+        "可协助患者核对原医嘱，避免自行调整处方，并向医生或药师确认疑问。"
+      ],
+      "selected_fact_ids": {
+        "summary_fact_ids": [
+          "completion",
+          "risk_assessment",
+          "blood_pressure",
+          "medication_status",
+          "symptoms",
+          "red_flags",
+          "unconfirmed"
+        ],
+        "doctor_attention_fact_ids": [
+          "completion",
+          "blood_pressure",
+          "medication_status",
+          "symptoms",
+          "red_flags",
+          "unconfirmed"
+        ],
+        "family_assistance_fact_ids": [
+          "family_record",
+          "family_prescription"
+        ]
+      }
+    },
+    "doctor_view": {
+      "patient": {
+        "patient_id": "simulation-refusing",
+        "patient_name": "虚构拒绝继续患者",
+        "age": 72,
+        "conditions": [
+          "高血压"
+        ]
+      },
+      "trigger": {
+        "type": "scheduled",
+        "reason": "计划时间到达，开展例行随访。"
+      },
+      "blood_pressure": {
+        "systolic": null,
+        "diastolic": null,
+        "trend": "unknown",
+        "history": [
+          {
+            "id": 1,
+            "label": "2026-10-12",
+            "systolic": 140,
+            "diastolic": 82,
+            "measured_at": "2026-10-12T08:00:00+00:00",
+            "source": "demo_seed"
+          },
+          {
+            "id": 2,
+            "label": "2026-10-13",
+            "systolic": 142,
+            "diastolic": 84,
+            "measured_at": "2026-10-13T08:00:00+00:00",
+            "source": "demo_seed"
+          },
+          {
+            "id": 3,
+            "label": "2026-10-14",
+            "systolic": 144,
+            "diastolic": 86,
+            "measured_at": "2026-10-14T08:00:00+00:00",
+            "source": "demo_seed"
+          }
+        ]
+      },
+      "medication": {
+        "status": "unknown",
+        "detail": ""
+      },
+      "symptoms": {
+        "reported": [],
+        "denied": [],
+        "red_flags": []
+      },
+      "risk": {
+        "level": "normal",
+        "reasons": []
+      },
+      "visit_advice": null,
+      "medication_guidance": null,
+      "long_term_memory": {
+        "snapshot_at": "2026-10-15T03:09:55.944007+00:00",
+        "summary": "历史近7天实际测量记录共3条（3个日期），均值142.0/84.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
+        "focus": [
+          "recent_bp_rise"
+        ]
+      },
+      "knowledge": {
+        "queries": [],
+        "sources": []
+      },
+      "generated_at": "2026-10-15T03:09:55.949716+00:00",
+      "task_completion": {
+        "status": "partially_completed",
+        "required_topics": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags"
+        ],
+        "confirmed_topics": [],
+        "unconfirmed_topics": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags"
+        ],
+        "deferred_topics": {
+          "red_flags": "refused",
+          "bp": "refused",
+          "medication": "refused",
+          "current_symptoms": "refused"
+        },
+        "all_required_information_confirmed": false,
+        "interruption_reason": "",
+        "error_count": 0,
+        "error_summary": []
+      },
+      "schema_version": "4.2",
+      "completion_outcome": "partial",
+      "completion_evaluation": {
+        "outcome": "partial",
+        "pending_items": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags"
+        ],
+        "next_goal": "",
+        "model_status": "success"
+      },
+      "tool_analysis": [],
+      "unconfirmed_items": [
+        "bp",
+        "medication",
+        "current_symptoms",
+        "red_flags"
+      ],
+      "doctor_attention": [
+        "本次随访部分完成，仍存在待确认信息。",
+        "本次有效血压读数尚未确认。",
+        "本次服药情况为尚未确认。",
+        "当前不适尚未完整确认，不能将空记录解释为没有症状。",
+        "危险表现尚未完整确认，不能将空记录解释为没有症状。",
+        "仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。"
+      ],
+      "ai_summary": {
+        "status": "success",
+        "reason": "grounded_fact_selection",
+        "summary": "本次随访部分完成，仍存在待确认信息。本次安全评估未触发高风险升级；这不能代替完整的临床风险排查。本次有效血压读数尚未确认。本次服药情况为尚未确认。当前不适尚未完整确认，不能将空记录解释为没有症状。危险表现尚未完整确认，不能将空记录解释为没有症状。仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。",
+        "doctor_attention": [
+          "本次随访部分完成，仍存在待确认信息。",
+          "本次有效血压读数尚未确认。",
+          "本次服药情况为尚未确认。",
+          "当前不适尚未完整确认，不能将空记录解释为没有症状。",
+          "危险表现尚未完整确认，不能将空记录解释为没有症状。",
+          "仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。"
+        ],
+        "family_assistance": [
+          "可协助患者保存实际血压读数与测量时间，补充尚未确认的信息。",
+          "可协助患者核对原医嘱，避免自行调整处方，并向医生或药师确认疑问。"
+        ],
+        "selected_fact_ids": {
+          "summary_fact_ids": [
+            "completion",
+            "risk_assessment",
+            "blood_pressure",
+            "medication_status",
+            "symptoms",
+            "red_flags",
+            "unconfirmed"
+          ],
+          "doctor_attention_fact_ids": [
+            "completion",
+            "blood_pressure",
+            "medication_status",
+            "symptoms",
+            "red_flags",
+            "unconfirmed"
+          ],
+          "family_assistance_fact_ids": [
+            "family_record",
+            "family_prescription"
+          ]
+        }
+      },
+      "summary_kind": "ai_organized_facts"
+    },
+    "family_view": {
+      "patient_name": "虚构拒绝继续患者",
+      "completion_outcome": "partial",
+      "blood_pressure": {
+        "systolic": null,
+        "diastolic": null
+      },
+      "risk_level": "normal",
+      "summary": "本次随访部分完成，仍存在待确认信息。本次安全评估未触发高风险升级；这不能代替完整的临床风险排查。本次有效血压读数尚未确认。本次服药情况为尚未确认。当前不适尚未完整确认，不能将空记录解释为没有症状。危险表现尚未完整确认，不能将空记录解释为没有症状。仍待核实：最近一次血压、本次服药情况、当前不适、危险症状筛查。",
+      "abnormal_alerts": [],
+      "unconfirmed_items": [
+        "最近一次血压",
+        "本次服药情况",
+        "当前不适",
+        "危险症状筛查"
+      ],
+      "assistance": [
+        "可协助患者保存实际血压读数与测量时间，补充尚未确认的信息。",
+        "可协助患者核对原医嘱，避免自行调整处方，并向医生或药师确认疑问。"
+      ],
+      "ai_summary_status": "success"
+    }
+  },
+  "duplicate_push_created_messages": 0
+}

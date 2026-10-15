@@ -1,7 +1,10 @@
 """Objective simulation evaluation; hidden fixtures and execution evidence win."""
 
 import re
+import json
+from collections import Counter
 from copy import deepcopy
+from datetime import datetime
 
 from agent.completion import completion_requirements
 from .patient import RED_FLAGS, _catalog, _source_subset, question_topics, resolve_scenario
@@ -202,6 +205,39 @@ def _execution_observations(trace, rows, state):
             inconsistencies.append({"trace_call_index": index, "code": "provider_call_evidence_mismatch"})
     tool_calls = [entry.get("detail") or {} for entry in trace if entry.get("event") == "V4_TOOL_CALL"]
     rag = [entry.get("detail") or {} for entry in trace if entry.get("event") == "RAG_RETRIEVAL"]
+    timings = {}
+    for call in calls:
+        duration = call.get("duration_ms")
+        if isinstance(duration, (int, float)) and not isinstance(duration, bool) and duration >= 0:
+            timings.setdefault(str(call.get("purpose") or "unknown"), []).append(duration)
+    phase_timings = {purpose: {"calls": len(values), "total_ms": round(sum(values), 1),
+                              "mean_ms": round(sum(values) / len(values), 1)}
+                     for purpose, values in timings.items()}
+    timestamps = []
+    for entry in trace:
+        try:
+            timestamps.append(datetime.fromisoformat(str(entry.get("time")).replace("Z", "+00:00")).timestamp())
+        except (ValueError, TypeError, OverflowError, OSError):
+            pass
+    seen_fact_fields, information_gain = set(), []
+    for index, row in enumerate(rows):
+        if row["role"] != "patient":
+            continue
+        disclosed = set()
+        for fact in row.get("reported_facts") or []:
+            if not isinstance(fact, dict) or not isinstance(fact.get("values"), dict):
+                continue
+            disclosed.update((fact.get("fact_id"), key, json.dumps(value, sort_keys=True, ensure_ascii=False))
+                             for key, value in fact["values"].items())
+        new = disclosed - seen_fact_fields
+        information_gain.append({"message_index": index, "new_fact_fields": len(new),
+                                 "disclosed_fact_fields": len(disclosed), "mode": row.get("mode")})
+        seen_fact_fields.update(disclosed)
+    executed_names = Counter(call.get("tool") for call in tool_calls if call.get("executed") is True and call.get("tool"))
+    decisions = [{key: (entry.get("detail") or {}).get(key) for key in ("action", "goal")}
+                 for entry in trace if entry.get("event") == "LLM_DECISION"]
+    outcome = state.get("completion_outcome") or {"partially_completed": "partial"}.get(
+        state.get("followup_status"), state.get("followup_status"))
     return {
         "model_call_attempts": sum(call.get("called") is True for call in calls),
         "successful_model_calls": sum(call.get("called") is True and call.get("ok") is True for call in calls),
@@ -219,6 +255,29 @@ def _execution_observations(trace, rows, state):
         "simulation_fallback_answers": sum(row["role"] == "patient" and row.get("mode") == "fallback" for row in rows),
         "simulation_profile_answers": sum(row["role"] == "patient" and row.get("mode") == "profile" for row in rows),
         "simulation_llm_answers": sum(row["role"] == "patient" and row.get("mode") == "llm" and row.get("model_status") == "success" for row in rows),
+        "simulation_semantically_verified_answers": sum(row["role"] == "patient" and row.get("mode") == "llm"
+            and row.get("validation_status") == "success" for row in rows),
+        "simulation_canonical_scripted_answers": sum(row["role"] == "patient" and row.get("validation_status") == "canonical" for row in rows),
+        "simulation_failure_stages": dict(Counter(row.get("failure_stage") for row in rows
+            if row["role"] == "patient" and row.get("failure_stage"))),
+        "patient_turns": sum(row["role"] == "patient" for row in rows),
+        "outcome": outcome, "fully_completed": outcome == "completed", "partially_completed": outcome == "partial",
+        "safety_escalated": outcome == "escalated", "interrupted": state.get("followup_status") == "interrupted",
+        "interruption_reasons": [(entry.get("detail") or {}).get("reason") for entry in trace
+                                 if entry.get("event") == "TASK_INTERRUPTED"],
+        "model_phase_timings": phase_timings,
+        "trace_elapsed_seconds": round(max(timestamps) - min(timestamps), 3) if len(timestamps) >= 2 else None,
+        "model_failures_by_stage": dict(Counter(str(call.get("purpose") or "unknown") + ":" +
+            str(call.get("failure_kind") or "unspecified") for call in calls if call.get("ok") is False)),
+        "model_retry_events": sum(entry.get("event") == "MODEL_RETRY" for entry in trace),
+        "model_retry_exhausted_events": sum(entry.get("event") == "MODEL_RETRY_EXHAUSTED" for entry in trace),
+        "reexecuted_tool_names": {name: count for name, count in executed_names.items() if count > 1},
+        "decision_path": decisions, "information_gain_by_patient_turn": information_gain,
+        "newly_disclosed_fact_fields": len(seen_fact_fields),
+        "review_required": {"semantic_question_repetition": "not_automatically_proven",
+                            "patient_answer_relevance": "not_automatically_proven",
+                            "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+                            "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"},
         "report_ai_status": ((state.get("report") or {}).get("ai_summary") or {}).get("status", "not_available"),
         "inconsistencies": inconsistencies,
     }

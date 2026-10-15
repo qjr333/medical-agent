@@ -25,7 +25,7 @@ class ScriptedDemoModel:
         if "candidate_facts" in payload:
             # This explicit offline demo keeps scripted behavior. Real patient
             # models receive the catalog and choose their own disclosures.
-            from simulation.patient import question_topics
+            from simulation.patient import CLARIFICATION_MESSAGE, question_topics
             available = {fact["fact_id"] for fact in payload["candidate_facts"]}
             topics = question_topics(payload.get("question"), payload.get("question_context"))
             ids = ["refusal"] if "refusal" in available else []
@@ -35,7 +35,8 @@ class ScriptedDemoModel:
                     identifier = "unable_" + topic
                 if identifier in available and identifier not in ids:
                     ids.append(identifier)
-            return {"response_fact_ids": ids[:2] or [next(iter(available))]}
+            return ({"response_fact_ids": ids[:2]} if ids else
+                    {"response_fact_ids": [], "message": CLARIFICATION_MESSAGE, "fact_claims": []})
         if "facts" in payload:
             return {s: [f["fact_id"] for f in payload["facts"] if s in f["allowed_sections"]]
                     for s in ("summary_fact_ids", "doctor_attention_fact_ids", "family_assistance_fact_ids")}

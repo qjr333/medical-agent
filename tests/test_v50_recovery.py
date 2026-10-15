@@ -5,6 +5,7 @@ import io
 import json
 import tempfile
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
@@ -12,6 +13,7 @@ from backend.simulation_v5 import SimulationManager
 from database import connection, repository, tasks
 from medical_tools import guidance
 from simulation.scripted import ScriptedDemoModel
+from simulation.patient import SimulatedPatient
 
 
 class V50RecoveryTests(unittest.TestCase):
@@ -68,6 +70,170 @@ class V50RecoveryTests(unittest.TestCase):
             state = repository.read_session(result["session_id"])
             self.assertEqual([entry for entry in state["trace"] if entry["event"] == "USER_MESSAGE"], old_user_messages)
         self.assertTrue(all(row.get("execution") == "completed" for row in replay["transcript"] if row["role"] == "patient"))
+
+    def test_restart_restores_patient_disclosures_from_saved_patient_turns(self):
+        created = self.create()
+        completed = self.manager.execute(created["run_id"])
+        self.assertEqual(completed["status"], "completed")
+        expected = {fact["fact_id"] for row in completed["transcript"] if row["role"] == "patient"
+                    for fact in row.get("reported_facts") or []}
+        before = self.table_counts(created["run_id"])
+        recovered = []
+        def restore(*args, **kwargs):
+            patient = SimulatedPatient(*args, **kwargs)
+            recovered.append(set(patient._reported))
+            return patient
+        restarted = SimulationManager(self.root / "runs")
+        with patch("backend.simulation_v5.SimulatedPatient", side_effect=restore):
+            result = restarted.execute(created["run_id"])
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(recovered, [expected])
+        self.assertEqual(self.table_counts(created["run_id"]), before)
+
+    def test_verification_outage_pauses_once_and_explicit_resume_reuses_saved_answer(self):
+        class Outage(ScriptedDemoModel):
+            verifications = 0
+            patient_generations = 0
+            def __call__(self, **kwargs):
+                payload = json.loads(kwargs["user_prompt"])
+                if "candidate_facts" in payload:
+                    self.patient_generations += 1
+                if "patient_message" in payload and "claims" in payload:
+                    self.verifications += 1
+                    raise TimeoutError("fictional verification outage")
+                return super().__call__(**kwargs)
+        outage = Outage()
+        created = self.create()
+        paused = self.manager.execute(created["run_id"], model_override=outage)
+        self.assertEqual(paused["status"], "running")
+        self.assertTrue(paused["recoverable"])
+        self.assertEqual(paused["followup_status"], "interrupted")
+        self.assertFalse(paused["evaluation"]["pass"])
+        self.assertTrue(self.manager.can_resume(paused))
+        self.assertEqual((outage.verifications, outage.patient_generations), (2, 1))
+        first_answer = deepcopy(next(row for row in paused["transcript"] if row["role"] == "patient"))
+        with connection.using_database(self.manager.store.database(created["run_id"])):
+            unconfirmed = repository.read_session(paused["session_id"])
+            self.assertEqual(unconfirmed["extraction_pending"]["status"], "awaiting_verification")
+            self.assertEqual(unconfirmed["red_flag_status"], "unknown")
+            first_trace = deepcopy(unconfirmed["trace"])
+        self.assertEqual(self.table_counts(created["run_id"])["reports"], 0)
+        with patch.object(self.manager, "launch") as launch:
+            self.manager.recover()
+        launch.assert_not_called()
+        # Each explicit resume gets one saved-stage attempt (and its one finite
+        # transient retry), never another simulated reply to the same question.
+        still_paused = self.manager.execute(created["run_id"], model_override=outage)
+        self.assertEqual(still_paused["status"], "running")
+        self.assertTrue(still_paused["recoverable"])
+        self.assertEqual(still_paused["resume_attempts"], 1)
+        self.assertEqual((outage.verifications, outage.patient_generations), (4, 1))
+        self.assertEqual(sum(row["role"] == "patient" for row in still_paused["transcript"]), 1)
+        # Older releases persisted the same recoverable outage as failed.
+        still_paused["status"] = "failed"
+        self.manager.store.save(still_paused)
+        self.assertTrue(self.manager.can_resume(still_paused))
+        recovered_model = ScriptedDemoModel()
+        first_resumed_payload = []
+        def recovered(**kwargs):
+            if not first_resumed_payload:
+                first_resumed_payload.append(json.loads(kwargs["user_prompt"]))
+            return recovered_model(**kwargs)
+        completed = self.manager.execute(created["run_id"], model_override=recovered)
+        self.assertEqual(completed["status"], "completed")
+        self.assertFalse(completed["recoverable"])
+        self.assertEqual(completed["resume_attempts"], 2)
+        self.assertIn("claims", first_resumed_payload[0])
+        self.assertEqual(next(row for row in completed["transcript"] if row["role"] == "patient"), first_answer)
+        counts = self.table_counts(created["run_id"])
+        self.assertEqual((counts["reports"], counts["report_messages"]), (1, 2))
+        self.assertEqual(counts["bp_records"], 4)  # three seeded records plus one new current reading
+        with connection.using_database(self.manager.store.database(created["run_id"])):
+            state = repository.read_session(completed["session_id"])
+            self.assertEqual(state["trace"][:len(first_trace)], first_trace)
+            self.assertEqual(sum(row["event"] == "USER_MESSAGE" for row in state["trace"]),
+                             sum(row["role"] == "patient" for row in completed["transcript"]))
+            self.assertIn("EXTRACTION_RESUMED", [row["event"] for row in state["trace"]])
+
+    def test_stale_or_rejected_pending_facts_cannot_be_resumed(self):
+        class Outage(ScriptedDemoModel):
+            def __call__(self, **kwargs):
+                payload = json.loads(kwargs["user_prompt"])
+                if "patient_message" in payload and "claims" in payload:
+                    raise TimeoutError("fictional outage")
+                return super().__call__(**kwargs)
+        created = self.create()
+        paused = self.manager.execute(created["run_id"], model_override=Outage())
+        for change in ("old_date", "changed_question", "rejected", "input_required_budget"):
+            with self.subTest(change=change), connection.using_database(self.manager.store.database(created["run_id"])):
+                saved = repository.read_session(paused["session_id"])
+                original = deepcopy(saved)
+                if change == "old_date":
+                    saved["extraction_pending"]["date"] = "2000-01-01"
+                elif change == "changed_question":
+                    saved["last_agent_question"] = "a different question"
+                elif change == "rejected":
+                    saved["extraction_pending"]["status"] = "rejected"
+                else:
+                    saved["execution_pending"] = {"reason": "execution_model_budget", "next_action": "WAIT_FOR_NEW_INPUT"}
+                repository.persist_session(paused["session_id"], saved)
+                self.assertFalse(self.manager.can_resume(paused))
+                repository.persist_session(paused["session_id"], original)
+
+    def test_crash_before_extraction_resumes_pending_input_without_another_patient_answer(self):
+        created = self.create()
+        with patch("backend.runtime_v5.extract_patient_information", side_effect=TimeoutError("fictional checkpoint crash")):
+            paused = self.manager.execute(created["run_id"])
+        self.assertEqual(paused["status"], "running")
+        self.assertTrue(paused["recoverable"])
+        self.assertEqual(paused["error_type"], "TimeoutError")
+        first_answer = deepcopy(paused["transcript"][-1])
+        self.assertEqual(first_answer["execution"], "pending")
+        with connection.using_database(self.manager.store.database(created["run_id"])):
+            saved = repository.read_session(paused["session_id"])
+            self.assertEqual(saved["extraction_pending"]["status"], "awaiting_extraction")
+        self.assertTrue(self.manager.can_resume(paused))
+        finished = self.manager.execute(created["run_id"])
+        self.assertEqual(finished["status"], "completed")
+        self.assertNotIn("error", finished)
+        first_answer["execution"] = "completed"
+        self.assertEqual(next(row for row in finished["transcript"] if row["role"] == "patient"), first_answer)
+        self.assertEqual(sum(row["role"] == "patient" for row in finished["transcript"]), 4)
+        with connection.using_database(self.manager.store.database(created["run_id"])):
+            saved = repository.read_session(finished["session_id"])
+            self.assertEqual(sum(row["event"] == "USER_MESSAGE" for row in saved["trace"]), 4)
+            self.assertIn("simulation_execution_failed", [row.get("detail", {}).get("reason")
+                          for row in saved["trace"] if row["event"] == "TASK_INTERRUPTED"])
+        self.assertEqual(self.table_counts(created["run_id"])["bp_records"], 4)
+
+    def test_generation_timeout_remains_recoverable_without_regenerating_the_patient_reply(self):
+        class GenerationOutage(ScriptedDemoModel):
+            extractions = 0
+            def __call__(self, **kwargs):
+                payload = json.loads(kwargs["user_prompt"])
+                if "patient_message" in payload and "claims" not in payload and "主要语义理解引擎" in kwargs["system_prompt"]:
+                    self.extractions += 1
+                    raise TimeoutError("fictional extraction generation outage")
+                return super().__call__(**kwargs)
+        created = self.create()
+        outage = GenerationOutage()
+        paused = self.manager.execute(created["run_id"], model_override=outage)
+        self.assertEqual(paused["status"], "running")
+        self.assertTrue(paused["recoverable"])
+        self.assertEqual(outage.extractions, 2)
+        self.assertTrue(self.manager.can_resume(paused))
+        first_answer = deepcopy(next(row for row in paused["transcript"] if row["role"] == "patient"))
+        with connection.using_database(self.manager.store.database(created["run_id"])):
+            state = repository.read_session(paused["session_id"])
+            self.assertEqual(state["extraction_pending"]["status"], "awaiting_extraction")
+            self.assertEqual(state["red_flag_status"], "unknown")
+        result = self.manager.execute(created["run_id"])
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(next(row for row in result["transcript"] if row["role"] == "patient"), first_answer)
+        self.assertEqual(sum(row["role"] == "patient" for row in result["transcript"]), 4)
+        with connection.using_database(self.manager.store.database(created["run_id"])):
+            state = repository.read_session(result["session_id"])
+            self.assertEqual(sum(row["event"] == "USER_MESSAGE" for row in state["trace"]), 4)
 
     def test_expired_run_lease_can_be_reclaimed_but_live_owner_cannot_be_duplicated(self):
         created = self.create()

@@ -29,6 +29,11 @@ const FOLLOWUP_SCENARIOS = [
   },
 ]
 
+function responseHasEnded(data) {
+  const state = data.state ?? data.patient_state
+  return Boolean(data.done) || ['completed', 'partially_completed', 'escalated'].includes(state?.followup_status)
+}
+
 export default function App() {
   const [page, setPage] = useState('home')
 
@@ -39,6 +44,7 @@ export default function App() {
   const [activeScenarioIndex, setActiveScenarioIndex] = useState(0)
 
   const [sessionId, setSessionId] = useState('')
+  const [followupDone, setFollowupDone] = useState(false)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -89,6 +95,7 @@ export default function App() {
     setError('')
     setInput('')
     setSessionId('')
+    setFollowupDone(false)
     setMessages([])
 
     const selectedIndex = scenarioIndex
@@ -114,6 +121,7 @@ export default function App() {
 
       setActiveScenarioIndex(selectedIndex)
       setSessionId(data.session_id)
+      setFollowupDone(responseHasEnded(data))
       setMessages([
         {
           role: 'assistant',
@@ -134,8 +142,8 @@ export default function App() {
     } finally {
       if (requestVersion === requestVersionRef.current) {
         setLoading(false)
+        requestLockRef.current = false
       }
-      requestLockRef.current = false
     }
   }
 
@@ -144,7 +152,7 @@ export default function App() {
 
     const message = input.trim()
 
-    if (!message || !sessionId || requestLockRef.current) return
+    if (!message || !sessionId || followupDone || requestLockRef.current) return
 
     requestLockRef.current = true
     const requestVersion = ++requestVersionRef.current
@@ -177,6 +185,7 @@ export default function App() {
         return
       }
 
+      setFollowupDone(responseHasEnded(data))
       setMessages((previous) => [
         ...previous,
         {
@@ -194,8 +203,8 @@ export default function App() {
     } finally {
       if (requestVersion === requestVersionRef.current) {
         setLoading(false)
+        requestLockRef.current = false
       }
-      requestLockRef.current = false
     }
   }
 
@@ -207,6 +216,7 @@ export default function App() {
 
     setPage('home')
     setSessionId('')
+    setFollowupDone(false)
     setMessages([])
     setInput('')
     setError('')
@@ -356,7 +366,7 @@ export default function App() {
 
               <span className="online-label">
                 <span className="pulse-dot" />
-                Agent 在线
+                {followupDone ? '本次随访已结束' : 'Agent 在线'}
               </span>
             </div>
 
@@ -411,15 +421,15 @@ export default function App() {
                     event.currentTarget.form?.requestSubmit()
                   }
                 }}
-                placeholder="请输入您的血压、服药情况或身体感受…"
-                disabled={!sessionId || loading}
+                placeholder={followupDone ? '本次随访已结束，可点击重新演示' : '请输入您的血压、服药情况或身体感受…'}
+                disabled={!sessionId || loading || followupDone}
                 rows={2}
               />
 
               <button
                 className="send-button"
                 type="submit"
-                disabled={!sessionId || !input.trim() || loading}
+                disabled={!sessionId || !input.trim() || loading || followupDone}
               >
                 <span>发送</span>
                 <span aria-hidden="true">↑</span>

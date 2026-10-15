@@ -1,0 +1,490 @@
+{
+  "scenario_id": "stable",
+  "status": "failed",
+  "followup_status": null,
+  "evaluation": null,
+  "error_type": "RuntimeError",
+  "error": "本次模拟执行未完成；记录已保存，请核对运行状态后重新开始。",
+  "model_mode": "live",
+  "real_model_requests": 6,
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-15T02:52:24.327735+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "scheduled",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-15T02:52:24.838790+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "deepseek_called": true,
+        "duration_ms": 163.8,
+        "error_type": "APIConnectionError",
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-15T02:52:24.838799+00:00",
+      "event": "MODEL_RETRY",
+      "stage": "model_retry",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "id": 5,
+      "time": "2026-10-15T02:52:24.839717+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "attempt": 2,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "deepseek_called": true,
+        "duration_ms": 0.9,
+        "error_type": "APIConnectionError",
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-15T02:52:24.839722+00:00",
+      "event": "MODEL_RETRY_EXHAUSTED",
+      "stage": "execution_error",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "id": 7,
+      "time": "2026-10-15T02:52:24.839741+00:00",
+      "event": "SAFETY_PAUSE",
+      "stage": "safety",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_unavailable",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "id": 8,
+      "time": "2026-10-15T02:52:24.839742+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted",
+        "next_action": ""
+      }
+    },
+    {
+      "id": 10,
+      "time": "2026-10-15T02:52:24.839746+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    },
+    {
+      "id": 13,
+      "time": "2026-10-15T02:52:24.845943+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "deepseek_called": true,
+        "duration_ms": 0.7,
+        "error_type": "APIConnectionError",
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 14,
+      "time": "2026-10-15T02:52:24.845946+00:00",
+      "event": "MODEL_RETRY",
+      "stage": "model_retry",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-15T02:52:24.846587+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "attempt": 2,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "deepseek_called": true,
+        "duration_ms": 0.6,
+        "error_type": "APIConnectionError",
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 16,
+      "time": "2026-10-15T02:52:24.846589+00:00",
+      "event": "MODEL_RETRY_EXHAUSTED",
+      "stage": "execution_error",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "id": 17,
+      "time": "2026-10-15T02:52:24.846600+00:00",
+      "event": "SAFETY_PAUSE",
+      "stage": "safety",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_unavailable",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "id": 18,
+      "time": "2026-10-15T02:52:24.846601+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted",
+        "next_action": ""
+      }
+    },
+    {
+      "id": 20,
+      "time": "2026-10-15T02:52:24.846604+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    },
+    {
+      "id": 23,
+      "time": "2026-10-15T02:52:24.851816+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "deepseek_called": true,
+        "duration_ms": 0.7,
+        "error_type": "APIConnectionError",
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 24,
+      "time": "2026-10-15T02:52:24.851819+00:00",
+      "event": "MODEL_RETRY",
+      "stage": "model_retry",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "id": 25,
+      "time": "2026-10-15T02:52:24.852526+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": false,
+        "called": true,
+        "status": "error",
+        "attempt": 2,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "deepseek_called": true,
+        "duration_ms": 0.7,
+        "error_type": "APIConnectionError",
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 26,
+      "time": "2026-10-15T02:52:24.852529+00:00",
+      "event": "MODEL_RETRY_EXHAUSTED",
+      "stage": "execution_error",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "id": 27,
+      "time": "2026-10-15T02:52:24.852538+00:00",
+      "event": "SAFETY_PAUSE",
+      "stage": "safety",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_unavailable",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "id": 28,
+      "time": "2026-10-15T02:52:24.852539+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted",
+        "next_action": ""
+      }
+    },
+    {
+      "id": 30,
+      "time": "2026-10-15T02:52:24.852542+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    }
+  ],
+  "transcript": [],
+  "task": null,
+  "doctor_handled": false,
+  "family_read": false,
+  "diagnostics": [
+    {
+      "time": "2026-10-15T02:52:24.838799+00:00",
+      "event": "MODEL_RETRY",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.839722+00:00",
+      "event": "MODEL_RETRY_EXHAUSTED",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.839741+00:00",
+      "event": "SAFETY_PAUSE",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_unavailable",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.839742+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_unavailable",
+        "next_status": "interrupted",
+        "next_action": "",
+        "pending_tasks": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags",
+          "resume_planning"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.845946+00:00",
+      "event": "MODEL_RETRY",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.846589+00:00",
+      "event": "MODEL_RETRY_EXHAUSTED",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.846600+00:00",
+      "event": "SAFETY_PAUSE",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_unavailable",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.846601+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_unavailable",
+        "next_status": "interrupted",
+        "next_action": "",
+        "pending_tasks": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags",
+          "resume_planning"
+        ]
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.851819+00:00",
+      "event": "MODEL_RETRY",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.852529+00:00",
+      "event": "MODEL_RETRY_EXHAUSTED",
+      "detail": {
+        "purpose": "PLAN",
+        "attempt": 2,
+        "failure_stage": "generation",
+        "failure_kind": "temporary_error",
+        "error_type": "APIConnectionError"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.852538+00:00",
+      "event": "SAFETY_PAUSE",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_unavailable",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "time": "2026-10-15T02:52:24.852539+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_unavailable",
+        "next_status": "interrupted",
+        "next_action": "",
+        "pending_tasks": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags",
+          "resume_planning"
+        ]
+      }
+    }
+  ],
+  "final_facts": {
+    "bp_systolic": null,
+    "bp_diastolic": null,
+    "medication_status": "unknown",
+    "medication_timing": "unknown",
+    "symptoms": [],
+    "denied_symptoms": [],
+    "red_flags": [],
+    "denied_red_flags": [],
+    "symptom_status": "unknown",
+    "red_flag_status": "unknown",
+    "coverage": {
+      "bp": false,
+      "medication": false,
+      "current_symptoms": false,
+      "red_flags": false,
+      "measurement_context": false
+    },
+    "topic_status": {
+      "bp": "unanswered",
+      "medication": "unanswered",
+      "current_symptoms": "unanswered",
+      "red_flags": "unanswered",
+      "measurement_context": "unanswered"
+    },
+    "_semantic": null
+  }
+}

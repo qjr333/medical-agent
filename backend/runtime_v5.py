@@ -6,6 +6,7 @@ from time import monotonic
 from agent.followup_agent import _call, extract_patient_information, run_followup_agent
 from agent.state_manager import add_trace, create_patient_state, merge_user_patch
 from agent.clinical_report import build_clinical_report
+from backend import config
 from backend.utils import today_local_date
 from database.connection import get_connection
 from database import repository, tasks
@@ -57,6 +58,39 @@ class AgentRuntime:
             self.turn(sid)
             return self.task_result(sid)
 
+    def accept_message(self, sid, message, *, turn_index=None):
+        """Durably accept input without calling a model or confirming any fact."""
+        message = message.strip()
+        if not message:
+            raise ValueError("Patient message required")
+        with repository.session_lock(sid):
+            stored = repository.read_session(sid)
+            if stored is None:
+                raise LookupError("Session does not exist")
+            state = copy.deepcopy(stored)
+            if state.get("followup_status") in TERMINAL:
+                raise ValueError("Follow-up already ended")
+            pending = state.get("extraction_pending") or {}
+            if (pending.get("status") in {"awaiting_extraction", "awaiting_verification"}
+                    and pending.get("patient_message") == message):
+                state["followup_status"] = "processing"
+                repository.persist_session(sid, copy.deepcopy(state))
+                return state
+            if state.get("followup_status") == "processing":
+                raise ValueError("Follow-up is processing another input")
+            add_trace(state, "USER_MESSAGE", {"message": message})
+            state.update(agent_version="V5.0", latest_patient_message=message, followup_status="processing")
+            state["extraction_pending"] = {
+                "patient_message": message, "date": today_local_date(), "status": "awaiting_extraction",
+                "context": {"last_agent_question": state.get("last_agent_question", ""),
+                            "question_context": copy.deepcopy(state.get("question_context") or {})},
+            }
+            state["execution_pending"] = {"reason": "patient_input_pending", "next_action": "EXTRACT"}
+            if turn_index is not None:
+                state.update(simulation_turn_index=turn_index, simulation_turn_stage="input_received")
+            repository.persist_session(sid, copy.deepcopy(state))
+            return state
+
     def turn(self, sid, message=None, *, turn_index=None):
         with repository.session_lock(sid):
             stored = repository.read_session(sid)
@@ -72,9 +106,22 @@ class AgentRuntime:
                 if message is not None:
                     raise ValueError("Follow-up already ended")
                 return state
+            if message is not None:
+                state = self.accept_message(sid, message, turn_index=turn_index)
+                message = None
+
+            def checkpoint(**observations):
+                # The repository cache must keep the committed snapshot. Model
+                # work after a checkpoint must not mutate it before a commit.
+                pending_status = (state.get("extraction_pending") or {}).get("status")
+                if pending_status in {"awaiting_extraction", "awaiting_verification"}:
+                    state.setdefault("execution_pending", {})["next_action"] = (
+                        "EXTRACT" if pending_status == "awaiting_extraction" else "VERIFY_EXTRACT")
+                repository.persist_session(sid, copy.deepcopy(state), **observations)
+
             state["agent_version"] = "V5.0"
             pending = state.get("extraction_pending") or {}
-            resuming_extraction = message is None and pending.get("status") == "awaiting_verification"
+            resuming_extraction = pending.get("status") in {"awaiting_extraction", "awaiting_verification"}
             if resuming_extraction:
                 original = pending.get("context") or {}
                 if (pending.get("date") != today_local_date()
@@ -86,7 +133,7 @@ class AgentRuntime:
                     state.pop("execution_pending", None)
                     add_trace(state, "SAFETY_PAUSE", {"purpose": "VERIFY_EXTRACT", "status": "stale_context",
                               "recoverable": False, "next_action": "WAIT_FOR_NEW_INPUT"})
-                    repository.persist_session(sid, state)
+                    checkpoint()
                     return state
                 message = pending.get("patient_message")
             if message is not None:
@@ -94,44 +141,55 @@ class AgentRuntime:
                 if not message:
                     raise ValueError("Patient message required")
                 before = execution_fingerprint(state, "PATIENT_FACTS", query="")
-                state["followup_status"] = "active"
-                if not resuming_extraction:
-                    add_trace(state, "USER_MESSAGE", {"message": message})
-                patch = extract_patient_information(message, state, call_json_model=self.model, enable_v50=True)
+                patch = extract_patient_information(message, state, call_json_model=self.model,
+                                                    enable_v50=True, on_checkpoint=checkpoint)
                 bp = None
                 if valid_bp_measurement(patch.get("bp_systolic"), patch.get("bp_diastolic")):
                     bp = {"systolic": patch["bp_systolic"], "diastolic": patch["bp_diastolic"], "source": "patient_chat"}
                 merge_user_patch(state, patch, message)
                 if before != execution_fingerprint(state, "PATIENT_FACTS", query=""):
                     state.update(visit_advice=None, medication_guidance=None)
-                med = [{"status": item["status"], "detail": item.get("detail") or message}
-                       for item in patch.get("medication_observations", [])]
+                med = [{"status": item["status"],
+                        "detail": f"服药日期：{item['date']}；{item.get('detail') or message}"}
+                       for item in patch.get("medication_observations", [])
+                       if item.get("status") in {"taken", "not_taken_yet", "missed", "irregular", "stopped"}]
                 add_trace(state, "STATE_UPDATE", {"coverage": state.get("coverage"), "patch": patch})
                 if turn_index is not None:
                     state.update(simulation_turn_index=turn_index, simulation_turn_stage="input_saved")
-                repository.persist_session(sid, state, new_bp=bp, new_medication=med)
+                state["followup_status"] = "processing"
+                pending_status = (state.get("extraction_pending") or {}).get("status")
+                state["execution_pending"] = {"reason": "patient_input_saved", "next_action": {
+                    "awaiting_extraction": "EXTRACT", "awaiting_verification": "VERIFY_EXTRACT",
+                }.get(pending_status, "PLAN")}
+                checkpoint(new_bp=bp, new_medication=med)
+                # A restart sees processing; the first normal planning request
+                # still starts a fresh turn rather than counting as a resume.
+                state["followup_status"] = "active"
             refresh_patient_memory(state, sid)
-            response = run_followup_agent(state, call_json_model=self.model, enable_v50=True)
+            planning_deadline = monotonic() + config.V5_REQUEST_TIMEOUT_SECONDS
+            response = run_followup_agent(state, call_json_model=self.model, enable_v50=True,
+                                          max_seconds=max(0.0, planning_deadline - monotonic()))
             state["last_agent_response"] = response["message"]
             add_trace(state, "AGENT_RESPONSE", {"message": response["message"], "followup_status": state["followup_status"]})
-            repository.persist_session(sid, state)
+            checkpoint()
             # Resume internally with the saved execution context, never a fabricated patient reply.
             for _ in range(3):
                 if state.get("followup_status") != "processing":
                     break
                 add_trace(state, "EXECUTION_RESUMED", {"automatic": True})
-                response = run_followup_agent(state, call_json_model=self.model, enable_v50=True)
+                response = run_followup_agent(state, call_json_model=self.model, enable_v50=True,
+                                              max_seconds=max(0.0, planning_deadline - monotonic()))
                 state["last_agent_response"] = response["message"]
                 add_trace(state, "AGENT_RESPONSE", {"message": response["message"], "followup_status": state["followup_status"]})
-                repository.persist_session(sid, state)
+                checkpoint()
             if state.get("followup_status") == "processing":
                 state.update(followup_status="interrupted", interruption_reason="automatic_resume_exhausted")
                 state["last_agent_response"] = "本次自动处理尚未完成，当前记录已保留。请稍后重试；不能据此认为医学评估已完成。"
                 add_trace(state, "TASK_INTERRUPTED", {"reason": "automatic_resume_exhausted", "next_status": "interrupted"})
-                repository.persist_session(sid, state)
+                checkpoint()
             if turn_index is not None:
                 state.update(simulation_turn_index=turn_index, simulation_turn_stage="completed")
-                repository.persist_session(sid, state)
+                checkpoint()
             # Emergency response has already been persisted before report work begins.
             self.finalize(sid)
             state = repository.read_session(sid)

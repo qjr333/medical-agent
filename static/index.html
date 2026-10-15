@@ -734,8 +734,10 @@
 
 // Compatible with both current FastAPI API: {message, state, session_id}
 // and legacy frontend API: {reply, patient_state, session_id}.
-const CHAT_TIMEOUT_MS = 90000;
-const TRIGGER_TIMEOUT_MS = 60000;
+// Chat also extracts/verifies the input before the 120s planning budget;
+// each model stage may retry once. These are wait limits, not auto-retries.
+const CHAT_TIMEOUT_MS = 360000;
+const TRIGGER_TIMEOUT_MS = 180000;
 const DEMO_TIMEOUT_MS = 12000;
 
 let sessionId = null;
@@ -830,6 +832,9 @@ function updateStatus(status) {
         active: '随访进行中',
         waiting_for_user: '等待患者回复',
         completed: '随访完成',
+        partially_completed: '随访部分完成',
+        interrupted: '随访已暂停',
+        processing: '正在处理',
         escalated: '异常升级'
     };
     const styles = {
@@ -838,6 +843,9 @@ function updateStatus(status) {
         active: 'following',
         waiting_for_user: 'following',
         completed: 'completed',
+        partially_completed: 'completed',
+        interrupted: 'waiting',
+        processing: 'following',
         escalated: 'escalated'
     };
     statusBadge.className = 'status ' + (styles[status] || 'waiting');
@@ -860,7 +868,7 @@ function normalizeResponse(data) {
         state,
         message,
         hasAlerts,
-        done: Boolean(data.done || status === 'completed' || status === 'escalated'),
+        done: Boolean(data.done || ['completed', 'partially_completed', 'escalated'].includes(status)),
         status
     };
 }
@@ -874,6 +882,7 @@ function updatePatientState(state) {
         ? `${systolic}/${diastolic} mmHg` : '尚未获得';
     const medMap = {
         unknown: '尚未确认', taken: '已报告按时服药',
+        not_taken_yet: '尚未服用',
         missed: '报告存在漏服', irregular: '近期服药不规律',
         stopped: '报告已停药'
     };

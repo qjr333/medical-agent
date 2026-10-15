@@ -115,7 +115,9 @@ def simulation(run_id: str, x_demo_token: Optional[str] = Header(default=None)):
 @router.post("/simulations/{run_id}/resume", status_code=202)
 def resume_simulation(run_id: str, x_demo_token: Optional[str] = Header(default=None)):
     payload = operation(manager().store.get, run_id, x_demo_token)
-    if payload["status"] in {"completed", "budget_exhausted", "failed"}:
+    if payload["status"] in {"completed", "budget_exhausted"} or (
+            (payload["status"] == "failed" or payload.get("recoverable") is True)
+            and not manager().can_resume(payload)):
         raise HTTPException(409, "此运行已经结束，请启动新运行")
     manager().launch(run_id)
     return {"run_id": run_id, "status": "queued"}
@@ -152,13 +154,20 @@ def session(sid: str, user=Depends(authenticated_user)):
             "question_context": state.get("question_context", {}), "report_generation": state.get("report_generation", {})}
 
 
-def dispatch(function, key):
+def dispatch(function, key, *, before_start=None):
     path = current_database_path()
     key = (str(path), key)
     with _job_lock:
         if key in _jobs:
             return False
         _jobs.add(key)
+    try:
+        if before_start is not None:
+            before_start()
+    except BaseException:
+        with _job_lock:
+            _jobs.discard(key)
+        raise
     def execute():
         try:
             with using_database(path):
@@ -185,16 +194,31 @@ def dispatch(function, key):
         finally:
             with _job_lock:
                 _jobs.discard(key)
-    threading.Thread(target=execute, daemon=True, name="v5-background").start()
+    try:
+        threading.Thread(target=execute, daemon=True, name="v5-background").start()
+    except BaseException:
+        with _job_lock:
+            _jobs.discard(key)
+        raise
     return True
 
 
 @router.post("/sessions/{sid}/messages", status_code=202)
 def patient_message(sid: str, request: MessageRequest, user=Depends(authenticated_user)):
     state = allowed_session(sid, user)
+    if not request.message.strip():
+        raise HTTPException(422, "患者回答不能为空")
     if state["followup_status"] not in {"waiting_for_user", "interrupted"}:
         raise HTTPException(409, "会话未等待新输入")
-    if not dispatch(lambda: AgentRuntime().turn(sid, request.message), "turn:" + sid):
+    runtime = AgentRuntime()
+    try:
+        accepted = dispatch(lambda: runtime.turn(sid), "turn:" + sid,
+                            before_start=lambda: runtime.accept_message(sid, request.message))
+    except ValueError:
+        raise HTTPException(409, "会话状态已变化或输入为空，请核对后再试") from None
+    except Exception:
+        raise HTTPException(503, "暂时无法启动本次处理，请稍后核对会话状态后重试") from None
+    if not accepted:
         raise HTTPException(409, "本会话正在处理上一条输入，请等待结果")
     return {"session_id": sid, "status": "processing"}
 
@@ -306,7 +330,7 @@ def recover_pending_sessions():
         if state.get("agent_version") != "V5.0":
             continue
         verification_pending = (state.get("followup_status") == "interrupted"
-                                and (state.get("extraction_pending") or {}).get("status") == "awaiting_verification")
+                                and (state.get("extraction_pending") or {}).get("status") in {"awaiting_extraction", "awaiting_verification"})
         pending = verification_pending or state.get("followup_status") == "processing" or (state.get("report_generation") or {}).get("status") in {"pending", "summary_pending", "failed"}
         if not pending or state.get("background_recovery_attempts", 0) >= 3:
             continue
@@ -317,7 +341,7 @@ def recover_pending_sessions():
                 if not fresh or fresh.get("background_recovery_attempts", 0) >= 3:
                     return
                 verifying = (fresh.get("followup_status") == "interrupted"
-                             and (fresh.get("extraction_pending") or {}).get("status") == "awaiting_verification")
+                             and (fresh.get("extraction_pending") or {}).get("status") in {"awaiting_extraction", "awaiting_verification"})
                 if verifying or fresh.get("followup_status") == "processing" or (fresh.get("report_generation") or {}).get("status") in {"pending", "summary_pending", "failed"}:
                     fresh["background_recovery_attempts"] = fresh.get("background_recovery_attempts", 0) + 1
                     repository.persist_session(session_id, fresh)
@@ -328,7 +352,8 @@ def recover_pending_sessions():
                         runtime.finalize(session_id)
                     result = runtime.task_result(session_id)
                     tasks.sync_session_status(session_id, result["status"], report_generated=result["report_generated"], station_messages=result["station_messages"])
-        dispatch(recover, "recover:" + sid)
+        # Recovery and a newly accepted message reserve the same execution slot.
+        dispatch(recover, "turn:" + sid)
 
 
 def stop_workers():

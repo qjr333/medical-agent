@@ -388,20 +388,9 @@ block_id: {block_id}
     # Visit Advice不能修改处方
     # =====================================================
 
-    unsafe_patterns = [
-        r"增加.{0,10}(剂量|药量)",
-        r"减少.{0,10}(剂量|药量)",
-        r"多吃.{0,6}(一片|一颗|药)",
-        r"少吃.{0,6}(一片|一颗|药)",
-        r"停用.{0,10}(降压药|药物)",
-        r"换成.{0,15}(药|降压药)",
-    ]
-
-    unsafe_output = any(
-        re.search(pattern, advice)
-        for pattern in unsafe_patterns
-    )
-    unsafe_output = unsafe_output or contains_unsafe_medication_instruction(advice)
+    # Share the prescription guard, including local negation handling. A safety
+    # warning such as “不要增加剂量” must not itself change the triage result.
+    unsafe_output = contains_unsafe_medication_instruction(advice)
 
     if unsafe_output:
 

@@ -348,15 +348,21 @@ class V50APIIntegrationTests(unittest.TestCase):
         received = []
         worker_path = []
 
-        def blocked_turn(session_id, message):
+        def blocked_turn(session_id):
             worker_path.append(connection.current_database_path())
-            received.append((session_id, message))
+            saved = repository.read_session(session_id)
+            received.append((session_id, saved["extraction_pending"]["patient_message"]))
             entered.set()
             if not release.wait(3):
                 raise AssertionError("The API worker was not released")
+            saved = copy.deepcopy(repository.read_session(session_id))
+            saved.update(followup_status="waiting_for_user")
+            saved.pop("extraction_pending", None)
+            saved.pop("execution_pending", None)
+            repository.persist_session(session_id, saved)
 
-        runtime = Mock()
-        runtime.turn.side_effect = blocked_turn
+        runtime = self.runtime.AgentRuntime(self.scripted.ScriptedDemoModel())
+        runtime.turn = Mock(side_effect=blocked_turn)
         url = f"/api/v5/sessions/{sid}/messages"
         try:
             with patch.object(self.v5_api, "AgentRuntime", return_value=runtime):
@@ -458,8 +464,8 @@ class V50APIIntegrationTests(unittest.TestCase):
                                      DEMO_BP_HISTORY=[], TRIGGER_CONFIGS=self.backend.TRIGGER_CONFIGS)
         state.update(agent_version="V5.0", session_id=sid, followup_status="waiting_for_user")
         repository.persist_session(sid, state)
-        runtime = Mock()
-        runtime.turn.side_effect = RuntimeError("PRIVATE_FAILURE_DETAIL")
+        runtime = self.runtime.AgentRuntime(self.scripted.ScriptedDemoModel())
+        runtime.turn = Mock(side_effect=RuntimeError("PRIVATE_FAILURE_DETAIL"))
         with patch.object(self.v5_api, "AgentRuntime", return_value=runtime):
             accepted = self.http.post(f"/api/v5/sessions/{sid}/messages", headers=self.production_headers(),
                                       json={"message": "真实接受的虚构患者回答"})
@@ -478,6 +484,98 @@ class V50APIIntegrationTests(unittest.TestCase):
         self.assertEqual(len(failure), 1)
         self.assertEqual(failure[0]["detail"]["error_type"], "RuntimeError")
         self.assertIsNone(stored.get("report"))
+        self.assertEqual(stored["extraction_pending"]["patient_message"], "真实接受的虚构患者回答")
+        self.assertEqual(stored["extraction_pending"]["status"], "awaiting_extraction")
+
+    def test_202_input_survives_restart_before_worker_starts(self):
+        from agent.state_manager import create_patient_state
+
+        sid = "accepted-before-worker"
+        state = create_patient_state("scheduled", DEMO_PATIENT=self.backend.DEMO_PATIENT,
+                                     DEMO_BP_HISTORY=[], TRIGGER_CONFIGS=self.backend.TRIGGER_CONFIGS)
+        state.update(agent_version="V5.0", session_id=sid, followup_status="waiting_for_user",
+                     last_agent_question="今天血压是多少？",
+                     question_context={"question": "今天血压是多少？", "topic": "bp", "kind": "bp"})
+        repository.persist_session(sid, state)
+        runtime = self.runtime.AgentRuntime(self.scripted.ScriptedDemoModel())
+        job_key = (str(connection.current_database_path()), "turn:" + sid)
+        try:
+            with patch.object(self.v5_api, "AgentRuntime", return_value=runtime), \
+                    patch.object(self.v5_api.threading, "Thread") as thread:
+                response = self.http.post(f"/api/v5/sessions/{sid}/messages", headers=self.production_headers(),
+                                          json={"message": "今天血压132/78"})
+                self.assertEqual(response.status_code, 202, response.text)
+                thread.return_value.start.assert_called_once()
+                repository.sessions.pop(sid, None)
+                saved = repository.read_session(sid)
+                self.assertEqual(saved["followup_status"], "processing")
+                self.assertEqual(saved["extraction_pending"]["patient_message"], "今天血压132/78")
+                self.assertIsNone(saved["bp_systolic"])
+                self.assertEqual(self.production_count("bp_records"), 0)
+                # Simulate process-local dispatch reservations disappearing on restart.
+                with self.v5_api._job_lock:
+                    self.v5_api._jobs.discard(job_key)
+            with patch.object(self.v5_api, "AgentRuntime", return_value=runtime):
+                self.v5_api.recover_pending_sessions()
+                self.drain_background()
+            recovered = repository.read_session(sid)
+            self.assertEqual(recovered["followup_status"], "waiting_for_user")
+            self.assertEqual(recovered["bp_systolic"], 132)
+            self.assertEqual(self.production_count("bp_records"), 1)
+            messages = [entry["detail"]["message"] for entry in recovered["trace"] if entry["event"] == "USER_MESSAGE"]
+            self.assertEqual(messages, ["今天血压132/78"])
+            self.network.assert_not_called()
+        finally:
+            with self.v5_api._job_lock:
+                self.v5_api._jobs.discard(job_key)
+
+    def test_input_write_failure_does_not_acknowledge_202_or_start_a_worker(self):
+        from agent.state_manager import create_patient_state
+
+        sid = "accept-write-failure"
+        state = create_patient_state("scheduled", DEMO_PATIENT=self.backend.DEMO_PATIENT,
+                                     DEMO_BP_HISTORY=[], TRIGGER_CONFIGS=self.backend.TRIGGER_CONFIGS)
+        state.update(agent_version="V5.0", session_id=sid, followup_status="waiting_for_user")
+        repository.persist_session(sid, state)
+        runtime = self.runtime.AgentRuntime(self.scripted.ScriptedDemoModel())
+        with patch.object(self.v5_api, "AgentRuntime", return_value=runtime), \
+                patch.object(self.v5_api.threading, "Thread") as thread, \
+                patch.object(repository, "persist_session", side_effect=RuntimeError("PRIVATE_WRITE_ERROR")):
+            response = self.http.post(f"/api/v5/sessions/{sid}/messages", headers=self.production_headers(),
+                                      json={"message": "今天血压132/78"})
+        self.assertEqual(response.status_code, 503, response.text)
+        self.assertNotIn("PRIVATE_WRITE_ERROR", response.text)
+        thread.assert_not_called()
+        with self.v5_api._job_lock:
+            self.assertNotIn((str(connection.current_database_path()), "turn:" + sid), self.v5_api._jobs)
+        repository.sessions.pop(sid, None)
+        self.assertEqual(repository.read_session(sid)["followup_status"], "waiting_for_user")
+        self.assertNotIn("extraction_pending", repository.read_session(sid))
+        self.network.assert_not_called()
+
+    def test_resume_rechecks_failed_or_paused_runs_without_bypassing_tokens(self):
+        run = self.manager.create("stable", model_mode="scripted", background=False, delay_seconds=0)
+        url = f"/api/v5/simulations/{run['run_id']}/resume"
+        for status, recoverable in (("failed", False), ("running", True)):
+            with self.subTest(status=status):
+                payload = self.manager.store.get(run["run_id"], trusted=True)
+                payload.update(status=status, recoverable=recoverable)
+                self.manager.store.save(payload)
+                with patch.object(self.manager, "can_resume", return_value=False) as can_resume, \
+                        patch.object(self.manager, "launch") as launch:
+                    self.assertEqual(self.http.post(url, headers={"X-Demo-Token": "wrong-token"}).status_code, 403)
+                    rejected = self.http.post(url, headers={"X-Demo-Token": run["run_token"]})
+                    self.assertEqual(rejected.status_code, 409, rejected.text)
+                can_resume.assert_called_once()
+                launch.assert_not_called()
+        payload = self.manager.store.get(run["run_id"], trusted=True)
+        payload.update(status="failed", recoverable=True)
+        self.manager.store.save(payload)
+        with patch.object(self.manager, "can_resume", return_value=True), \
+                patch.object(self.manager, "launch") as launch:
+            accepted = self.http.post(url, headers={"X-Demo-Token": run["run_token"]})
+            self.assertEqual(accepted.status_code, 202, accepted.text)
+        launch.assert_called_once_with(run["run_id"])
 
     def test_restart_recovers_processing_without_fabricating_another_patient_message(self):
         from agent.state_manager import add_trace, create_patient_state
