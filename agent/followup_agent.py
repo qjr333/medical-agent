@@ -241,12 +241,22 @@ def _minimal_safety_signals(text, state):
             direct = {prefix + connector + term + ending for prefix in prefixes
                       for connector in ("", "有", "出现", "感觉") for term in terms for ending in endings}
             direct_lookup.update({phrase: name for phrase in direct})
+        previous_direct = False
         for clause in clauses:
+            # A direct current declaration may continue after a comma. Carry
+            # only that already explicit context; historical, conditional and
+            # negative clauses never enable this safety-only shortcut.
+            if previous_direct:
+                for connector in ("而且", "并且"):
+                    if clause.startswith(connector):
+                        clause = clause[len(connector):].strip()
+                        break
             pieces = [piece.strip() for piece in re.split(r"[、]|和|及|或", clause)]
             # A coordinated *direct* declaration is still an emergency signal.
             # Every piece must be direct; an historical/conditional first piece
             # cannot promote the later bare label into a current symptom.
-            if pieces and all(piece in direct_lookup for piece in pieces):
+            previous_direct = bool(pieces) and all(piece in direct_lookup for piece in pieces)
+            if previous_direct:
                 found.extend(direct_lookup[piece] for piece in pieces)
         if any(clause in {"我快死了", "我感觉快死了", "我快不行了", "救命", "快救救我"}
                for clause in clauses):
@@ -302,8 +312,9 @@ Python不负责用正则理解语义；你要准确理解口语短答、省略�
 “昨天喘不上气，今天没有”是历史报告与当前否认；“如果胸痛怎么办”是询问/假设，不是当前症状。没有胸痛但是喘不上气，保留当前呼吸困难。
 “还没呢”在是否服药的问题下表示not_taken_yet，不等于漏服；“没有”在有没有漏服的问题下只否认漏服，不能推断已服药。
 “超过了”结合服药时间问题表示overdue，但不能凭此编造具体时间、药名或补服方案。记不清、拒答保留unknown。
+timing=not_due只表示今天这次药尚未服用且还没到规定时间，不表示“按时吃了”。已服药但没有另外说明时间关系时timing=unknown；不要推断下一次服药时间。明确提前服药等细节保留在原话信息中，不将已服药写为尚未到时的待服剂次。
 短答只可解释刚刚实际询问的范围。“挺好”不能等同于六种危险症状全部否认。
-screening只有实际上下文询问与患者回答形成有效危险筛查时才adequate=true；列出实际scope和原话证据，不需要机械询问全部六项。
+screening只有实际上下文询问与患者回答形成有效危险筛查时才adequate=true；scope只列实际涉及的标准red_flag标签，普通症状单独放入claims，不需要机械询问全部六项。
 标准red_flag标签：胸痛、呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常。其它症状可自然命名，但不能自创新的红旗标签。
 monitoring_plan表示患者当下明确同意后续监测的意愿（temporal=current）；条件句、Agent单方建议、历史承诺不是患者现在的承诺。
 end_request表示患者当下希望结束或明确不希望结束，value为布尔。不是药物停服；不要把拒绝一个问题等同拒绝整个随访。
@@ -318,8 +329,9 @@ claims可以为空，不为了填字段创造事实。历史服药若日期明�
 SEMANTIC_REVIEW_PROMPT = """你是独立患者事实审核器，不规划、不补充患者事实。审查候选claims与screening是否被患者本轮完整原话和实际上一问支持。
 证据只是引用定位，不是事实保证；尤其引用“胸痛”不能忽略外面的“没有/去年/如果”，引用数字不能忽略其是假设目标或历史记录。
 逐条判断supported、polarity、temporal、date。只认可原话支持的语义，不修正为新事实。短答依实际上一问范围解释，未知、不确定与拒答不填为已确认。
-screening的adequate必须有实际危险筛查上下文和针对性回答；“挺好”“吃了”等无关回答不能排除危险症状。scope不得超出实际询问或明确报告范围。
+screening的adequate必须有实际危险筛查上下文和针对性回答；“挺好”“吃了”等无关回答不能排除危险症状。scope只列标准red_flag标签，不放头晕、胸闷等普通症状，不得超出候选及实际询问或明确报告范围。
 临床信息history/hypothetical/uncertain不得审核为current。今天的当前服药不被昨天服药替代。monitoring_plan必须是患者现在明确的意愿，end_request必须是患者希望结束（或明确否认结束）的意思。
+用药timing=not_due是“尚未服用且未到规定时间”，不是“已按时服药”；不能因为按时二字审核出not_due或推断下次剂次时间。
 禁止新增claim。返回严格JSON：{"reviews":[{"id":"候选id","supported":true,"polarity":"affirmed|denied","temporal":"current|history|hypothetical|uncertain","date":"可选YYYY-MM-DD"}],"screening":{"supported":false,"adequate":false,"evidence":"候选原话","scope":[],"question":"实际上一问"}}。"""
 
 
@@ -426,6 +438,20 @@ def _validated_claims(text, model):
     return candidates
 
 
+def _screening_red_flag_scope(screening, ordinary_symptoms):
+    """Separate schema categories without interpreting a patient's answer.
+
+    Models sometimes include an asked ordinary symptom in the screening list.
+    It is not a red-flag denial. Unknown labels still fail validation, and the
+    remaining red flags must independently pass the candidate/context checks.
+    """
+    scope = screening.get("scope")
+    if (not isinstance(scope, list) or any(not isinstance(name, str) for name in scope)
+            or any(name not in DANGER_LABELS and name not in ordinary_symptoms for name in scope)):
+        return None
+    return unique_list([name for name in scope if name in DANGER_LABELS])
+
+
 def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
     patch = _empty_semantic_patch()
     context = _context_for_model(state)
@@ -500,6 +526,7 @@ def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
                if isinstance(row, dict) and isinstance(row.get("id"), str)}
     accepted = []
     explicit_red_flag_scope = set()
+    unconfirmed_medication_timing = False
     for claim in candidates:
         checked = reviews.get(claim["id"]) or {}
         if (checked.get("supported") is not True or checked.get("temporal") != claim["temporal"]
@@ -527,17 +554,35 @@ def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
         elif kind == "medication":
             if value.get("adherence") == "no_missed_or_stopped" and polarity == "denied":
                 patch["medication_adherence"] = value["adherence"]
-            if polarity != "affirmed" or value.get("status", "unknown") == "unknown":
+            if polarity != "affirmed":
                 continue
             if any(observed_date is not None and observed_date != today_local_date()
                    for observed_date in (claim.get("date"), checked.get("date"))):
                 continue
-            patch["medication_status"] = value["status"]
+            status = value.get("status", "unknown")
+            if status == "unknown":
+                # The model may confirm only the deadline relation in a short
+                # answer. Merge that reviewed partial fact with today's known
+                # pending dose; never infer a dose or reuse yesterday's status.
+                if (value.get("timing") in {"not_due", "overdue"}
+                        and state.get("medication_status") == "not_taken_yet"
+                        and state.get("medication_date") == today_local_date()
+                        and context["question_context"].get("topic") == "medication"):
+                    status = "not_taken_yet"
+                else:
+                    continue
+            patch["medication_status"] = status
             patch["medication_timing"] = value.get("timing", "unknown")
+            if patch["medication_timing"] == "not_due" and status != "not_taken_yet":
+                # not_due describes the pending dose, not on-time adherence or
+                # an inferred next dose. Keep the verified status and raw quote;
+                # do not turn this contradictory enum into a confirmed fact.
+                patch["medication_timing"] = "unknown"
+                unconfirmed_medication_timing = True
             patch["medication_detail"] = quote
-            patch["medication_observations"].append({"date": today_local_date(), "status": value["status"],
+            patch["medication_observations"].append({"date": today_local_date(), "status": status,
                                                    "detail": quote, "timing": patch["medication_timing"]})
-            patch["topic_status"]["medication"] = ("clarification_needed" if value["status"] == "not_taken_yet"
+            patch["topic_status"]["medication"] = ("clarification_needed" if status == "not_taken_yet"
                                                      and patch["medication_timing"] == "unknown" else "answered")
         elif kind == "symptom":
             name = value["name"]
@@ -564,8 +609,14 @@ def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
             key = "monitoring_plan" if kind == "monitoring_plan" else "patient_requested_end"
             patch["_semantic"][key] = {"confirmed": value is True and polarity == "affirmed", "evidence": quote}
     checked_screen = review.get("screening") or {}
-    proposed_scope = screening.get("scope") if isinstance(screening.get("scope"), list) else []
-    proposed_scope = [name for name in proposed_scope if isinstance(name, str)]
+    ordinary_symptoms = {name for name in context["question_context"].get("asked_symptoms") or []
+                         if isinstance(name, str)} | set(patch["symptoms"]) | set(patch["denied_symptoms"])
+    danger_terms = {term for label, aliases in SAFETY_PHRASES.items()
+                    for term in (label, *aliases, *DANGER_PATTERNS[label])}
+    ordinary_symptoms.difference_update(danger_terms)
+    proposed_scope = _screening_red_flag_scope(screening, ordinary_symptoms)
+    checked_scope = (_screening_red_flag_scope(checked_screen, ordinary_symptoms)
+                     if isinstance(checked_screen, dict) else None)
     actual_scope = {name for name in context["question_context"].get("asked_red_flags") or []
                     if isinstance(name, str) and name in DANGER_LABELS} | explicit_red_flag_scope
     if (isinstance(checked_screen, dict) and checked_screen.get("supported") is True
@@ -573,11 +624,11 @@ def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
             and _quoted(text, checked_screen.get("evidence"))
             and checked_screen.get("evidence") == screening.get("evidence")
             and checked_screen.get("question") == (context["question_context"].get("question") or context["last_agent_question"])
-            and isinstance(checked_screen.get("scope"), list) and checked_screen["scope"]
-            and all(isinstance(name, str) and name in DANGER_LABELS for name in checked_screen["scope"])
-            and set(checked_screen["scope"]).issubset(proposed_scope)
-            and set(checked_screen["scope"]).issubset(actual_scope)):
-        patch["_semantic"]["screening"] = {key: checked_screen[key] for key in ("adequate", "evidence", "question", "scope")}
+            and checked_scope and proposed_scope is not None
+            and set(checked_scope).issubset(proposed_scope)
+            and set(checked_scope).issubset(actual_scope)):
+        patch["_semantic"]["screening"] = {
+            **{key: checked_screen[key] for key in ("adequate", "evidence", "question")}, "scope": checked_scope}
         patch["topic_status"]["red_flags"] = "answered"
     if (len(accepted) != len(candidates) or len(reviews) != len(candidates)
             or (screening.get("adequate") is True and "screening" not in patch["_semantic"])):
@@ -593,10 +644,13 @@ def _extract_v50_semantic(text, state, call_json_model, *, on_checkpoint=None):
     patch["semantic_validated"] = state.get("llm_v4_last_extraction_ok") is not False
     if not patch["semantic_validated"]:
         add_trace(state, "SEMANTIC_VALIDATION_REJECTED", {"purpose": "VERIFY_EXTRACT", "status": "rejected",
-                  "candidate_count": len(candidates), "accepted_count": len(accepted)})
+                  "candidate_count": len(candidates), "accepted_count": len(accepted),
+                  "claims_rejected": len(accepted) != len(candidates) or len(reviews) != len(candidates),
+                  "screening_rejected": screening.get("adequate") is True and "screening" not in patch["_semantic"]})
     add_trace(state, "LLM_EXTRACTION_RESULT", {"accepted_claims": len(accepted), "candidate_claims": len(candidates),
               "reported_symptoms": patch["symptoms"], "reported_red_flags": patch["red_flags"],
-              "answer_status": patch["answer_status"], "semantic_validated": patch["semantic_validated"]})
+              "answer_status": patch["answer_status"], "semantic_validated": patch["semantic_validated"],
+              "unconfirmed_medication_timing": unconfirmed_medication_timing})
     return patch
 
 

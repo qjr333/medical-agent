@@ -1,0 +1,378 @@
+{
+  "date": "2026-10-15",
+  "baseline_commit": "cd94bb6",
+  "source_reference": "working tree based on cd94bb6",
+  "offline_tests": {
+    "python_baseline": 603,
+    "python_final": 671,
+    "python_added": 68,
+    "frontend_behavior": 7,
+    "react_build": "pass",
+    "react_lint": "pass"
+  },
+  "scripted_conditions": {
+    "sample_size": 6,
+    "model_mode": "scripted",
+    "real_provider_requests": 0,
+    "rag_mode": "keyword",
+    "sqlite": "temporary per run",
+    "delay_seconds": 0
+  },
+  "scripted_results": [
+    {
+      "scenario": "stable",
+      "followup_status": "completed",
+      "objective_score": 100,
+      "objective_checks_pass": true,
+      "patient_turns": 4,
+      "scripted_adapter_calls": 25,
+      "real_provider_requests": 0,
+      "executed_tools": 1,
+      "cached_tools": 0,
+      "exact_duplicate_questions": 0,
+      "fact_errors": 0,
+      "trace_elapsed_seconds": 0.895,
+      "report_schema": "4.2",
+      "doctor_handled": true,
+      "family_read": true,
+      "duplicate_push_created_messages": 0,
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "bp"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "medication"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "current_symptoms"
+        },
+        {
+          "action": "CHECK_BP_HISTORY",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "FINISH",
+          "goal": "dynamic_followup"
+        }
+      ],
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      }
+    },
+    {
+      "scenario": "high_bp",
+      "followup_status": "completed",
+      "objective_score": 100,
+      "objective_checks_pass": true,
+      "patient_turns": 4,
+      "scripted_adapter_calls": 29,
+      "real_provider_requests": 0,
+      "executed_tools": 3,
+      "cached_tools": 0,
+      "exact_duplicate_questions": 0,
+      "fact_errors": 0,
+      "trace_elapsed_seconds": 0.926,
+      "report_schema": "4.2",
+      "doctor_handled": true,
+      "family_read": true,
+      "duplicate_push_created_messages": 0,
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "medication"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "current_symptoms"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "measurement_context"
+        },
+        {
+          "action": "CHECK_BP_HISTORY",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "RETRIEVE_MEDICAL_GUIDANCE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "GENERATE_VISIT_ADVICE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "FINISH",
+          "goal": "dynamic_followup"
+        }
+      ],
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      }
+    },
+    {
+      "scenario": "nonadherent",
+      "followup_status": "completed",
+      "objective_score": 100,
+      "objective_checks_pass": true,
+      "patient_turns": 5,
+      "scripted_adapter_calls": 39,
+      "real_provider_requests": 0,
+      "executed_tools": 6,
+      "cached_tools": 0,
+      "exact_duplicate_questions": 0,
+      "fact_errors": 0,
+      "trace_elapsed_seconds": 1.001,
+      "report_schema": "4.2",
+      "doctor_handled": true,
+      "family_read": true,
+      "duplicate_push_created_messages": 0,
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "bp"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "medication"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "current_symptoms"
+        },
+        {
+          "action": "RETRIEVE_MEDICAL_GUIDANCE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "MEDICATION_GUIDANCE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "collect_medication_details"
+        },
+        {
+          "action": "RETRIEVE_MEDICAL_GUIDANCE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "MEDICATION_GUIDANCE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "CHECK_BP_HISTORY",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "GENERATE_VISIT_ADVICE",
+          "goal": "dynamic_followup"
+        },
+        {
+          "action": "FINISH",
+          "goal": "dynamic_followup"
+        }
+      ],
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      }
+    },
+    {
+      "scenario": "unclear",
+      "followup_status": "partially_completed",
+      "objective_score": 89,
+      "objective_checks_pass": true,
+      "patient_turns": 4,
+      "scripted_adapter_calls": 22,
+      "real_provider_requests": 0,
+      "executed_tools": 0,
+      "cached_tools": 0,
+      "exact_duplicate_questions": 0,
+      "fact_errors": 0,
+      "trace_elapsed_seconds": 0.873,
+      "report_schema": "4.2",
+      "doctor_handled": true,
+      "family_read": true,
+      "duplicate_push_created_messages": 0,
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "bp"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "medication"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "current_symptoms"
+        },
+        {
+          "action": "FINISH",
+          "goal": "dynamic_followup"
+        }
+      ],
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      }
+    },
+    {
+      "scenario": "danger",
+      "followup_status": "escalated",
+      "objective_score": 100,
+      "objective_checks_pass": true,
+      "patient_turns": 1,
+      "scripted_adapter_calls": 2,
+      "real_provider_requests": 0,
+      "executed_tools": 1,
+      "cached_tools": 0,
+      "exact_duplicate_questions": 0,
+      "fact_errors": 0,
+      "trace_elapsed_seconds": 0.76,
+      "report_schema": "4.2",
+      "doctor_handled": true,
+      "family_read": true,
+      "duplicate_push_created_messages": 0,
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        }
+      ],
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      }
+    },
+    {
+      "scenario": "refusing",
+      "followup_status": "partially_completed",
+      "objective_score": 73,
+      "objective_checks_pass": true,
+      "patient_turns": 4,
+      "scripted_adapter_calls": 24,
+      "real_provider_requests": 0,
+      "executed_tools": 0,
+      "cached_tools": 0,
+      "exact_duplicate_questions": 0,
+      "fact_errors": 0,
+      "trace_elapsed_seconds": 0.863,
+      "report_schema": "4.2",
+      "doctor_handled": true,
+      "family_read": true,
+      "duplicate_push_created_messages": 0,
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "red_flags"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "bp"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "medication"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "current_symptoms"
+        },
+        {
+          "action": "FINISH",
+          "goal": "dynamic_followup"
+        }
+      ],
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      }
+    }
+  ],
+  "scripted_aggregate": {
+    "expected_terminal_outcome": 6,
+    "fully_completed": 3,
+    "partially_completed": 2,
+    "safety_escalated": 1,
+    "patient_turns_mean": 3.67,
+    "adapter_calls_mean": 23.5,
+    "trace_elapsed_seconds_mean": 0.886,
+    "exact_duplicate_questions": 0,
+    "fact_errors": 0,
+    "semantic_repetition_and_naturalness": "not proven by scripted tests"
+  },
+  "deterministic_context_comparison": {
+    "before": {
+      "kind": "deterministic_context_fixture",
+      "baseline_commit": "cd94bb6",
+      "recent_dialogue_messages": 10,
+      "agent_messages": 6,
+      "tool_result_occurrences": 2,
+      "planner_payload_characters": 4320,
+      "plan_calls": 2,
+      "real_model_requests": 0
+    },
+    "after": {
+      "kind": "deterministic_context_fixture",
+      "baseline_commit": "cd94bb6",
+      "recent_dialogue_messages": 8,
+      "agent_messages": 4,
+      "tool_result_occurrences": 1,
+      "planner_payload_characters": 3673,
+      "plan_calls": 2,
+      "real_model_requests": 0
+    },
+    "payload_character_reduction": 647,
+    "payload_character_reduction_percent": 14.98,
+    "notes": "Same deterministic fixture. Characters, not tokenizer counts or measured live-model savings."
+  },
+  "live_tests": {
+    "status": "stopped_at_user_request_after_provider_failures",
+    "valid_patient_conversations": 0,
+    "stable_runs_attempted": 2,
+    "minimal_connectivity_generations_attempted": 1,
+    "natural_language_quality": "not verified",
+    "stable_abnormal_danger_acceptance": "pending provider availability; no automatic further tests scheduled"
+  },
+  "limitations": [
+    "Small fictional sample; no clinical validation.",
+    "Scripted success is not proof of LLM autonomy.",
+    "Exact duplicate count does not measure semantic repetition.",
+    "No reliable pre/post live-model success-rate or latency baseline."
+  ]
+}

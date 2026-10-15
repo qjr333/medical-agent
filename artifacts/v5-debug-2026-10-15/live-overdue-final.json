@@ -1,0 +1,246 @@
+{
+  "mode": "live",
+  "case": "overdue_final",
+  "pass": true,
+  "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？",
+  "patient_message": "超过了",
+  "patch": {
+    "bp_systolic": null,
+    "bp_diastolic": null,
+    "medication_status": "not_taken_yet",
+    "medication_detail": "超过了",
+    "medication_timing": "overdue",
+    "medication_observations": [
+      {
+        "date": "2026-10-15",
+        "status": "not_taken_yet",
+        "detail": "超过了",
+        "timing": "overdue"
+      }
+    ],
+    "medication_adherence": "",
+    "symptoms": [],
+    "denied_symptoms": [],
+    "red_flags": [],
+    "denied_red_flags": [],
+    "additional_information": "",
+    "measurement_context": "",
+    "patient_question": "",
+    "answer_status": "answered",
+    "answered_topics": [
+      "medication"
+    ],
+    "topic_status": {
+      "medication": "answered"
+    },
+    "_semantic": {},
+    "_llm_v4_verified": true,
+    "semantic_validated": true
+  },
+  "trace": [
+    {
+      "time": "2026-10-15T12:07:44.537776+00:00",
+      "event": "LLM_CALL",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "provider_events": [
+          {
+            "provider": "deepseek",
+            "mode": "json",
+            "status": "started",
+            "error_type": null
+          },
+          {
+            "provider": "deepseek",
+            "mode": "json",
+            "status": "success",
+            "error_type": null
+          }
+        ],
+        "agent_version": "V5.0",
+        "duration_ms": 16831.4
+      }
+    },
+    {
+      "time": "2026-10-15T12:08:20.912396+00:00",
+      "event": "LLM_CALL",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "provider_events": [
+          {
+            "provider": "deepseek",
+            "mode": "json",
+            "status": "started",
+            "error_type": null
+          },
+          {
+            "provider": "deepseek",
+            "mode": "json",
+            "status": "success",
+            "error_type": null
+          }
+        ],
+        "agent_version": "V5.0",
+        "duration_ms": 36374.2
+      }
+    },
+    {
+      "time": "2026-10-15T12:08:20.912544+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 1,
+        "candidate_claims": 1,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "answered",
+        "semantic_validated": true,
+        "unconfirmed_medication_timing": false
+      }
+    }
+  ],
+  "calls": [
+    {
+      "result": {
+        "claims": [
+          {
+            "id": "c1",
+            "kind": "medication",
+            "value": {
+              "status": "not_taken_yet",
+              "timing": "overdue"
+            },
+            "polarity": "affirmed",
+            "temporal": "current",
+            "evidence": "超过了"
+          }
+        ],
+        "answer_status": "answered",
+        "patient_question": "",
+        "screening": {
+          "adequate": false,
+          "evidence": "超过了",
+          "scope": [],
+          "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？"
+        },
+        "reason": "患者回答“超过了”，在服药时间问题下表示已超过原定服药时间；无危险症状筛查。"
+      },
+      "payload": {
+        "patient_message": "超过了",
+        "today": "2026-10-15",
+        "question_context": {
+          "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？",
+          "topic": "medication",
+          "kind": "medication_details"
+        },
+        "last_agent_question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？",
+        "current_goal": "确认本次服药情况",
+        "today_state": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "not_taken_yet",
+          "medication_timing": "unknown",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "symptom_status": null,
+          "red_flag_status": null,
+          "topic_status": {
+            "bp": "unanswered",
+            "medication": "unanswered",
+            "current_symptoms": "unanswered",
+            "red_flags": "unanswered",
+            "measurement_context": "unanswered"
+          },
+          "deferred_topics": {}
+        }
+      }
+    },
+    {
+      "result": {
+        "reviews": [
+          {
+            "id": "c1",
+            "supported": true,
+            "polarity": "affirmed",
+            "temporal": "current"
+          }
+        ],
+        "screening": {
+          "supported": false,
+          "adequate": false,
+          "evidence": "超过了",
+          "scope": [],
+          "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？"
+        }
+      },
+      "payload": {
+        "patient_message": "超过了",
+        "today": "2026-10-15",
+        "question_context": {
+          "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？",
+          "topic": "medication",
+          "kind": "medication_details"
+        },
+        "last_agent_question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？",
+        "current_goal": "确认本次服药情况",
+        "today_state": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "not_taken_yet",
+          "medication_timing": "unknown",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "symptom_status": null,
+          "red_flag_status": null,
+          "topic_status": {
+            "bp": "unanswered",
+            "medication": "unanswered",
+            "current_symptoms": "unanswered",
+            "red_flags": "unanswered",
+            "measurement_context": "unanswered"
+          },
+          "deferred_topics": {}
+        },
+        "claims": [
+          {
+            "id": "c1",
+            "kind": "medication",
+            "value": {
+              "status": "not_taken_yet",
+              "timing": "overdue"
+            },
+            "polarity": "affirmed",
+            "temporal": "current",
+            "evidence": "超过了"
+          }
+        ],
+        "screening": {
+          "adequate": false,
+          "evidence": "超过了",
+          "scope": [],
+          "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？"
+        }
+      }
+    }
+  ],
+  "real_model_requests": 2
+}

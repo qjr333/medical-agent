@@ -585,6 +585,23 @@ class ObjectiveEvaluationV50Tests(unittest.TestCase):
                 self.assertFalse(result["pass"])
                 self.assertEqual(result["total_score"], 95)
 
+    def test_explicit_current_and_history_in_one_sentence_are_not_mislabeled(self):
+        from simulation.evaluation import _text_bp_errors
+        text = "您今天记录的血压是168/104 mmHg，明显偏高，而且最近几次（148/90、156/96、160/100）也在逐步上升。"
+        self.assertEqual(_text_bp_errors(text, get_scenario("high_bp")["hidden_facts"]), [])
+
+    def test_narrative_temporal_labels_do_not_hide_wrong_current_or_invented_history(self):
+        from simulation.evaluation import _text_bp_errors
+        truth = get_scenario("high_bp")["hidden_facts"]
+        for text, code in (
+            ("您今天血压是148/90，最近几次为156/96、160/100。", "stale_history_as_current"),
+            ("历史记录148/90，今天血压是220/120。", "incorrect_current_bp"),
+            ("今天168/104，历史记录148/90，今天又是148/90。", "stale_history_as_current"),
+            ("今天168/104，历史记录还有199/119。", "invented_history"),
+        ):
+            with self.subTest(text=text):
+                self.assertIn(code, [error["code"] for error in _text_bp_errors(text, truth)])
+
     def test_report_wrong_prescription_false_denial_and_history_are_real_errors(self):
         state = completed_state("nonadherent")
         state["report"]["medication"]["detail"] = "原医嘱氨氯地平10 mg"
@@ -801,6 +818,25 @@ class ObjectiveEvaluationV50Tests(unittest.TestCase):
                 self.assertEqual(observed["partially_completed"], outcome == "partial")
                 self.assertEqual(observed["safety_escalated"], outcome == "escalated")
                 self.assertEqual(observed["interrupted"], outcome == "interrupted")
+
+    def test_skipped_safety_extraction_is_not_a_model_attempt_or_phase_failure(self):
+        state = completed_state("danger")
+        state["trace"][0]["detail"]["duration_ms"] = 10
+        state["trace"] += [
+            {"event": "LLM_CALL", "detail": {"purpose": "VERIFY_RESPONSE", "called": True, "ok": True,
+                                             "deepseek_called": False, "provider_events": [], "duration_ms": 20}},
+            {"event": "LLM_CALL", "detail": {"purpose": "EXTRACT", "called": False, "ok": False,
+                                             "status": "skipped", "reason": "direct_safety_override", "duration_ms": 0}},
+        ]
+        before = deepcopy(state["trace"])
+        observed = evaluate_run("danger", [], state)["observations"]
+        self.assertEqual(observed["model_call_attempts"], 2)
+        self.assertEqual(sum(phase["calls"] for phase in observed["model_phase_timings"].values()), 2)
+        self.assertNotIn("EXTRACT", observed["model_phase_timings"])
+        self.assertEqual(observed["skipped_model_phases"], {"EXTRACT": 1})
+        self.assertEqual(observed["model_failures_by_stage"], {})
+        self.assertEqual(observed["provider_request_count"], 0)
+        self.assertEqual(state["trace"], before)
 
     def test_fully_disclosed_information_does_not_require_fixed_question_order(self):
         facts = patient_module._catalog(get_scenario("stable"))

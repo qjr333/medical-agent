@@ -1,0 +1,819 @@
+{
+  "scenario_id": "high_bp",
+  "status": "failed",
+  "followup_status": "interrupted",
+  "evaluation": {
+    "schema_version": "5.0",
+    "scenario_id": "high_bp",
+    "total_score": 79,
+    "max_score": 100,
+    "pass": false,
+    "metrics": {
+      "information_collection": {
+        "score": 18,
+        "max_score": 30,
+        "status": "partial",
+        "evidence": {
+          "trigger_type": "high_bp",
+          "required_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags",
+            "measurement_context"
+          ],
+          "correctly_collected_topics": [
+            "bp",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "missing_topics": [
+            "medication",
+            "measurement_context"
+          ],
+          "honestly_unconfirmed_topics": [],
+          "reported_topics": [
+            "current_symptoms",
+            "red_flags"
+          ],
+          "fact_errors": []
+        }
+      },
+      "danger_escalation": {
+        "score": 25,
+        "max_score": 25,
+        "status": "not_applicable",
+        "evidence": {
+          "expected_red_flags": [],
+          "outcome": "interrupted",
+          "safety_events": [],
+          "danger_disclosed_at": null,
+          "routine_questions_after_danger": []
+        }
+      },
+      "question_efficiency": {
+        "score": 15,
+        "max_score": 15,
+        "status": "passed",
+        "evidence": {
+          "questions": [
+            {
+              "index": 0,
+              "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+              "topics": [
+                "red_flags",
+                "current_symptoms"
+              ]
+            }
+          ],
+          "duplicate_questions": [],
+          "unnecessary_questions": []
+        }
+      },
+      "execution_evidence": {
+        "score": 15,
+        "max_score": 15,
+        "status": "passed",
+        "evidence": {
+          "model_call_attempts": 6,
+          "successful_model_calls": 6,
+          "provider_request_count": 6,
+          "successful_provider_requests": 6,
+          "injected_or_custom_model_calls": 0,
+          "planner_decisions": 1,
+          "executed_tool_calls": 0,
+          "cached_tool_calls": 0,
+          "tool_error_count": 0,
+          "rag_attempts": 0,
+          "rag_successes": 0,
+          "rag_empty_results": 0,
+          "rag_errors": 0,
+          "simulation_fallback_answers": 1,
+          "simulation_profile_answers": 0,
+          "simulation_llm_answers": 0,
+          "simulation_semantically_verified_answers": 0,
+          "simulation_canonical_scripted_answers": 0,
+          "simulation_failure_stages": {
+            "validation_rejected": 1
+          },
+          "patient_turns": 1,
+          "outcome": "interrupted",
+          "fully_completed": false,
+          "partially_completed": false,
+          "safety_escalated": false,
+          "interrupted": true,
+          "interruption_reasons": [
+            "llm_extraction_failed"
+          ],
+          "model_phase_timings": {
+            "PLAN": {
+              "calls": 1,
+              "total_ms": 3986.2,
+              "mean_ms": 3986.2
+            },
+            "VERIFY_RESPONSE": {
+              "calls": 1,
+              "total_ms": 5921.1,
+              "mean_ms": 5921.1
+            },
+            "SIMULATED_PATIENT": {
+              "calls": 1,
+              "total_ms": 7601.9,
+              "mean_ms": 7601.9
+            },
+            "SIMULATED_PATIENT_VALIDATE": {
+              "calls": 1,
+              "total_ms": 38957.2,
+              "mean_ms": 38957.2
+            },
+            "EXTRACT": {
+              "calls": 1,
+              "total_ms": 20474.9,
+              "mean_ms": 20474.9
+            },
+            "VERIFY_EXTRACT": {
+              "calls": 1,
+              "total_ms": 29306.8,
+              "mean_ms": 29306.8
+            }
+          },
+          "skipped_model_phases": {},
+          "trace_elapsed_seconds": 106.865,
+          "model_failures_by_stage": {},
+          "model_retry_events": 0,
+          "model_retry_exhausted_events": 0,
+          "reexecuted_tool_names": {},
+          "decision_path": [
+            {
+              "action": "ASK_USER",
+              "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状"
+            }
+          ],
+          "information_gain_by_patient_turn": [
+            {
+              "message_index": 1,
+              "new_fact_fields": 6,
+              "disclosed_fact_fields": 6,
+              "mode": "fallback"
+            }
+          ],
+          "newly_disclosed_fact_fields": 6,
+          "review_required": {
+            "semantic_question_repetition": "not_automatically_proven",
+            "patient_answer_relevance": "not_automatically_proven",
+            "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+            "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+          },
+          "report_ai_status": "not_available",
+          "inconsistencies": []
+        }
+      },
+      "completion_truthfulness": {
+        "score": 4,
+        "max_score": 10,
+        "status": "partial",
+        "evidence": {
+          "outcome": "interrupted",
+          "errors": [],
+          "missing_topics": [
+            "medication",
+            "measurement_context"
+          ],
+          "pending_items": []
+        }
+      },
+      "report_consistency": {
+        "score": 2,
+        "max_score": 5,
+        "status": "partial",
+        "evidence": {
+          "fact_errors": [],
+          "missing_fields": [
+            "report_not_available"
+          ]
+        }
+      }
+    },
+    "observations": {
+      "model_call_attempts": 6,
+      "successful_model_calls": 6,
+      "provider_request_count": 6,
+      "successful_provider_requests": 6,
+      "injected_or_custom_model_calls": 0,
+      "planner_decisions": 1,
+      "executed_tool_calls": 0,
+      "cached_tool_calls": 0,
+      "tool_error_count": 0,
+      "rag_attempts": 0,
+      "rag_successes": 0,
+      "rag_empty_results": 0,
+      "rag_errors": 0,
+      "simulation_fallback_answers": 1,
+      "simulation_profile_answers": 0,
+      "simulation_llm_answers": 0,
+      "simulation_semantically_verified_answers": 0,
+      "simulation_canonical_scripted_answers": 0,
+      "simulation_failure_stages": {
+        "validation_rejected": 1
+      },
+      "patient_turns": 1,
+      "outcome": "interrupted",
+      "fully_completed": false,
+      "partially_completed": false,
+      "safety_escalated": false,
+      "interrupted": true,
+      "interruption_reasons": [
+        "llm_extraction_failed"
+      ],
+      "model_phase_timings": {
+        "PLAN": {
+          "calls": 1,
+          "total_ms": 3986.2,
+          "mean_ms": 3986.2
+        },
+        "VERIFY_RESPONSE": {
+          "calls": 1,
+          "total_ms": 5921.1,
+          "mean_ms": 5921.1
+        },
+        "SIMULATED_PATIENT": {
+          "calls": 1,
+          "total_ms": 7601.9,
+          "mean_ms": 7601.9
+        },
+        "SIMULATED_PATIENT_VALIDATE": {
+          "calls": 1,
+          "total_ms": 38957.2,
+          "mean_ms": 38957.2
+        },
+        "EXTRACT": {
+          "calls": 1,
+          "total_ms": 20474.9,
+          "mean_ms": 20474.9
+        },
+        "VERIFY_EXTRACT": {
+          "calls": 1,
+          "total_ms": 29306.8,
+          "mean_ms": 29306.8
+        }
+      },
+      "skipped_model_phases": {},
+      "trace_elapsed_seconds": 106.865,
+      "model_failures_by_stage": {},
+      "model_retry_events": 0,
+      "model_retry_exhausted_events": 0,
+      "reexecuted_tool_names": {},
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状"
+        }
+      ],
+      "information_gain_by_patient_turn": [
+        {
+          "message_index": 1,
+          "new_fact_fields": 6,
+          "disclosed_fact_fields": 6,
+          "mode": "fallback"
+        }
+      ],
+      "newly_disclosed_fact_fields": 6,
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      },
+      "report_ai_status": "not_available",
+      "inconsistencies": []
+    },
+    "scoring_method": "objective_hidden_facts_and_execution_trace"
+  },
+  "error_type": null,
+  "error": null,
+  "model_mode": "live",
+  "real_model_requests": 6,
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-15T11:34:59.880394+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "high_bp",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-15T11:35:04.412661+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3986.2,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-15T11:35:04.412778+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "high_bp"
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-15T11:35:10.348246+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 5921.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 10,
+      "time": "2026-10-15T11:35:10.348982+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "您这次记录的血压是168/104 mmHg，比前几天148→156→160的连续上升趋势又高了一些，所以想先确认一下您现在身体有没有不舒服。\n\n这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？"
+      }
+    },
+    {
+      "id": 11,
+      "time": "2026-10-15T11:35:17.960719+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 7601.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 12,
+      "time": "2026-10-15T11:35:56.918971+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 38957.2,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 13,
+      "time": "2026-10-15T11:35:56.919150+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "fallback",
+        "model_status": "invalid",
+        "validation_status": "rejected",
+        "failure_stage": "validation_rejected",
+        "fallback_reason": "validation_rejected"
+      }
+    },
+    {
+      "id": 14,
+      "time": "2026-10-15T11:35:56.931643+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。"
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-15T11:36:17.414974+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 20474.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 16,
+      "time": "2026-10-15T11:36:46.730397+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 29306.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 17,
+      "time": "2026-10-15T11:36:46.730716+00:00",
+      "event": "LLM_VALIDATION_ERROR",
+      "stage": "planner",
+      "detail": {
+        "purpose": "EXTRACT",
+        "status": "error"
+      }
+    },
+    {
+      "id": 18,
+      "time": "2026-10-15T11:36:46.730891+00:00",
+      "event": "SEMANTIC_VALIDATION_REJECTED",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "status": "rejected",
+        "candidate_count": 7,
+        "accepted_count": 7
+      }
+    },
+    {
+      "id": 20,
+      "time": "2026-10-15T11:36:46.734519+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 23,
+      "time": "2026-10-15T11:36:46.745174+00:00",
+      "event": "SAFETY_PAUSE",
+      "stage": "safety",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_extraction_failed",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "id": 24,
+      "time": "2026-10-15T11:36:46.745180+00:00",
+      "event": "TASK_INTERRUPTED",
+      "stage": "execution_error",
+      "detail": {
+        "next_status": "interrupted",
+        "next_action": "ASK_USER"
+      }
+    },
+    {
+      "id": 26,
+      "time": "2026-10-15T11:36:46.745200+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。"
+      }
+    }
+  ],
+  "transcript": [
+    {
+      "role": "agent",
+      "message": "您这次记录的血压是168/104 mmHg，比前几天148→156→160的连续上升趋势又高了一些，所以想先确认一下您现在身体有没有不舒服。\n\n这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+      "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+      "question_context": {
+        "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+        "topic": "red_flags",
+        "kind": "symptoms",
+        "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "asked_symptoms": [
+          "头晕",
+          "胸闷"
+        ],
+        "asked_red_flags": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    },
+    {
+      "role": "patient",
+      "message": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+      "reported_facts": [
+        {
+          "fact_id": "red_flags",
+          "topic": "red_flags",
+          "render": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。",
+          "values": {
+            "red_flags": [],
+            "denied_red_flags": [
+              "胸痛",
+              "呼吸困难",
+              "晕厥",
+              "意识异常",
+              "突发肢体无力",
+              "突发言语异常"
+            ],
+            "red_flag_status": "denied"
+          }
+        },
+        {
+          "fact_id": "symptoms",
+          "topic": "current_symptoms",
+          "render": "我现在没有不舒服，也没有头晕。",
+          "values": {
+            "symptoms": [],
+            "denied_symptoms": [
+              "头晕"
+            ],
+            "symptom_status": "denied"
+          }
+        }
+      ],
+      "mode": "fallback",
+      "model_status": "invalid",
+      "validation_status": "rejected",
+      "failure_stage": "validation_rejected",
+      "fallback_reason": "validation_rejected",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "当前智能随访模型暂时不可用或处理未完成，当前记录已保留，请稍后继续。不能据此认为医学评估已完成；如出现危险症状，请立即寻求急诊帮助。",
+      "question_context": {
+        "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+        "topic": "red_flags",
+        "kind": "symptoms",
+        "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "asked_symptoms": [
+          "头晕",
+          "胸闷"
+        ],
+        "asked_red_flags": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    }
+  ],
+  "task": {
+    "task_id": "5a934537-6023-4799-99be-6eff98803912",
+    "patient_id": "simulation-high_bp",
+    "event_id": "simulation-event",
+    "trigger_type": "high_bp",
+    "due_at": "2026-10-15T11:34:59.876038+00:00",
+    "status": "failed",
+    "attempts": 1,
+    "max_attempts": 3,
+    "lease_until": null,
+    "claim_token": null,
+    "session_id": "task_5a9345376023479999be6eff98803912",
+    "last_error": null,
+    "created_at": "2026-10-15T11:34:59.876038+00:00",
+    "updated_at": "2026-10-15T11:36:46.754708+00:00",
+    "delivery_status": "not_configured",
+    "station_delivery_status": "pending",
+    "report_generated": 0,
+    "station_messages": 0,
+    "payload": {
+      "bp_record_id": 4,
+      "measurement": {
+        "diastolic": 104,
+        "id": 4,
+        "measured_at": "2026-10-15T11:34:59.876038+00:00",
+        "source": "simulation_device",
+        "systolic": 168
+      }
+    },
+    "result": {
+      "followup_status": "waiting_for_user",
+      "message": "您这次记录的血压是168/104 mmHg，比前几天148→156→160的连续上升趋势又高了一些，所以想先确认一下您现在身体有没有不舒服。\n\n这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+      "report_generated": false,
+      "session_id": "task_5a9345376023479999be6eff98803912",
+      "station_messages": 0,
+      "status": "waiting_for_user"
+    },
+    "measurement": {
+      "diastolic": 104,
+      "id": 4,
+      "measured_at": "2026-10-15T11:34:59.876038+00:00",
+      "source": "simulation_device",
+      "systolic": 168
+    }
+  },
+  "doctor_handled": false,
+  "family_read": false,
+  "diagnostics": [
+    {
+      "time": "2026-10-15T11:35:10.348887+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T11:35:56.919150+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "fallback",
+        "model_status": "invalid",
+        "validation_status": "rejected",
+        "failure_stage": "validation_rejected",
+        "fallback_reason": "validation_rejected"
+      }
+    },
+    {
+      "time": "2026-10-15T11:36:46.730716+00:00",
+      "event": "LLM_VALIDATION_ERROR",
+      "detail": {
+        "purpose": "EXTRACT",
+        "status": "error",
+        "code": "unsupported_semantic_claims_or_screening"
+      }
+    },
+    {
+      "time": "2026-10-15T11:36:46.730891+00:00",
+      "event": "SEMANTIC_VALIDATION_REJECTED",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "status": "rejected",
+        "candidate_count": 7,
+        "accepted_count": 7
+      }
+    },
+    {
+      "time": "2026-10-15T11:36:46.730905+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 7,
+        "candidate_claims": 7,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "answered",
+        "semantic_validated": false
+      }
+    },
+    {
+      "time": "2026-10-15T11:36:46.734519+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": true,
+          "medication": false,
+          "current_symptoms": true,
+          "red_flags": true,
+          "measurement_context": false
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [
+            "头晕"
+          ],
+          "red_flags": [],
+          "denied_red_flags": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常"
+          ],
+          "additional_information": "",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "answered",
+          "answered_topics": [
+            "current_symptoms"
+          ],
+          "topic_status": {
+            "current_symptoms": "answered"
+          },
+          "_semantic": {},
+          "_llm_v4_verified": true,
+          "semantic_validated": false
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T11:36:46.745174+00:00",
+      "event": "SAFETY_PAUSE",
+      "detail": {
+        "status": "paused",
+        "recoverable": false,
+        "failure_kind": "llm_extraction_failed",
+        "next_action": "WAIT_FOR_NEW_INPUT"
+      }
+    },
+    {
+      "time": "2026-10-15T11:36:46.745180+00:00",
+      "event": "TASK_INTERRUPTED",
+      "detail": {
+        "reason": "llm_extraction_failed",
+        "next_status": "interrupted",
+        "next_action": "ASK_USER",
+        "pending_tasks": [
+          "medication",
+          "measurement_context",
+          "ASK_USER"
+        ]
+      }
+    }
+  ],
+  "final_facts": {
+    "bp_systolic": 168,
+    "bp_diastolic": 104,
+    "medication_status": "unknown",
+    "medication_timing": "unknown",
+    "symptoms": [],
+    "denied_symptoms": [
+      "头晕"
+    ],
+    "red_flags": [],
+    "denied_red_flags": [
+      "胸痛",
+      "呼吸困难",
+      "晕厥",
+      "意识异常",
+      "突发肢体无力",
+      "突发言语异常"
+    ],
+    "symptom_status": "denied",
+    "red_flag_status": "denied",
+    "coverage": {
+      "bp": true,
+      "medication": false,
+      "current_symptoms": true,
+      "red_flags": true,
+      "measurement_context": false
+    },
+    "topic_status": {
+      "bp": "answered",
+      "medication": "unanswered",
+      "current_symptoms": "answered",
+      "red_flags": "answered",
+      "measurement_context": "unanswered"
+    },
+    "_semantic": null
+  }
+}

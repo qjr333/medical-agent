@@ -1,0 +1,61 @@
+{
+  "kind": "one_fictional_review_payload_two_modes",
+  "model": "deepseek-flash",
+  "production_configuration_changed": false,
+  "samples": [
+    {
+      "mode": "provider_default",
+      "seconds": 15.197,
+      "model": "deepseek-flash",
+      "max_tokens": 4096,
+      "finish_reason": "stop",
+      "usage": {
+        "completion_tokens": 2646,
+        "prompt_tokens": 1339,
+        "total_tokens": 3985,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 2288,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": {
+          "audio_tokens": null,
+          "cache_write_tokens": null,
+          "cached_tokens": 256
+        },
+        "prompt_cache_hit_tokens": 256,
+        "prompt_cache_miss_tokens": 1083
+      },
+      "reasoning_characters": 8558,
+      "reviewed_claims": 8,
+      "all_claims_supported": true,
+      "screening_supported": true
+    },
+    {
+      "mode": "thinking_disabled",
+      "seconds": 1.918,
+      "model": "deepseek-flash",
+      "max_tokens": 4096,
+      "finish_reason": "stop",
+      "usage": {
+        "completion_tokens": 341,
+        "prompt_tokens": 1314,
+        "total_tokens": 1655,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": {
+          "audio_tokens": null,
+          "cache_write_tokens": null,
+          "cached_tokens": 0
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1314
+      },
+      "reasoning_characters": 0,
+      "reviewed_claims": 8,
+      "all_claims_supported": true,
+      "screening_supported": false
+    }
+  ],
+  "limitations": "One sample per mode; not a clinical accuracy or general latency benchmark; reasoning text never recorded."
+}

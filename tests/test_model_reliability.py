@@ -5,6 +5,7 @@ import importlib
 import importlib.util
 import io
 import os
+import runpy
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 import unittest
@@ -75,6 +76,13 @@ class ModelReliabilityTests(unittest.TestCase):
             self.assertEqual(config._timeout_seconds("TEST_MODEL_TIMEOUT", 50), 60)
         with patch.dict(os.environ, {}, clear=True):
             self.assertEqual(config._timeout_seconds("TEST_MODEL_TIMEOUT", 50), 50)
+
+    def test_default_model_is_current_and_explicit_configuration_is_preserved(self):
+        path = MODEL_PATH.with_name("config.py")
+        with patch("dotenv.load_dotenv", return_value=False), patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(runpy.run_path(str(path))["DEEPSEEK_MODEL"], "deepseek-flash")
+        with patch("dotenv.load_dotenv", return_value=False), patch.dict(os.environ, {"DEEPSEEK_MODEL": "configured-model"}):
+            self.assertEqual(runpy.run_path(str(path))["DEEPSEEK_MODEL"], "configured-model")
 
     def test_temporary_errors_are_raised_before_plain_fallback(self):
         module, _ = self.load_client()

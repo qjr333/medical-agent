@@ -1,0 +1,717 @@
+{
+  "mode": "real_deepseek_extraction_with_manual_fictional_contexts",
+  "cases": [
+    {
+      "case": "not_yet",
+      "patient_message": "还没呢",
+      "question": "今天已经服用降压药了吗？",
+      "expected": {
+        "medication_status": "not_taken_yet",
+        "medication_timing": "unknown"
+      },
+      "pass": true,
+      "patch": {
+        "bp_systolic": null,
+        "bp_diastolic": null,
+        "medication_status": "not_taken_yet",
+        "medication_detail": "还没呢",
+        "medication_timing": "unknown",
+        "medication_observations": [
+          {
+            "date": "2026-10-15",
+            "status": "not_taken_yet",
+            "detail": "还没呢",
+            "timing": "unknown"
+          }
+        ],
+        "medication_adherence": "",
+        "symptoms": [],
+        "denied_symptoms": [],
+        "red_flags": [],
+        "denied_red_flags": [],
+        "additional_information": "",
+        "measurement_context": "",
+        "patient_question": "",
+        "answer_status": "answered",
+        "answered_topics": [],
+        "topic_status": {
+          "medication": "clarification_needed"
+        },
+        "_semantic": {},
+        "_llm_v4_verified": true,
+        "semantic_validated": true
+      },
+      "calls": [
+        {
+          "payload": {
+            "patient_message": "还没呢",
+            "today": "2026-10-15",
+            "question_context": {
+              "question": "今天已经服用降压药了吗？",
+              "topic": "medication",
+              "kind": "medication_details"
+            },
+            "last_agent_question": "今天已经服用降压药了吗？",
+            "current_goal": "确认本次服药情况",
+            "today_state": {
+              "bp_systolic": null,
+              "bp_diastolic": null,
+              "medication_status": "unknown",
+              "medication_timing": "unknown",
+              "symptoms": [],
+              "denied_symptoms": [],
+              "red_flags": [],
+              "denied_red_flags": [],
+              "symptom_status": null,
+              "red_flag_status": null,
+              "topic_status": {
+                "bp": "unanswered",
+                "medication": "unanswered",
+                "current_symptoms": "unanswered",
+                "red_flags": "unanswered",
+                "measurement_context": "unanswered"
+              },
+              "deferred_topics": {}
+            }
+          },
+          "result": {
+            "claims": [
+              {
+                "id": "c1",
+                "kind": "medication",
+                "value": {
+                  "status": "not_taken_yet",
+                  "timing": "unknown"
+                },
+                "polarity": "affirmed",
+                "temporal": "current",
+                "evidence": "还没呢"
+              }
+            ],
+            "answer_status": "answered",
+            "patient_question": "",
+            "screening": {
+              "adequate": false,
+              "evidence": "还没呢",
+              "scope": [],
+              "question": "今天已经服用降压药了吗？"
+            },
+            "reason": "患者回答“还没呢”，表示今天降压药尚未服用；未提及是否已到服药时间，因此timing为unknown。"
+          },
+          "seconds": 3.383
+        },
+        {
+          "payload": {
+            "patient_message": "还没呢",
+            "today": "2026-10-15",
+            "question_context": {
+              "question": "今天已经服用降压药了吗？",
+              "topic": "medication",
+              "kind": "medication_details"
+            },
+            "last_agent_question": "今天已经服用降压药了吗？",
+            "current_goal": "确认本次服药情况",
+            "today_state": {
+              "bp_systolic": null,
+              "bp_diastolic": null,
+              "medication_status": "unknown",
+              "medication_timing": "unknown",
+              "symptoms": [],
+              "denied_symptoms": [],
+              "red_flags": [],
+              "denied_red_flags": [],
+              "symptom_status": null,
+              "red_flag_status": null,
+              "topic_status": {
+                "bp": "unanswered",
+                "medication": "unanswered",
+                "current_symptoms": "unanswered",
+                "red_flags": "unanswered",
+                "measurement_context": "unanswered"
+              },
+              "deferred_topics": {}
+            },
+            "claims": [
+              {
+                "id": "c1",
+                "kind": "medication",
+                "value": {
+                  "status": "not_taken_yet",
+                  "timing": "unknown"
+                },
+                "polarity": "affirmed",
+                "temporal": "current",
+                "evidence": "还没呢"
+              }
+            ],
+            "screening": {
+              "adequate": false,
+              "evidence": "还没呢",
+              "scope": [],
+              "question": "今天已经服用降压药了吗？"
+            }
+          },
+          "result": {
+            "reviews": [
+              {
+                "id": "c1",
+                "supported": true,
+                "polarity": "affirmed",
+                "temporal": "current",
+                "date": "2026-10-15"
+              }
+            ],
+            "screening": {
+              "supported": false,
+              "adequate": false,
+              "evidence": "还没呢",
+              "scope": [],
+              "question": "今天已经服用降压药了吗？"
+            }
+          },
+          "seconds": 3.416
+        }
+      ],
+      "trace": [
+        {
+          "time": "2026-10-15T11:56:47.504209+00:00",
+          "event": "LLM_CALL",
+          "detail": {
+            "purpose": "EXTRACT",
+            "ok": true,
+            "called": true,
+            "status": "success",
+            "attempt": 1,
+            "max_attempts": 2,
+            "failure_stage": "generation",
+            "failure_kind": "",
+            "deepseek_called": true,
+            "provider_events": [
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "started",
+                "error_type": null
+              },
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "success",
+                "error_type": null
+              }
+            ],
+            "agent_version": "V5.0",
+            "duration_ms": 3383.6
+          }
+        },
+        {
+          "time": "2026-10-15T11:56:50.922068+00:00",
+          "event": "LLM_CALL",
+          "detail": {
+            "purpose": "VERIFY_EXTRACT",
+            "ok": true,
+            "called": true,
+            "status": "success",
+            "attempt": 1,
+            "max_attempts": 2,
+            "failure_stage": "validation",
+            "failure_kind": "",
+            "deepseek_called": true,
+            "provider_events": [
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "started",
+                "error_type": null
+              },
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "success",
+                "error_type": null
+              }
+            ],
+            "agent_version": "V5.0",
+            "duration_ms": 3417.3
+          }
+        },
+        {
+          "time": "2026-10-15T11:56:50.922374+00:00",
+          "event": "LLM_EXTRACTION_RESULT",
+          "detail": {
+            "accepted_claims": 1,
+            "candidate_claims": 1,
+            "reported_symptoms": [],
+            "reported_red_flags": [],
+            "answer_status": "answered",
+            "semantic_validated": true,
+            "unconfirmed_medication_timing": false
+          }
+        }
+      ],
+      "real_model_requests": 2
+    },
+    {
+      "case": "denied_missed",
+      "patient_message": "没有",
+      "question": "今天有没有漏服或者自行停药？",
+      "expected": {
+        "medication_status": "unknown"
+      },
+      "pass": true,
+      "patch": {
+        "bp_systolic": null,
+        "bp_diastolic": null,
+        "medication_status": "unknown",
+        "medication_detail": "",
+        "medication_timing": "unknown",
+        "medication_observations": [],
+        "medication_adherence": "no_missed_or_stopped",
+        "symptoms": [],
+        "denied_symptoms": [],
+        "red_flags": [],
+        "denied_red_flags": [],
+        "additional_information": "",
+        "measurement_context": "",
+        "patient_question": "",
+        "answer_status": "answered",
+        "answered_topics": [],
+        "topic_status": {},
+        "_semantic": {},
+        "_llm_v4_verified": true,
+        "semantic_validated": true
+      },
+      "calls": [
+        {
+          "payload": {
+            "patient_message": "没有",
+            "today": "2026-10-15",
+            "question_context": {
+              "question": "今天有没有漏服或者自行停药？",
+              "topic": "medication",
+              "kind": "medication_details"
+            },
+            "last_agent_question": "今天有没有漏服或者自行停药？",
+            "current_goal": "确认本次服药情况",
+            "today_state": {
+              "bp_systolic": null,
+              "bp_diastolic": null,
+              "medication_status": "unknown",
+              "medication_timing": "unknown",
+              "symptoms": [],
+              "denied_symptoms": [],
+              "red_flags": [],
+              "denied_red_flags": [],
+              "symptom_status": null,
+              "red_flag_status": null,
+              "topic_status": {
+                "bp": "unanswered",
+                "medication": "unanswered",
+                "current_symptoms": "unanswered",
+                "red_flags": "unanswered",
+                "measurement_context": "unanswered"
+              },
+              "deferred_topics": {}
+            }
+          },
+          "result": {
+            "claims": [
+              {
+                "id": "c1",
+                "kind": "medication",
+                "value": {
+                  "status": "unknown",
+                  "timing": "unknown",
+                  "adherence": "no_missed_or_stopped"
+                },
+                "polarity": "denied",
+                "temporal": "current",
+                "evidence": "没有"
+              }
+            ],
+            "answer_status": "answered",
+            "patient_question": "",
+            "screening": {
+              "adequate": false,
+              "evidence": "没有",
+              "scope": [],
+              "question": "今天有没有漏服或者自行停药？"
+            },
+            "reason": "患者用“没有”否认今天漏服或自行停药，但不能据此推断已服药。"
+          },
+          "seconds": 4.694
+        },
+        {
+          "payload": {
+            "patient_message": "没有",
+            "today": "2026-10-15",
+            "question_context": {
+              "question": "今天有没有漏服或者自行停药？",
+              "topic": "medication",
+              "kind": "medication_details"
+            },
+            "last_agent_question": "今天有没有漏服或者自行停药？",
+            "current_goal": "确认本次服药情况",
+            "today_state": {
+              "bp_systolic": null,
+              "bp_diastolic": null,
+              "medication_status": "unknown",
+              "medication_timing": "unknown",
+              "symptoms": [],
+              "denied_symptoms": [],
+              "red_flags": [],
+              "denied_red_flags": [],
+              "symptom_status": null,
+              "red_flag_status": null,
+              "topic_status": {
+                "bp": "unanswered",
+                "medication": "unanswered",
+                "current_symptoms": "unanswered",
+                "red_flags": "unanswered",
+                "measurement_context": "unanswered"
+              },
+              "deferred_topics": {}
+            },
+            "claims": [
+              {
+                "id": "c1",
+                "kind": "medication",
+                "value": {
+                  "status": "unknown",
+                  "timing": "unknown",
+                  "adherence": "no_missed_or_stopped"
+                },
+                "polarity": "denied",
+                "temporal": "current",
+                "evidence": "没有"
+              }
+            ],
+            "screening": {
+              "adequate": false,
+              "evidence": "没有",
+              "scope": [],
+              "question": "今天有没有漏服或者自行停药？"
+            }
+          },
+          "result": {
+            "reviews": [
+              {
+                "id": "c1",
+                "supported": true,
+                "polarity": "denied",
+                "temporal": "current",
+                "date": "2026-10-15"
+              }
+            ],
+            "screening": {
+              "supported": false,
+              "adequate": false,
+              "evidence": "没有",
+              "scope": [],
+              "question": "今天有没有漏服或者自行停药？"
+            }
+          },
+          "seconds": 13.919
+        }
+      ],
+      "trace": [
+        {
+          "time": "2026-10-15T11:56:55.622535+00:00",
+          "event": "LLM_CALL",
+          "detail": {
+            "purpose": "EXTRACT",
+            "ok": true,
+            "called": true,
+            "status": "success",
+            "attempt": 1,
+            "max_attempts": 2,
+            "failure_stage": "generation",
+            "failure_kind": "",
+            "deepseek_called": true,
+            "provider_events": [
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "started",
+                "error_type": null
+              },
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "success",
+                "error_type": null
+              }
+            ],
+            "agent_version": "V5.0",
+            "duration_ms": 4694.4
+          }
+        },
+        {
+          "time": "2026-10-15T11:57:09.542738+00:00",
+          "event": "LLM_CALL",
+          "detail": {
+            "purpose": "VERIFY_EXTRACT",
+            "ok": true,
+            "called": true,
+            "status": "success",
+            "attempt": 1,
+            "max_attempts": 2,
+            "failure_stage": "validation",
+            "failure_kind": "",
+            "deepseek_called": true,
+            "provider_events": [
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "started",
+                "error_type": null
+              },
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "success",
+                "error_type": null
+              }
+            ],
+            "agent_version": "V5.0",
+            "duration_ms": 13919.6
+          }
+        },
+        {
+          "time": "2026-10-15T11:57:09.542800+00:00",
+          "event": "LLM_EXTRACTION_RESULT",
+          "detail": {
+            "accepted_claims": 1,
+            "candidate_claims": 1,
+            "reported_symptoms": [],
+            "reported_red_flags": [],
+            "answer_status": "answered",
+            "semantic_validated": true,
+            "unconfirmed_medication_timing": false
+          }
+        }
+      ],
+      "real_model_requests": 2
+    },
+    {
+      "case": "overdue",
+      "patient_message": "超过了",
+      "question": "您是还没到规定的服药时间，还是已经超过了原定服药时间？",
+      "expected": {
+        "medication_status": "not_taken_yet",
+        "medication_timing": "overdue"
+      },
+      "pass": false,
+      "patch": {
+        "bp_systolic": null,
+        "bp_diastolic": null,
+        "medication_status": "unknown",
+        "medication_detail": "",
+        "medication_timing": "unknown",
+        "medication_observations": [],
+        "medication_adherence": "",
+        "symptoms": [],
+        "denied_symptoms": [],
+        "red_flags": [],
+        "denied_red_flags": [],
+        "additional_information": "",
+        "measurement_context": "",
+        "patient_question": "",
+        "answer_status": "unclear",
+        "answered_topics": [],
+        "topic_status": {},
+        "_semantic": {},
+        "_llm_v4_verified": true,
+        "semantic_validated": true
+      },
+      "calls": [
+        {
+          "payload": {
+            "patient_message": "超过了",
+            "today": "2026-10-15",
+            "question_context": {},
+            "last_agent_question": "",
+            "current_goal": "",
+            "today_state": {
+              "bp_systolic": null,
+              "bp_diastolic": null,
+              "medication_status": "unknown",
+              "medication_timing": "unknown",
+              "symptoms": [],
+              "denied_symptoms": [],
+              "red_flags": [],
+              "denied_red_flags": [],
+              "symptom_status": null,
+              "red_flag_status": null,
+              "topic_status": {
+                "bp": "unanswered",
+                "medication": "unanswered",
+                "current_symptoms": "unanswered",
+                "red_flags": "unanswered",
+                "measurement_context": "unanswered"
+              },
+              "deferred_topics": {}
+            }
+          },
+          "result": {
+            "claims": [],
+            "answer_status": "unclear",
+            "patient_question": "",
+            "screening": {
+              "adequate": false,
+              "evidence": "超过了",
+              "scope": [],
+              "question": ""
+            },
+            "reason": "上一问与当前目标均为空，“超过了”指代不明，不能据此推断为服药超时或其它具体事实。"
+          },
+          "seconds": 4.103
+        }
+      ],
+      "trace": [
+        {
+          "time": "2026-10-15T11:57:13.648601+00:00",
+          "event": "LLM_CALL",
+          "detail": {
+            "purpose": "EXTRACT",
+            "ok": true,
+            "called": true,
+            "status": "success",
+            "attempt": 1,
+            "max_attempts": 2,
+            "failure_stage": "generation",
+            "failure_kind": "",
+            "deepseek_called": true,
+            "provider_events": [
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "started",
+                "error_type": null
+              },
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "success",
+                "error_type": null
+              }
+            ],
+            "agent_version": "V5.0",
+            "duration_ms": 4103.1
+          }
+        }
+      ],
+      "real_model_requests": 1
+    },
+    {
+      "case": "unable",
+      "patient_message": "记不清",
+      "question": "医生原来安排今天几点服药？",
+      "expected": {
+        "answer_status": "unable",
+        "medication_status": "unknown"
+      },
+      "pass": true,
+      "patch": {
+        "bp_systolic": null,
+        "bp_diastolic": null,
+        "medication_status": "unknown",
+        "medication_detail": "",
+        "medication_timing": "unknown",
+        "medication_observations": [],
+        "medication_adherence": "",
+        "symptoms": [],
+        "denied_symptoms": [],
+        "red_flags": [],
+        "denied_red_flags": [],
+        "additional_information": "",
+        "measurement_context": "",
+        "patient_question": "",
+        "answer_status": "unable",
+        "answered_topics": [],
+        "topic_status": {},
+        "_semantic": {},
+        "_llm_v4_verified": true,
+        "semantic_validated": true
+      },
+      "calls": [
+        {
+          "payload": {
+            "patient_message": "记不清",
+            "today": "2026-10-15",
+            "question_context": {},
+            "last_agent_question": "",
+            "current_goal": "",
+            "today_state": {
+              "bp_systolic": null,
+              "bp_diastolic": null,
+              "medication_status": "unknown",
+              "medication_timing": "unknown",
+              "symptoms": [],
+              "denied_symptoms": [],
+              "red_flags": [],
+              "denied_red_flags": [],
+              "symptom_status": null,
+              "red_flag_status": null,
+              "topic_status": {
+                "bp": "unanswered",
+                "medication": "unanswered",
+                "current_symptoms": "unanswered",
+                "red_flags": "unanswered",
+                "measurement_context": "unanswered"
+              },
+              "deferred_topics": {}
+            }
+          },
+          "result": {
+            "claims": [],
+            "answer_status": "unable",
+            "patient_question": "",
+            "screening": {
+              "adequate": false,
+              "evidence": "记不清",
+              "scope": [],
+              "question": ""
+            },
+            "reason": "患者表示记不清，未提供任何可提取的事实；上一问为空，无法确定具体询问范围，不推断任何服药、血压或症状信息。"
+          },
+          "seconds": 1.221
+        }
+      ],
+      "trace": [
+        {
+          "time": "2026-10-15T11:57:14.871552+00:00",
+          "event": "LLM_CALL",
+          "detail": {
+            "purpose": "EXTRACT",
+            "ok": true,
+            "called": true,
+            "status": "success",
+            "attempt": 1,
+            "max_attempts": 2,
+            "failure_stage": "generation",
+            "failure_kind": "",
+            "deepseek_called": true,
+            "provider_events": [
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "started",
+                "error_type": null
+              },
+              {
+                "provider": "deepseek",
+                "mode": "json",
+                "status": "success",
+                "error_type": null
+              }
+            ],
+            "agent_version": "V5.0",
+            "duration_ms": 1221.1
+          }
+        }
+      ],
+      "real_model_requests": 1
+    }
+  ]
+}

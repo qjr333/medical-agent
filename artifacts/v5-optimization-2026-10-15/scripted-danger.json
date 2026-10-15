@@ -99,24 +99,20 @@
           "model_phase_timings": {
             "PLAN": {
               "calls": 1,
-              "total_ms": 0.3,
-              "mean_ms": 0.3
+              "total_ms": 0.2,
+              "mean_ms": 0.2
             },
             "VERIFY_RESPONSE": {
               "calls": 1,
-              "total_ms": 0.1,
-              "mean_ms": 0.1
-            },
-            "EXTRACT": {
-              "calls": 1,
-              "total_ms": 0,
-              "mean_ms": 0.0
+              "total_ms": 0.3,
+              "mean_ms": 0.3
             }
           },
-          "trace_elapsed_seconds": 0.511,
-          "model_failures_by_stage": {
-            "EXTRACT:unspecified": 1
+          "skipped_model_phases": {
+            "EXTRACT": 1
           },
+          "trace_elapsed_seconds": 0.76,
+          "model_failures_by_stage": {},
           "model_retry_events": 0,
           "model_retry_exhausted_events": 0,
           "reexecuted_tool_names": {},
@@ -196,24 +192,20 @@
       "model_phase_timings": {
         "PLAN": {
           "calls": 1,
-          "total_ms": 0.3,
-          "mean_ms": 0.3
+          "total_ms": 0.2,
+          "mean_ms": 0.2
         },
         "VERIFY_RESPONSE": {
           "calls": 1,
-          "total_ms": 0.1,
-          "mean_ms": 0.1
-        },
-        "EXTRACT": {
-          "calls": 1,
-          "total_ms": 0,
-          "mean_ms": 0.0
+          "total_ms": 0.3,
+          "mean_ms": 0.3
         }
       },
-      "trace_elapsed_seconds": 0.511,
-      "model_failures_by_stage": {
-        "EXTRACT:unspecified": 1
+      "skipped_model_phases": {
+        "EXTRACT": 1
       },
+      "trace_elapsed_seconds": 0.76,
+      "model_failures_by_stage": {},
       "model_retry_events": 0,
       "model_retry_exhausted_events": 0,
       "reexecuted_tool_names": {},
@@ -250,7 +242,7 @@
   "trace": [
     {
       "id": 0,
-      "time": "2026-10-15T03:09:55.340821+00:00",
+      "time": "2026-10-15T11:16:25.227778+00:00",
       "event": "TRIGGER_ENGINE",
       "stage": "trigger",
       "detail": {
@@ -260,7 +252,7 @@
     },
     {
       "id": 3,
-      "time": "2026-10-15T03:09:55.823230+00:00",
+      "time": "2026-10-15T11:16:25.953531+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -273,13 +265,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.3,
+        "duration_ms": 0.2,
         "provider_request_count": 0
       }
     },
     {
       "id": 4,
-      "time": "2026-10-15T03:09:55.823285+00:00",
+      "time": "2026-10-15T11:16:25.953602+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -289,7 +281,7 @@
     },
     {
       "id": 6,
-      "time": "2026-10-15T03:09:55.825620+00:00",
+      "time": "2026-10-15T11:16:25.958616+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -302,13 +294,13 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.3,
         "provider_request_count": 0
       }
     },
     {
       "id": 10,
-      "time": "2026-10-15T03:09:55.825739+00:00",
+      "time": "2026-10-15T11:16:25.959004+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -317,7 +309,7 @@
     },
     {
       "id": 11,
-      "time": "2026-10-15T03:09:55.831690+00:00",
+      "time": "2026-10-15T11:16:25.966837+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -328,7 +320,7 @@
     },
     {
       "id": 12,
-      "time": "2026-10-15T03:09:55.834522+00:00",
+      "time": "2026-10-15T11:16:25.969893+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -337,7 +329,7 @@
     },
     {
       "id": 13,
-      "time": "2026-10-15T03:09:55.839761+00:00",
+      "time": "2026-10-15T11:16:25.974123+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -351,14 +343,14 @@
     },
     {
       "id": 14,
-      "time": "2026-10-15T03:09:55.840542+00:00",
+      "time": "2026-10-15T11:16:25.974765+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 17,
-      "time": "2026-10-15T03:09:55.846536+00:00",
+      "time": "2026-10-15T11:16:25.980661+00:00",
       "event": "SAFETY_OVERRIDE",
       "stage": "safety",
       "detail": {
@@ -367,7 +359,7 @@
     },
     {
       "id": 18,
-      "time": "2026-10-15T03:09:55.846547+00:00",
+      "time": "2026-10-15T11:16:25.980672+00:00",
       "event": "V4_TOOL_CALL",
       "stage": "medical_tool",
       "detail": {
@@ -378,7 +370,7 @@
     },
     {
       "id": 21,
-      "time": "2026-10-15T03:09:55.846600+00:00",
+      "time": "2026-10-15T11:16:25.980746+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -387,7 +379,7 @@
     },
     {
       "id": 22,
-      "time": "2026-10-15T03:09:55.849754+00:00",
+      "time": "2026-10-15T11:16:25.984540+00:00",
       "event": "REPORT_GENERATED",
       "stage": "report",
       "detail": {
@@ -397,7 +389,7 @@
     },
     {
       "id": 23,
-      "time": "2026-10-15T03:09:55.851554+00:00",
+      "time": "2026-10-15T11:16:25.987670+00:00",
       "event": "MESSAGE_DELIVERY",
       "stage": "notification",
       "detail": {
@@ -472,20 +464,20 @@
     }
   ],
   "task": {
-    "task_id": "fc1d3952-85d1-4201-b6b1-d9f519525a24",
+    "task_id": "1edc28d4-ecac-43c3-be7b-a035fc67f1e9",
     "patient_id": "simulation-danger",
     "event_id": "simulation-event",
     "trigger_type": "high_bp",
-    "due_at": "2026-10-15T03:09:55.333916+00:00",
+    "due_at": "2026-10-15T11:16:25.216354+00:00",
     "status": "completed",
     "attempts": 1,
     "max_attempts": 3,
     "lease_until": null,
     "claim_token": null,
-    "session_id": "task_fc1d395285d14201b6b1d9f519525a24",
+    "session_id": "task_1edc28d4ecac43c3be7ba035fc67f1e9",
     "last_error": null,
-    "created_at": "2026-10-15T03:09:55.333916+00:00",
-    "updated_at": "2026-10-15T03:09:55.860367+00:00",
+    "created_at": "2026-10-15T11:16:25.216354+00:00",
+    "updated_at": "2026-10-15T11:16:25.996715+00:00",
     "delivery_status": "not_configured",
     "station_delivery_status": "delivered",
     "report_generated": 1,
@@ -495,7 +487,7 @@
       "measurement": {
         "diastolic": 106,
         "id": 4,
-        "measured_at": "2026-10-15T03:09:55.333916+00:00",
+        "measured_at": "2026-10-15T11:16:25.216354+00:00",
         "source": "simulation_device",
         "systolic": 172
       }
@@ -504,14 +496,14 @@
       "followup_status": "waiting_for_user",
       "message": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
       "report_generated": false,
-      "session_id": "task_fc1d395285d14201b6b1d9f519525a24",
+      "session_id": "task_1edc28d4ecac43c3be7ba035fc67f1e9",
       "station_messages": 0,
       "status": "waiting_for_user"
     },
     "measurement": {
       "diastolic": 106,
       "id": 4,
-      "measured_at": "2026-10-15T03:09:55.333916+00:00",
+      "measured_at": "2026-10-15T11:16:25.216354+00:00",
       "source": "simulation_device",
       "systolic": 172
     }
@@ -520,7 +512,7 @@
   "family_read": true,
   "diagnostics": [
     {
-      "time": "2026-10-15T03:09:55.825704+00:00",
+      "time": "2026-10-15T11:16:25.958899+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -529,7 +521,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.831690+00:00",
+      "time": "2026-10-15T11:16:25.966837+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "profile",
@@ -538,7 +530,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.840542+00:00",
+      "time": "2026-10-15T11:16:25.974765+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -657,7 +649,7 @@
           "label": "2026-10-15",
           "systolic": 172,
           "diastolic": 106,
-          "measured_at": "2026-10-15T03:09:55.333916+00:00",
+          "measured_at": "2026-10-15T11:16:25.216354+00:00",
           "source": "simulation_device"
         }
       ]
@@ -682,7 +674,7 @@
     "visit_advice": null,
     "medication_guidance": null,
     "long_term_memory": {
-      "snapshot_at": "2026-10-15T03:09:55.842429+00:00",
+      "snapshot_at": "2026-10-15T11:16:25.976328+00:00",
       "summary": "历史近7天实际测量记录共4条（4个日期），均值160.0/98.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
       "focus": [
         "recent_bp_rise"
@@ -692,7 +684,7 @@
       "queries": [],
       "sources": []
     },
-    "generated_at": "2026-10-15T03:09:55.849651+00:00",
+    "generated_at": "2026-10-15T11:16:25.984371+00:00",
     "task_completion": {
       "status": "escalated",
       "required_topics": [
@@ -827,7 +819,7 @@
             "label": "2026-10-15",
             "systolic": 172,
             "diastolic": 106,
-            "measured_at": "2026-10-15T03:09:55.333916+00:00",
+            "measured_at": "2026-10-15T11:16:25.216354+00:00",
             "source": "simulation_device"
           }
         ]
@@ -852,7 +844,7 @@
       "visit_advice": null,
       "medication_guidance": null,
       "long_term_memory": {
-        "snapshot_at": "2026-10-15T03:09:55.842429+00:00",
+        "snapshot_at": "2026-10-15T11:16:25.976328+00:00",
         "summary": "历史近7天实际测量记录共4条（4个日期），均值160.0/98.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
         "focus": [
           "recent_bp_rise"
@@ -862,7 +854,7 @@
         "queries": [],
         "sources": []
       },
-      "generated_at": "2026-10-15T03:09:55.849651+00:00",
+      "generated_at": "2026-10-15T11:16:25.984371+00:00",
       "task_completion": {
         "status": "escalated",
         "required_topics": [

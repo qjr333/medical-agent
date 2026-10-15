@@ -1,0 +1,735 @@
+{
+  "scenario_id": "stable",
+  "model_mode": "live",
+  "debug_status": "runner_interrupted_without_terminal_result",
+  "status": "running",
+  "followup_status": "waiting_for_user",
+  "transcript": [
+    {
+      "role": "agent",
+      "message": "您好，我是银龄守护随访助手，今天按计划做一个例行随访，想了解一下您最近的情况。\n\n最近这几天身体感觉怎么样，有没有出现头晕、头痛、胸闷或其他不舒服的地方？",
+      "question": "最近这几天身体感觉怎么样，有没有出现头晕、头痛、胸闷或其他不舒服的地方？",
+      "question_context": {
+        "goal": "例行随访开场：了解当前身体状况与有无不适症状",
+        "topic": "current_symptoms",
+        "kind": "symptoms",
+        "question": "最近这几天身体感觉怎么样，有没有出现头晕、头痛、胸闷或其他不舒服的地方？",
+        "asked_symptoms": [
+          "头晕",
+          "头痛",
+          "胸闷"
+        ],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "这几天总体还凑合，没觉得头晕，也没有别的不舒服的地方。",
+      "reported_facts": [
+        {
+          "fact_id": "symptoms",
+          "topic": "current_symptoms",
+          "render": "没觉得头晕，也没有别的不舒服的地方",
+          "values": {
+            "denied_symptoms": [
+              "头晕"
+            ],
+            "symptom_status": "denied",
+            "symptoms": []
+          },
+          "evidence": "没觉得头晕，也没有别的不舒服的地方"
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "success",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "好的，没有头晕和其他不舒服，我记下了。\n\n再和您确认一下：这几天有没有出现过胸口疼、喘不上气、突然晕倒，或者手脚突然没力气、说话不清楚的情况？",
+      "question": "再和您确认一下：这几天有没有出现过胸口疼、喘不上气、突然晕倒，或者手脚突然没力气、说话不清楚的情况？",
+      "question_context": {
+        "goal": "安全筛查：确认近期有无胸痛、呼吸困难、晕厥或突发神经症状等危险信号",
+        "topic": "red_flags",
+        "kind": "symptoms",
+        "question": "再和您确认一下：这几天有没有出现过胸口疼、喘不上气、突然晕倒，或者手脚突然没力气、说话不清楚的情况？",
+        "asked_symptoms": [],
+        "asked_red_flags": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    },
+    {
+      "role": "patient",
+      "message": "没有。这几天胸口没疼过，也没觉得喘不上气，没有突然晕倒，手脚也没突然没力气，说话都正常。",
+      "reported_facts": [
+        {
+          "fact_id": "red_flags",
+          "topic": "red_flags",
+          "render": "这几天胸口没疼过，也没觉得喘不上气，没有突然晕倒，手脚也没突然没力气，说话都正常",
+          "values": {
+            "red_flags": [],
+            "denied_red_flags": [
+              "胸痛",
+              "呼吸困难",
+              "晕厥",
+              "突发肢体无力",
+              "突发言语异常"
+            ],
+            "red_flag_status": "denied"
+          },
+          "evidence": "这几天胸口没疼过，也没觉得喘不上气，没有突然晕倒，手脚也没突然没力气，说话都正常"
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "success",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "好的，胸口疼、喘不上气、晕倒、肢体无力和说话异常这些情况都没有，这些危险的信号暂时没有出现，我记下了。\n\n请问您最近一次在家测血压是什么时候？方便的话把收缩压和舒张压的数值告诉我。",
+      "question": "请问您最近一次在家测血压是什么时候？方便的话把收缩压和舒张压的数值告诉我。",
+      "question_context": {
+        "goal": "了解最近一次家庭血压测量情况",
+        "topic": "bp",
+        "kind": "bp",
+        "question": "请问您最近一次在家测血压是什么时候？方便的话把收缩压和舒张压的数值告诉我。",
+        "asked_symptoms": [],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "今天早晨测的，坐着安静休息了5分钟后量的，用的是上臂式血压计。收缩压132，舒张压78。",
+      "reported_facts": [
+        {
+          "fact_id": "current_bp",
+          "topic": "bp",
+          "render": "收缩压132，舒张压78",
+          "values": {
+            "bp_systolic": 132,
+            "bp_diastolic": 78
+          },
+          "evidence": "收缩压132，舒张压78"
+        },
+        {
+          "fact_id": "measurement_context",
+          "topic": "measurement_context",
+          "render": "今天早晨测的，坐着安静休息了5分钟后量的，用的是上臂式血压计。",
+          "values": {
+            "measurement_context": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。"
+          },
+          "evidence": "今天早晨测的，坐着安静休息了5分钟后量的，用的是上臂式血压计。"
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "success",
+      "execution": "completed"
+    }
+  ],
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-15T11:34:59.880135+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "scheduled",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-15T11:35:05.977175+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 5550.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-15T11:35:05.977394+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-15T11:35:08.924693+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2942.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 10,
+      "time": "2026-10-15T11:35:08.925128+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "您好，我是银龄守护随访助手，今天按计划做一个例行随访，想了解一下您最近的情况。\n\n最近这几天身体感觉怎么样，有没有出现头晕、头痛、胸闷或其他不舒服的地方？"
+      }
+    },
+    {
+      "id": 11,
+      "time": "2026-10-15T11:35:14.408059+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 5463.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 12,
+      "time": "2026-10-15T11:35:32.347486+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 17938.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 13,
+      "time": "2026-10-15T11:35:32.347701+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "id": 14,
+      "time": "2026-10-15T11:35:32.353536+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "这几天总体还凑合，没觉得头晕，也没有别的不舒服的地方。"
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-15T11:35:46.887903+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 14526.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 16,
+      "time": "2026-10-15T11:36:33.294033+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 46399.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 18,
+      "time": "2026-10-15T11:36:33.303358+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 21,
+      "time": "2026-10-15T11:36:39.094227+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 5779.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 22,
+      "time": "2026-10-15T11:36:39.094349+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 24,
+      "time": "2026-10-15T11:36:42.427640+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3332.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 28,
+      "time": "2026-10-15T11:36:42.427837+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "好的，没有头晕和其他不舒服，我记下了。\n\n再和您确认一下：这几天有没有出现过胸口疼、喘不上气、突然晕倒，或者手脚突然没力气、说话不清楚的情况？"
+      }
+    },
+    {
+      "id": 29,
+      "time": "2026-10-15T11:36:45.030235+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2585.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 30,
+      "time": "2026-10-15T11:36:47.462221+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2431.4,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 31,
+      "time": "2026-10-15T11:36:47.462308+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "id": 32,
+      "time": "2026-10-15T11:36:47.464461+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "没有。这几天胸口没疼过，也没觉得喘不上气，没有突然晕倒，手脚也没突然没力气，说话都正常。"
+      }
+    },
+    {
+      "id": 33,
+      "time": "2026-10-15T11:36:56.344042+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 8877.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 34,
+      "time": "2026-10-15T11:37:03.298606+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 6949.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 36,
+      "time": "2026-10-15T11:37:03.300901+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 39,
+      "time": "2026-10-15T11:37:06.051490+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2743.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 40,
+      "time": "2026-10-15T11:37:06.051734+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 42,
+      "time": "2026-10-15T11:37:14.864657+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 8811.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 46,
+      "time": "2026-10-15T11:37:14.865053+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "好的，胸口疼、喘不上气、晕倒、肢体无力和说话异常这些情况都没有，这些危险的信号暂时没有出现，我记下了。\n\n请问您最近一次在家测血压是什么时候？方便的话把收缩压和舒张压的数值告诉我。"
+      }
+    },
+    {
+      "id": 47,
+      "time": "2026-10-15T11:37:16.664874+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 1785.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 48,
+      "time": "2026-10-15T11:37:19.524834+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2859.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 49,
+      "time": "2026-10-15T11:37:19.525101+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "id": 50,
+      "time": "2026-10-15T11:37:19.532372+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "今天早晨测的，坐着安静休息了5分钟后量的，用的是上臂式血压计。收缩压132，舒张压78。"
+      }
+    },
+    {
+      "id": 51,
+      "time": "2026-10-15T11:37:24.267333+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 4726.2,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 52,
+      "time": "2026-10-15T11:37:29.661709+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 5389.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 54,
+      "time": "2026-10-15T11:37:29.662253+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 57,
+      "time": "2026-10-15T11:37:33.543530+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3877.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 58,
+      "time": "2026-10-15T11:37:33.543641+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 60,
+      "time": "2026-10-15T11:37:47.709972+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 14165.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 63,
+      "time": "2026-10-15T11:37:51.871421+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 4160.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 64,
+      "time": "2026-10-15T11:37:51.871499+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 66,
+      "time": "2026-10-15T11:37:56.337555+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 4465.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 70,
+      "time": "2026-10-15T11:37:56.338181+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "好的，这次血压数值和测量情况我都记下了。\n\n请问您今天吃降压药了吗？是按时吃的，还是漏服或晚服了？"
+      }
+    }
+  ],
+  "real_model_requests": 22
+}

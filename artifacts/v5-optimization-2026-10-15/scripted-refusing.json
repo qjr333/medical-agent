@@ -147,18 +147,18 @@
           "model_phase_timings": {
             "PLAN": {
               "calls": 5,
-              "total_ms": 8.0,
-              "mean_ms": 1.6
+              "total_ms": 2.3,
+              "mean_ms": 0.5
             },
             "VERIFY_RESPONSE": {
               "calls": 5,
-              "total_ms": 8.2,
-              "mean_ms": 1.6
+              "total_ms": 2.2,
+              "mean_ms": 0.4
             },
             "SIMULATED_PATIENT": {
               "calls": 4,
-              "total_ms": 0.7,
-              "mean_ms": 0.2
+              "total_ms": 2.0,
+              "mean_ms": 0.5
             },
             "EXTRACT": {
               "calls": 4,
@@ -167,21 +167,22 @@
             },
             "VERIFY_EXTRACT": {
               "calls": 4,
-              "total_ms": 3.3,
-              "mean_ms": 0.8
+              "total_ms": 0.9,
+              "mean_ms": 0.2
             },
             "COMPLETE": {
               "calls": 1,
-              "total_ms": 0.3,
-              "mean_ms": 0.3
+              "total_ms": 0.1,
+              "mean_ms": 0.1
             },
             "REPORT_SUMMARY": {
               "calls": 1,
-              "total_ms": 0.1,
-              "mean_ms": 0.1
+              "total_ms": 0.4,
+              "mean_ms": 0.4
             }
           },
-          "trace_elapsed_seconds": 0.618,
+          "skipped_model_phases": {},
+          "trace_elapsed_seconds": 0.863,
           "model_failures_by_stage": {},
           "model_retry_events": 0,
           "model_retry_exhausted_events": 0,
@@ -308,18 +309,18 @@
       "model_phase_timings": {
         "PLAN": {
           "calls": 5,
-          "total_ms": 8.0,
-          "mean_ms": 1.6
+          "total_ms": 2.3,
+          "mean_ms": 0.5
         },
         "VERIFY_RESPONSE": {
           "calls": 5,
-          "total_ms": 8.2,
-          "mean_ms": 1.6
+          "total_ms": 2.2,
+          "mean_ms": 0.4
         },
         "SIMULATED_PATIENT": {
           "calls": 4,
-          "total_ms": 0.7,
-          "mean_ms": 0.2
+          "total_ms": 2.0,
+          "mean_ms": 0.5
         },
         "EXTRACT": {
           "calls": 4,
@@ -328,21 +329,22 @@
         },
         "VERIFY_EXTRACT": {
           "calls": 4,
-          "total_ms": 3.3,
-          "mean_ms": 0.8
+          "total_ms": 0.9,
+          "mean_ms": 0.2
         },
         "COMPLETE": {
           "calls": 1,
-          "total_ms": 0.3,
-          "mean_ms": 0.3
+          "total_ms": 0.1,
+          "mean_ms": 0.1
         },
         "REPORT_SUMMARY": {
           "calls": 1,
-          "total_ms": 0.1,
-          "mean_ms": 0.1
+          "total_ms": 0.4,
+          "mean_ms": 0.4
         }
       },
-      "trace_elapsed_seconds": 0.618,
+      "skipped_model_phases": {},
+      "trace_elapsed_seconds": 0.863,
       "model_failures_by_stage": {},
       "model_retry_events": 0,
       "model_retry_exhausted_events": 0,
@@ -414,7 +416,7 @@
   "trace": [
     {
       "id": 0,
-      "time": "2026-10-15T03:09:55.343097+00:00",
+      "time": "2026-10-15T11:16:25.232953+00:00",
       "event": "TRIGGER_ENGINE",
       "stage": "trigger",
       "detail": {
@@ -424,7 +426,7 @@
     },
     {
       "id": 3,
-      "time": "2026-10-15T03:09:55.804025+00:00",
+      "time": "2026-10-15T11:16:25.950971+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -437,13 +439,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.3,
         "provider_request_count": 0
       }
     },
     {
       "id": 4,
-      "time": "2026-10-15T03:09:55.804077+00:00",
+      "time": "2026-10-15T11:16:25.951039+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -453,7 +455,7 @@
     },
     {
       "id": 6,
-      "time": "2026-10-15T03:09:55.808263+00:00",
+      "time": "2026-10-15T11:16:25.954353+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -472,7 +474,7 @@
     },
     {
       "id": 10,
-      "time": "2026-10-15T03:09:55.808498+00:00",
+      "time": "2026-10-15T11:16:25.954607+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -481,50 +483,11 @@
     },
     {
       "id": 11,
-      "time": "2026-10-15T03:09:55.815617+00:00",
+      "time": "2026-10-15T11:16:25.962693+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
         "purpose": "SIMULATED_PATIENT",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "generation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 0.1,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 12,
-      "time": "2026-10-15T03:09:55.815642+00:00",
-      "event": "SIMULATED_PATIENT",
-      "stage": "simulated_patient",
-      "detail": {
-        "mode": "llm",
-        "model_status": "success",
-        "validation_status": "canonical"
-      }
-    },
-    {
-      "id": 13,
-      "time": "2026-10-15T03:09:55.817328+00:00",
-      "event": "USER_MESSAGE",
-      "stage": "patient_input",
-      "detail": {
-        "message": "我现在不想继续回答了，请结束这次随访。"
-      }
-    },
-    {
-      "id": 14,
-      "time": "2026-10-15T03:09:55.820401+00:00",
-      "event": "LLM_CALL",
-      "stage": "information_extraction",
-      "detail": {
-        "purpose": "EXTRACT",
         "ok": true,
         "called": true,
         "status": "success",
@@ -538,8 +501,47 @@
       }
     },
     {
+      "id": 12,
+      "time": "2026-10-15T11:16:25.962750+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "id": 13,
+      "time": "2026-10-15T11:16:25.965592+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在不想继续回答了，请结束这次随访。"
+      }
+    },
+    {
+      "id": 14,
+      "time": "2026-10-15T11:16:25.969659+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.1,
+        "provider_request_count": 0
+      }
+    },
+    {
       "id": 15,
-      "time": "2026-10-15T03:09:55.823764+00:00",
+      "time": "2026-10-15T11:16:25.971861+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -558,14 +560,14 @@
     },
     {
       "id": 17,
-      "time": "2026-10-15T03:09:55.824172+00:00",
+      "time": "2026-10-15T11:16:25.972292+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 20,
-      "time": "2026-10-15T03:09:55.827393+00:00",
+      "time": "2026-10-15T11:16:25.975138+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -584,7 +586,7 @@
     },
     {
       "id": 21,
-      "time": "2026-10-15T03:09:55.827431+00:00",
+      "time": "2026-10-15T11:16:25.975192+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -594,7 +596,7 @@
     },
     {
       "id": 23,
-      "time": "2026-10-15T03:09:55.827837+00:00",
+      "time": "2026-10-15T11:16:25.975468+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -607,13 +609,13 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 27,
-      "time": "2026-10-15T03:09:55.827937+00:00",
+      "time": "2026-10-15T11:16:25.975514+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -622,7 +624,7 @@
     },
     {
       "id": 28,
-      "time": "2026-10-15T03:09:55.833749+00:00",
+      "time": "2026-10-15T11:16:25.981349+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
@@ -635,13 +637,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 29,
-      "time": "2026-10-15T03:09:55.833803+00:00",
+      "time": "2026-10-15T11:16:25.981372+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -652,7 +654,7 @@
     },
     {
       "id": 30,
-      "time": "2026-10-15T03:09:55.835936+00:00",
+      "time": "2026-10-15T11:16:25.985285+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -661,7 +663,7 @@
     },
     {
       "id": 31,
-      "time": "2026-10-15T03:09:55.839949+00:00",
+      "time": "2026-10-15T11:16:25.989580+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -674,13 +676,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 32,
-      "time": "2026-10-15T03:09:55.842183+00:00",
+      "time": "2026-10-15T11:16:25.991287+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -699,14 +701,14 @@
     },
     {
       "id": 34,
-      "time": "2026-10-15T03:09:55.842579+00:00",
+      "time": "2026-10-15T11:16:25.992053+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 37,
-      "time": "2026-10-15T03:09:55.874805+00:00",
+      "time": "2026-10-15T11:16:26.028678+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -725,7 +727,7 @@
     },
     {
       "id": 38,
-      "time": "2026-10-15T03:09:55.874862+00:00",
+      "time": "2026-10-15T11:16:26.028710+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -735,7 +737,7 @@
     },
     {
       "id": 40,
-      "time": "2026-10-15T03:09:55.875376+00:00",
+      "time": "2026-10-15T11:16:26.029063+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -754,7 +756,7 @@
     },
     {
       "id": 44,
-      "time": "2026-10-15T03:09:55.875509+00:00",
+      "time": "2026-10-15T11:16:26.029155+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -763,7 +765,7 @@
     },
     {
       "id": 45,
-      "time": "2026-10-15T03:09:55.883087+00:00",
+      "time": "2026-10-15T11:16:26.034965+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
@@ -776,13 +778,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.5,
         "provider_request_count": 0
       }
     },
     {
       "id": 46,
-      "time": "2026-10-15T03:09:55.883151+00:00",
+      "time": "2026-10-15T11:16:26.035024+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -793,7 +795,7 @@
     },
     {
       "id": 47,
-      "time": "2026-10-15T03:09:55.887271+00:00",
+      "time": "2026-10-15T11:16:26.037635+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -802,7 +804,7 @@
     },
     {
       "id": 48,
-      "time": "2026-10-15T03:09:55.891845+00:00",
+      "time": "2026-10-15T11:16:26.041925+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -815,154 +817,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 49,
-      "time": "2026-10-15T03:09:55.897128+00:00",
-      "event": "LLM_CALL",
-      "stage": "information_validation",
-      "detail": {
-        "purpose": "VERIFY_EXTRACT",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "validation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 2.9,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 51,
-      "time": "2026-10-15T03:09:55.897810+00:00",
-      "event": "STATE_UPDATE",
-      "stage": "information_extraction",
-      "detail": {}
-    },
-    {
-      "id": 54,
-      "time": "2026-10-15T03:09:55.911521+00:00",
-      "event": "LLM_CALL",
-      "stage": "planner",
-      "detail": {
-        "purpose": "PLAN",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "generation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 7.2,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 55,
-      "time": "2026-10-15T03:09:55.911603+00:00",
-      "event": "LLM_DECISION",
-      "stage": "planner",
-      "detail": {
-        "action": "ASK_USER",
-        "trigger_type": "scheduled"
-      }
-    },
-    {
-      "id": 57,
-      "time": "2026-10-15T03:09:55.919310+00:00",
-      "event": "LLM_CALL",
-      "stage": "response_validation",
-      "detail": {
-        "purpose": "VERIFY_RESPONSE",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "validation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 7.4,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 61,
-      "time": "2026-10-15T03:09:55.919441+00:00",
-      "event": "AGENT_RESPONSE",
-      "stage": "agent_reply",
-      "detail": {
-        "message": "您现在有没有头晕或其他不舒服？"
-      }
-    },
-    {
-      "id": 62,
-      "time": "2026-10-15T03:09:55.932714+00:00",
-      "event": "LLM_CALL",
-      "stage": "simulated_patient",
-      "detail": {
-        "purpose": "SIMULATED_PATIENT",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "generation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 0.2,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 63,
-      "time": "2026-10-15T03:09:55.932742+00:00",
-      "event": "SIMULATED_PATIENT",
-      "stage": "simulated_patient",
-      "detail": {
-        "mode": "llm",
-        "model_status": "success",
-        "validation_status": "canonical"
-      }
-    },
-    {
-      "id": 64,
-      "time": "2026-10-15T03:09:55.935623+00:00",
-      "event": "USER_MESSAGE",
-      "stage": "patient_input",
-      "detail": {
-        "message": "我现在不想继续回答了，请结束这次随访。"
-      }
-    },
-    {
-      "id": 65,
-      "time": "2026-10-15T03:09:55.939576+00:00",
-      "event": "LLM_CALL",
-      "stage": "information_extraction",
-      "detail": {
-        "purpose": "EXTRACT",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "generation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 0.2,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 66,
-      "time": "2026-10-15T03:09:55.941620+00:00",
+      "time": "2026-10-15T11:16:26.045114+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -980,15 +841,15 @@
       }
     },
     {
-      "id": 68,
-      "time": "2026-10-15T03:09:55.942045+00:00",
+      "id": 51,
+      "time": "2026-10-15T11:16:26.045524+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
-      "id": 71,
-      "time": "2026-10-15T03:09:55.947080+00:00",
+      "id": 54,
+      "time": "2026-10-15T11:16:26.049577+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -1001,23 +862,23 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.9,
         "provider_request_count": 0
       }
     },
     {
-      "id": 72,
-      "time": "2026-10-15T03:09:55.947127+00:00",
+      "id": 55,
+      "time": "2026-10-15T11:16:26.049636+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
-        "action": "FINISH",
+        "action": "ASK_USER",
         "trigger_type": "scheduled"
       }
     },
     {
-      "id": 74,
-      "time": "2026-10-15T03:09:55.947678+00:00",
+      "id": 57,
+      "time": "2026-10-15T11:16:26.050578+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -1030,13 +891,154 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.6,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 61,
+      "time": "2026-10-15T11:16:26.050708+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "您现在有没有头晕或其他不舒服？"
+      }
+    },
+    {
+      "id": 62,
+      "time": "2026-10-15T11:16:26.061339+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 1.2,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 63,
+      "time": "2026-10-15T11:16:26.061384+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "canonical"
+      }
+    },
+    {
+      "id": 64,
+      "time": "2026-10-15T11:16:26.064023+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我现在不想继续回答了，请结束这次随访。"
+      }
+    },
+    {
+      "id": 65,
+      "time": "2026-10-15T11:16:26.067819+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.5,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 66,
+      "time": "2026-10-15T11:16:26.070664+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.5,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 68,
+      "time": "2026-10-15T11:16:26.071550+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 71,
+      "time": "2026-10-15T11:16:26.081799+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 0.7,
+        "provider_request_count": 0
+      }
+    },
+    {
+      "id": 72,
+      "time": "2026-10-15T11:16:26.081826+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "FINISH",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 74,
+      "time": "2026-10-15T11:16:26.083071+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 1.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 76,
-      "time": "2026-10-15T03:09:55.948742+00:00",
+      "time": "2026-10-15T11:16:26.083537+00:00",
       "event": "LLM_CALL",
       "stage": "completion",
       "detail": {
@@ -1049,13 +1051,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.3,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 77,
-      "time": "2026-10-15T03:09:55.948843+00:00",
+      "time": "2026-10-15T11:16:26.083570+00:00",
       "event": "TASK_COMPLETION_EVALUATED",
       "stage": "completion",
       "detail": {
@@ -1065,7 +1067,7 @@
     },
     {
       "id": 81,
-      "time": "2026-10-15T03:09:55.950026+00:00",
+      "time": "2026-10-15T11:16:26.084952+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -1074,7 +1076,7 @@
     },
     {
       "id": 82,
-      "time": "2026-10-15T03:09:55.958192+00:00",
+      "time": "2026-10-15T11:16:26.093383+00:00",
       "event": "LLM_CALL",
       "stage": "report",
       "detail": {
@@ -1087,13 +1089,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.4,
         "provider_request_count": 0
       }
     },
     {
       "id": 83,
-      "time": "2026-10-15T03:09:55.958418+00:00",
+      "time": "2026-10-15T11:16:26.093537+00:00",
       "event": "REPORT_GENERATED",
       "stage": "report",
       "detail": {
@@ -1103,7 +1105,7 @@
     },
     {
       "id": 84,
-      "time": "2026-10-15T03:09:55.961063+00:00",
+      "time": "2026-10-15T11:16:26.096307+00:00",
       "event": "MESSAGE_DELIVERY",
       "stage": "notification",
       "detail": {
@@ -1268,34 +1270,34 @@
     }
   ],
   "task": {
-    "task_id": "57e6f9cf-cf30-4a38-b8ad-935eb4d321f3",
+    "task_id": "bc582d06-c84e-4753-b000-4ddca9753000",
     "patient_id": "simulation-refusing",
-    "event_id": "plan:703c2d42-fd9e-4eb1-94f1-bc32628e8dac:2026-10-15T03:09:55.333759+00:00",
+    "event_id": "plan:80aeeec8-b5aa-4391-8033-f68dfe53e021:2026-10-15T11:16:25.220655+00:00",
     "trigger_type": "scheduled",
-    "due_at": "2026-10-15T03:09:55.333759+00:00",
+    "due_at": "2026-10-15T11:16:25.220655+00:00",
     "status": "completed",
     "attempts": 1,
     "max_attempts": 3,
     "lease_until": null,
     "claim_token": null,
-    "session_id": "task_57e6f9cfcf304a38b8ad935eb4d321f3",
+    "session_id": "task_bc582d06c84e4753b0004ddca9753000",
     "last_error": null,
-    "created_at": "2026-10-15T03:09:55.338562+00:00",
-    "updated_at": "2026-10-15T03:09:55.968269+00:00",
+    "created_at": "2026-10-15T11:16:25.226774+00:00",
+    "updated_at": "2026-10-15T11:16:26.105306+00:00",
     "delivery_status": "not_configured",
     "station_delivery_status": "delivered",
     "report_generated": 1,
     "station_messages": 2,
     "payload": {
-      "plan_id": "703c2d42-fd9e-4eb1-94f1-bc32628e8dac",
-      "window_end": "2026-10-15T03:09:55.333759+00:00",
-      "window_start": "2026-10-15T03:08:55.333759+00:00"
+      "plan_id": "80aeeec8-b5aa-4391-8033-f68dfe53e021",
+      "window_end": "2026-10-15T11:16:25.220655+00:00",
+      "window_start": "2026-10-15T11:15:25.220655+00:00"
     },
     "result": {
       "followup_status": "waiting_for_user",
       "message": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
       "report_generated": false,
-      "session_id": "task_57e6f9cfcf304a38b8ad935eb4d321f3",
+      "session_id": "task_bc582d06c84e4753b0004ddca9753000",
       "station_messages": 0,
       "status": "waiting_for_user"
     }
@@ -1304,7 +1306,7 @@
   "family_read": true,
   "diagnostics": [
     {
-      "time": "2026-10-15T03:09:55.808429+00:00",
+      "time": "2026-10-15T11:16:25.954534+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1313,7 +1315,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.815642+00:00",
+      "time": "2026-10-15T11:16:25.962750+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1322,7 +1324,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.823789+00:00",
+      "time": "2026-10-15T11:16:25.971883+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1334,7 +1336,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.824172+00:00",
+      "time": "2026-10-15T11:16:25.972292+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1374,7 +1376,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.827878+00:00",
+      "time": "2026-10-15T11:16:25.975486+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1383,7 +1385,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.833803+00:00",
+      "time": "2026-10-15T11:16:25.981372+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1392,7 +1394,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.842225+00:00",
+      "time": "2026-10-15T11:16:25.991351+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1404,7 +1406,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.842579+00:00",
+      "time": "2026-10-15T11:16:25.992053+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1444,7 +1446,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.875440+00:00",
+      "time": "2026-10-15T11:16:26.029114+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1453,7 +1455,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.883151+00:00",
+      "time": "2026-10-15T11:16:26.035024+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1462,7 +1464,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.897357+00:00",
+      "time": "2026-10-15T11:16:26.045156+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1474,7 +1476,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.897810+00:00",
+      "time": "2026-10-15T11:16:26.045524+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1514,7 +1516,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.919372+00:00",
+      "time": "2026-10-15T11:16:26.050642+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1523,7 +1525,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.932742+00:00",
+      "time": "2026-10-15T11:16:26.061384+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1532,7 +1534,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.941663+00:00",
+      "time": "2026-10-15T11:16:26.070711+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1544,7 +1546,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.942045+00:00",
+      "time": "2026-10-15T11:16:26.071550+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1584,7 +1586,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.947724+00:00",
+      "time": "2026-10-15T11:16:26.083098+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "FINISH",
@@ -1593,7 +1595,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.948843+00:00",
+      "time": "2026-10-15T11:16:26.083570+00:00",
       "event": "TASK_COMPLETION_EVALUATED",
       "detail": {
         "outcome": "partial",
@@ -1701,7 +1703,7 @@
     "visit_advice": null,
     "medication_guidance": null,
     "long_term_memory": {
-      "snapshot_at": "2026-10-15T03:09:55.944007+00:00",
+      "snapshot_at": "2026-10-15T11:16:26.074666+00:00",
       "summary": "历史近7天实际测量记录共3条（3个日期），均值142.0/84.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
       "focus": [
         "recent_bp_rise"
@@ -1711,7 +1713,7 @@
       "queries": [],
       "sources": []
     },
-    "generated_at": "2026-10-15T03:09:55.949716+00:00",
+    "generated_at": "2026-10-15T11:16:26.084801+00:00",
     "task_completion": {
       "status": "partially_completed",
       "required_topics": [
@@ -1866,7 +1868,7 @@
       "visit_advice": null,
       "medication_guidance": null,
       "long_term_memory": {
-        "snapshot_at": "2026-10-15T03:09:55.944007+00:00",
+        "snapshot_at": "2026-10-15T11:16:26.074666+00:00",
         "summary": "历史近7天实际测量记录共3条（3个日期），均值142.0/84.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
         "focus": [
           "recent_bp_rise"
@@ -1876,7 +1878,7 @@
         "queries": [],
         "sources": []
       },
-      "generated_at": "2026-10-15T03:09:55.949716+00:00",
+      "generated_at": "2026-10-15T11:16:26.084801+00:00",
       "task_completion": {
         "status": "partially_completed",
         "required_topics": [

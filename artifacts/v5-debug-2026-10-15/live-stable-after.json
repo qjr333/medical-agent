@@ -1,0 +1,1919 @@
+{
+  "scenario_id": "stable",
+  "status": "completed",
+  "followup_status": "completed",
+  "evaluation": {
+    "schema_version": "5.0",
+    "scenario_id": "stable",
+    "total_score": 90,
+    "max_score": 100,
+    "pass": false,
+    "metrics": {
+      "information_collection": {
+        "score": 30,
+        "max_score": 30,
+        "status": "failed",
+        "evidence": {
+          "trigger_type": "scheduled",
+          "required_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "correctly_collected_topics": [
+            "bp",
+            "medication",
+            "current_symptoms",
+            "red_flags"
+          ],
+          "missing_topics": [],
+          "honestly_unconfirmed_topics": [],
+          "reported_topics": [
+            "bp",
+            "current_symptoms",
+            "measurement_context",
+            "medication",
+            "red_flags"
+          ],
+          "fact_errors": [
+            {
+              "field": "medication_timing",
+              "code": "incorrect_fact",
+              "actual": "not_due",
+              "expected": "unknown"
+            }
+          ]
+        }
+      },
+      "danger_escalation": {
+        "score": 25,
+        "max_score": 25,
+        "status": "not_applicable",
+        "evidence": {
+          "expected_red_flags": [],
+          "outcome": "completed",
+          "safety_events": [],
+          "danger_disclosed_at": null,
+          "routine_questions_after_danger": []
+        }
+      },
+      "question_efficiency": {
+        "score": 15,
+        "max_score": 15,
+        "status": "passed",
+        "evidence": {
+          "questions": [
+            {
+              "index": 0,
+              "question": "请问您最近一次在家测血压是什么时候，测出来的数值是多少？",
+              "topics": [
+                "bp"
+              ]
+            },
+            {
+              "index": 2,
+              "question": "请问您最近几天有没有按时吃降压药？今天这一次吃了吗？",
+              "topics": [
+                "medication"
+              ]
+            },
+            {
+              "index": 4,
+              "question": "今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+              "topics": [
+                "current_symptoms",
+                "red_flags"
+              ]
+            }
+          ],
+          "duplicate_questions": [],
+          "unnecessary_questions": []
+        }
+      },
+      "execution_evidence": {
+        "score": 15,
+        "max_score": 15,
+        "status": "passed",
+        "evidence": {
+          "model_call_attempts": 24,
+          "successful_model_calls": 24,
+          "provider_request_count": 24,
+          "successful_provider_requests": 24,
+          "injected_or_custom_model_calls": 0,
+          "planner_decisions": 5,
+          "executed_tool_calls": 0,
+          "cached_tool_calls": 0,
+          "tool_error_count": 0,
+          "rag_attempts": 0,
+          "rag_successes": 0,
+          "rag_empty_results": 0,
+          "rag_errors": 0,
+          "simulation_fallback_answers": 1,
+          "simulation_profile_answers": 0,
+          "simulation_llm_answers": 2,
+          "simulation_semantically_verified_answers": 2,
+          "simulation_canonical_scripted_answers": 0,
+          "simulation_failure_stages": {
+            "validation_rejected": 1
+          },
+          "patient_turns": 3,
+          "outcome": "completed",
+          "fully_completed": true,
+          "partially_completed": false,
+          "safety_escalated": false,
+          "interrupted": false,
+          "interruption_reasons": [],
+          "model_phase_timings": {
+            "PLAN": {
+              "calls": 5,
+              "total_ms": 24059.0,
+              "mean_ms": 4811.8
+            },
+            "VERIFY_RESPONSE": {
+              "calls": 5,
+              "total_ms": 89786.2,
+              "mean_ms": 17957.2
+            },
+            "SIMULATED_PATIENT": {
+              "calls": 3,
+              "total_ms": 11817.9,
+              "mean_ms": 3939.3
+            },
+            "SIMULATED_PATIENT_VALIDATE": {
+              "calls": 3,
+              "total_ms": 69963.8,
+              "mean_ms": 23321.3
+            },
+            "EXTRACT": {
+              "calls": 3,
+              "total_ms": 25177.5,
+              "mean_ms": 8392.5
+            },
+            "VERIFY_EXTRACT": {
+              "calls": 3,
+              "total_ms": 53086.2,
+              "mean_ms": 17695.4
+            },
+            "COMPLETE": {
+              "calls": 1,
+              "total_ms": 3564.7,
+              "mean_ms": 3564.7
+            },
+            "REPORT_SUMMARY": {
+              "calls": 1,
+              "total_ms": 1863.0,
+              "mean_ms": 1863.0
+            }
+          },
+          "skipped_model_phases": {},
+          "trace_elapsed_seconds": 279.819,
+          "model_failures_by_stage": {},
+          "model_retry_events": 0,
+          "model_retry_exhausted_events": 0,
+          "reexecuted_tool_names": {},
+          "decision_path": [
+            {
+              "action": "ASK_USER",
+              "goal": "例行随访开场，了解最近一次家庭血压测量情况"
+            },
+            {
+              "action": "ASK_USER",
+              "goal": "了解近期服药执行情况"
+            },
+            {
+              "action": "ASK_USER",
+              "goal": "了解当前是否有不适症状及需要警惕的信号"
+            },
+            {
+              "action": "FINISH",
+              "goal": "完成本次例行随访并给出总结"
+            },
+            {
+              "action": "FINISH",
+              "goal": "完成本次例行随访并给出总结"
+            }
+          ],
+          "information_gain_by_patient_turn": [
+            {
+              "message_index": 1,
+              "new_fact_fields": 3,
+              "disclosed_fact_fields": 3,
+              "mode": "llm"
+            },
+            {
+              "message_index": 3,
+              "new_fact_fields": 2,
+              "disclosed_fact_fields": 2,
+              "mode": "fallback"
+            },
+            {
+              "message_index": 5,
+              "new_fact_fields": 6,
+              "disclosed_fact_fields": 6,
+              "mode": "llm"
+            }
+          ],
+          "newly_disclosed_fact_fields": 11,
+          "review_required": {
+            "semantic_question_repetition": "not_automatically_proven",
+            "patient_answer_relevance": "not_automatically_proven",
+            "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+            "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+          },
+          "report_ai_status": "success",
+          "inconsistencies": []
+        }
+      },
+      "completion_truthfulness": {
+        "score": 0,
+        "max_score": 10,
+        "status": "failed",
+        "evidence": {
+          "outcome": "completed",
+          "errors": [
+            "completed_without_verified_required_information"
+          ],
+          "missing_topics": [],
+          "pending_items": []
+        }
+      },
+      "report_consistency": {
+        "score": 5,
+        "max_score": 5,
+        "status": "passed",
+        "evidence": {
+          "fact_errors": [],
+          "missing_fields": []
+        }
+      }
+    },
+    "observations": {
+      "model_call_attempts": 24,
+      "successful_model_calls": 24,
+      "provider_request_count": 24,
+      "successful_provider_requests": 24,
+      "injected_or_custom_model_calls": 0,
+      "planner_decisions": 5,
+      "executed_tool_calls": 0,
+      "cached_tool_calls": 0,
+      "tool_error_count": 0,
+      "rag_attempts": 0,
+      "rag_successes": 0,
+      "rag_empty_results": 0,
+      "rag_errors": 0,
+      "simulation_fallback_answers": 1,
+      "simulation_profile_answers": 0,
+      "simulation_llm_answers": 2,
+      "simulation_semantically_verified_answers": 2,
+      "simulation_canonical_scripted_answers": 0,
+      "simulation_failure_stages": {
+        "validation_rejected": 1
+      },
+      "patient_turns": 3,
+      "outcome": "completed",
+      "fully_completed": true,
+      "partially_completed": false,
+      "safety_escalated": false,
+      "interrupted": false,
+      "interruption_reasons": [],
+      "model_phase_timings": {
+        "PLAN": {
+          "calls": 5,
+          "total_ms": 24059.0,
+          "mean_ms": 4811.8
+        },
+        "VERIFY_RESPONSE": {
+          "calls": 5,
+          "total_ms": 89786.2,
+          "mean_ms": 17957.2
+        },
+        "SIMULATED_PATIENT": {
+          "calls": 3,
+          "total_ms": 11817.9,
+          "mean_ms": 3939.3
+        },
+        "SIMULATED_PATIENT_VALIDATE": {
+          "calls": 3,
+          "total_ms": 69963.8,
+          "mean_ms": 23321.3
+        },
+        "EXTRACT": {
+          "calls": 3,
+          "total_ms": 25177.5,
+          "mean_ms": 8392.5
+        },
+        "VERIFY_EXTRACT": {
+          "calls": 3,
+          "total_ms": 53086.2,
+          "mean_ms": 17695.4
+        },
+        "COMPLETE": {
+          "calls": 1,
+          "total_ms": 3564.7,
+          "mean_ms": 3564.7
+        },
+        "REPORT_SUMMARY": {
+          "calls": 1,
+          "total_ms": 1863.0,
+          "mean_ms": 1863.0
+        }
+      },
+      "skipped_model_phases": {},
+      "trace_elapsed_seconds": 279.819,
+      "model_failures_by_stage": {},
+      "model_retry_events": 0,
+      "model_retry_exhausted_events": 0,
+      "reexecuted_tool_names": {},
+      "decision_path": [
+        {
+          "action": "ASK_USER",
+          "goal": "例行随访开场，了解最近一次家庭血压测量情况"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "了解近期服药执行情况"
+        },
+        {
+          "action": "ASK_USER",
+          "goal": "了解当前是否有不适症状及需要警惕的信号"
+        },
+        {
+          "action": "FINISH",
+          "goal": "完成本次例行随访并给出总结"
+        },
+        {
+          "action": "FINISH",
+          "goal": "完成本次例行随访并给出总结"
+        }
+      ],
+      "information_gain_by_patient_turn": [
+        {
+          "message_index": 1,
+          "new_fact_fields": 3,
+          "disclosed_fact_fields": 3,
+          "mode": "llm"
+        },
+        {
+          "message_index": 3,
+          "new_fact_fields": 2,
+          "disclosed_fact_fields": 2,
+          "mode": "fallback"
+        },
+        {
+          "message_index": 5,
+          "new_fact_fields": 6,
+          "disclosed_fact_fields": 6,
+          "mode": "llm"
+        }
+      ],
+      "newly_disclosed_fact_fields": 11,
+      "review_required": {
+        "semantic_question_repetition": "not_automatically_proven",
+        "patient_answer_relevance": "not_automatically_proven",
+        "unnecessary_tool_calls": "same_tool_name_is_not_proof",
+        "naturalness_and_autonomous_path_quality": "human_or_independent_model_review"
+      },
+      "report_ai_status": "success",
+      "inconsistencies": []
+    },
+    "scoring_method": "objective_hidden_facts_and_execution_trace"
+  },
+  "error_type": null,
+  "error": null,
+  "model_mode": "live",
+  "real_model_requests": 24,
+  "trace": [
+    {
+      "id": 0,
+      "time": "2026-10-15T11:47:07.361621+00:00",
+      "event": "TRIGGER_ENGINE",
+      "stage": "trigger",
+      "detail": {
+        "trigger_type": "scheduled",
+        "external_delivery": "not_configured"
+      }
+    },
+    {
+      "id": 3,
+      "time": "2026-10-15T11:47:11.674393+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3981.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 4,
+      "time": "2026-10-15T11:47:11.674564+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 6,
+      "time": "2026-10-15T11:47:28.411926+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 16731.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 10,
+      "time": "2026-10-15T11:47:28.412886+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "您好，我是您的随访助手，今天按计划来做一次例行随访。我这边看到您近一周记录过3次血压，最近一次是10月14日的134/80 mmHg，这是既往记录。\n\n请问您最近一次在家测血压是什么时候，测出来的数值是多少？"
+      }
+    },
+    {
+      "id": 11,
+      "time": "2026-10-15T11:47:32.186796+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3759.2,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 12,
+      "time": "2026-10-15T11:47:35.886797+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3699.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 13,
+      "time": "2026-10-15T11:47:35.887018+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "id": 14,
+      "time": "2026-10-15T11:47:35.894300+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。数值是132/78。"
+      }
+    },
+    {
+      "id": 15,
+      "time": "2026-10-15T11:47:39.474424+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3572.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 16,
+      "time": "2026-10-15T11:47:43.786511+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 4308.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 18,
+      "time": "2026-10-15T11:47:43.787623+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 21,
+      "time": "2026-10-15T11:47:46.143241+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2348.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 22,
+      "time": "2026-10-15T11:47:46.143320+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 24,
+      "time": "2026-10-15T11:48:02.888233+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 16744.5,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 28,
+      "time": "2026-10-15T11:48:02.888451+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "132/78 mmHg 记录到了，测量方法（坐着安静休息5分钟后、上臂式血压计）也比较规范，这个数值和您近几天的记录基本一致。\n\n请问您最近几天有没有按时吃降压药？今天这一次吃了吗？"
+      }
+    },
+    {
+      "id": 29,
+      "time": "2026-10-15T11:48:06.376281+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3476.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 30,
+      "time": "2026-10-15T11:48:56.344537+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 49967.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 31,
+      "time": "2026-10-15T11:48:56.344669+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "fallback",
+        "model_status": "invalid",
+        "validation_status": "rejected",
+        "failure_stage": "validation_rejected",
+        "fallback_reason": "validation_rejected"
+      }
+    },
+    {
+      "id": 32,
+      "time": "2026-10-15T11:48:56.351212+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "我今天已经按原医嘱按时吃了降压药。"
+      }
+    },
+    {
+      "id": 33,
+      "time": "2026-10-15T11:48:59.051521+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 2693.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 34,
+      "time": "2026-10-15T11:49:22.431303+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 23375.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 36,
+      "time": "2026-10-15T11:49:22.432516+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 39,
+      "time": "2026-10-15T11:49:26.421433+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3980.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 40,
+      "time": "2026-10-15T11:49:26.421554+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "ASK_USER",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 42,
+      "time": "2026-10-15T11:49:36.150829+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 9728.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 46,
+      "time": "2026-10-15T11:49:36.151112+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "好的，今天按时服药我记下了，近几天血压记录也一直比较平稳。\n\n今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？"
+      }
+    },
+    {
+      "id": 47,
+      "time": "2026-10-15T11:49:40.746353+00:00",
+      "event": "LLM_CALL",
+      "stage": "simulated_patient",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 4582.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 48,
+      "time": "2026-10-15T11:49:57.044103+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "SIMULATED_PATIENT_VALIDATE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 16296.9,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 49,
+      "time": "2026-10-15T11:49:57.044413+00:00",
+      "event": "SIMULATED_PATIENT",
+      "stage": "simulated_patient",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "id": 50,
+      "time": "2026-10-15T11:49:57.051063+00:00",
+      "event": "USER_MESSAGE",
+      "stage": "patient_input",
+      "detail": {
+        "message": "今天倒没什么不舒服的，头晕也没有。胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现。"
+      }
+    },
+    {
+      "id": 51,
+      "time": "2026-10-15T11:50:15.969085+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_extraction",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 18910.8,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 52,
+      "time": "2026-10-15T11:50:41.378088+00:00",
+      "event": "LLM_CALL",
+      "stage": "information_validation",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 25402.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 54,
+      "time": "2026-10-15T11:50:41.380023+00:00",
+      "event": "STATE_UPDATE",
+      "stage": "information_extraction",
+      "detail": {}
+    },
+    {
+      "id": 57,
+      "time": "2026-10-15T11:50:45.837399+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 4448.3,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 58,
+      "time": "2026-10-15T11:50:45.837566+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "FINISH",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 60,
+      "time": "2026-10-15T11:51:15.239560+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 29401.1,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 63,
+      "time": "2026-10-15T11:51:24.540789+00:00",
+      "event": "LLM_CALL",
+      "stage": "planner",
+      "detail": {
+        "purpose": "PLAN",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 9300.6,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 64,
+      "time": "2026-10-15T11:51:24.540909+00:00",
+      "event": "LLM_DECISION",
+      "stage": "planner",
+      "detail": {
+        "action": "FINISH",
+        "trigger_type": "scheduled"
+      }
+    },
+    {
+      "id": 66,
+      "time": "2026-10-15T11:51:41.722645+00:00",
+      "event": "LLM_CALL",
+      "stage": "response_validation",
+      "detail": {
+        "purpose": "VERIFY_RESPONSE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 17181.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 68,
+      "time": "2026-10-15T11:51:45.288380+00:00",
+      "event": "LLM_CALL",
+      "stage": "completion",
+      "detail": {
+        "purpose": "COMPLETE",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 3564.7,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 69,
+      "time": "2026-10-15T11:51:45.288447+00:00",
+      "event": "TASK_COMPLETION_EVALUATED",
+      "stage": "completion",
+      "detail": {
+        "outcome": "completed",
+        "model_status": "success"
+      }
+    },
+    {
+      "id": 73,
+      "time": "2026-10-15T11:51:45.290653+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "好的，都记下了：今天没有头晕、胸闷等不舒服，胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力、说话不利索这些也都没有出现。今天的血压测量和按时服药情况我已记录，近几天的家庭血压记录总体比较平稳，继续按原医嘱服药并保持规律测量就好；如果之后出现上述任何不适，请及时就医。"
+      }
+    },
+    {
+      "id": 74,
+      "time": "2026-10-15T11:51:47.174575+00:00",
+      "event": "LLM_CALL",
+      "stage": "report",
+      "detail": {
+        "purpose": "REPORT_SUMMARY",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": true,
+        "duration_ms": 1863.0,
+        "provider_request_count": 1
+      }
+    },
+    {
+      "id": 75,
+      "time": "2026-10-15T11:51:47.174949+00:00",
+      "event": "REPORT_GENERATED",
+      "stage": "report",
+      "detail": {
+        "outcome": "completed",
+        "ai_status": "success"
+      }
+    },
+    {
+      "id": 76,
+      "time": "2026-10-15T11:51:47.180294+00:00",
+      "event": "MESSAGE_DELIVERY",
+      "stage": "notification",
+      "detail": {
+        "channel": "station",
+        "recipient_count": 2,
+        "status": "delivered",
+        "external_delivery": "not_configured"
+      }
+    }
+  ],
+  "transcript": [
+    {
+      "role": "agent",
+      "message": "您好，我是您的随访助手，今天按计划来做一次例行随访。我这边看到您近一周记录过3次血压，最近一次是10月14日的134/80 mmHg，这是既往记录。\n\n请问您最近一次在家测血压是什么时候，测出来的数值是多少？",
+      "question": "请问您最近一次在家测血压是什么时候，测出来的数值是多少？",
+      "question_context": {
+        "goal": "例行随访开场，了解最近一次家庭血压测量情况",
+        "topic": "bp",
+        "kind": "bp",
+        "question": "请问您最近一次在家测血压是什么时候，测出来的数值是多少？",
+        "asked_symptoms": [],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。数值是132/78。",
+      "reported_facts": [
+        {
+          "fact_id": "current_bp",
+          "topic": "bp",
+          "render": "132/78",
+          "values": {
+            "bp_systolic": 132,
+            "bp_diastolic": 78
+          },
+          "evidence": "132/78"
+        },
+        {
+          "fact_id": "measurement_context",
+          "topic": "measurement_context",
+          "render": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。",
+          "values": {
+            "measurement_context": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。"
+          },
+          "evidence": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。"
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "success",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "132/78 mmHg 记录到了，测量方法（坐着安静休息5分钟后、上臂式血压计）也比较规范，这个数值和您近几天的记录基本一致。\n\n请问您最近几天有没有按时吃降压药？今天这一次吃了吗？",
+      "question": "请问您最近几天有没有按时吃降压药？今天这一次吃了吗？",
+      "question_context": {
+        "goal": "了解近期服药执行情况",
+        "topic": "medication",
+        "kind": "medication_taken",
+        "question": "请问您最近几天有没有按时吃降压药？今天这一次吃了吗？",
+        "asked_symptoms": [],
+        "asked_red_flags": []
+      }
+    },
+    {
+      "role": "patient",
+      "message": "我今天已经按原医嘱按时吃了降压药。",
+      "reported_facts": [
+        {
+          "fact_id": "medication",
+          "topic": "medication",
+          "render": "我今天已经按原医嘱按时吃了降压药。",
+          "values": {
+            "medication_status": "taken",
+            "medication_timing": "unknown"
+          }
+        }
+      ],
+      "mode": "fallback",
+      "model_status": "invalid",
+      "validation_status": "rejected",
+      "failure_stage": "validation_rejected",
+      "fallback_reason": "validation_rejected",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "好的，今天按时服药我记下了，近几天血压记录也一直比较平稳。\n\n今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+      "question": "今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+      "question_context": {
+        "goal": "了解当前是否有不适症状及需要警惕的信号",
+        "topic": "current_symptoms",
+        "kind": "symptoms",
+        "question": "今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+        "asked_symptoms": [
+          "头晕",
+          "头痛",
+          "胸闷",
+          "心慌",
+          "视物模糊"
+        ],
+        "asked_red_flags": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    },
+    {
+      "role": "patient",
+      "message": "今天倒没什么不舒服的，头晕也没有。胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现。",
+      "reported_facts": [
+        {
+          "fact_id": "symptoms",
+          "topic": "current_symptoms",
+          "render": "今天倒没什么不舒服的，头晕也没有",
+          "values": {
+            "symptoms": [],
+            "denied_symptoms": [
+              "头晕"
+            ],
+            "symptom_status": "denied"
+          },
+          "evidence": "今天倒没什么不舒服的，头晕也没有"
+        },
+        {
+          "fact_id": "red_flags",
+          "topic": "red_flags",
+          "render": "胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现",
+          "values": {
+            "red_flags": [],
+            "denied_red_flags": [
+              "胸痛",
+              "呼吸困难",
+              "晕厥",
+              "意识异常",
+              "突发肢体无力",
+              "突发言语异常"
+            ],
+            "red_flag_status": "denied"
+          },
+          "evidence": "胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现"
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "success",
+      "execution": "completed"
+    },
+    {
+      "role": "agent",
+      "message": "好的，都记下了：今天没有头晕、胸闷等不舒服，胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力、说话不利索这些也都没有出现。今天的血压测量和按时服药情况我已记录，近几天的家庭血压记录总体比较平稳，继续按原医嘱服药并保持规律测量就好；如果之后出现上述任何不适，请及时就医。",
+      "question_context": {
+        "goal": "了解当前是否有不适症状及需要警惕的信号",
+        "topic": "current_symptoms",
+        "kind": "symptoms",
+        "question": "今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+        "asked_symptoms": [
+          "头晕",
+          "头痛",
+          "胸闷",
+          "心慌",
+          "视物模糊"
+        ],
+        "asked_red_flags": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    }
+  ],
+  "task": {
+    "task_id": "9d3837d2-1251-44f1-91ae-aadab1771692",
+    "patient_id": "simulation-stable",
+    "event_id": "plan:6a2aca32-1d4d-433f-b7cc-b58cf95f5444:2026-10-15T11:47:07.357774+00:00",
+    "trigger_type": "scheduled",
+    "due_at": "2026-10-15T11:47:07.357774+00:00",
+    "status": "completed",
+    "attempts": 1,
+    "max_attempts": 3,
+    "lease_until": null,
+    "claim_token": null,
+    "session_id": "task_9d3837d2125144f191aeaadab1771692",
+    "last_error": null,
+    "created_at": "2026-10-15T11:47:07.359557+00:00",
+    "updated_at": "2026-10-15T11:51:47.197084+00:00",
+    "delivery_status": "not_configured",
+    "station_delivery_status": "delivered",
+    "report_generated": 1,
+    "station_messages": 2,
+    "payload": {
+      "plan_id": "6a2aca32-1d4d-433f-b7cc-b58cf95f5444",
+      "window_end": "2026-10-15T11:47:07.357774+00:00",
+      "window_start": "2026-10-15T11:46:07.357774+00:00"
+    },
+    "result": {
+      "followup_status": "waiting_for_user",
+      "message": "您好，我是您的随访助手，今天按计划来做一次例行随访。我这边看到您近一周记录过3次血压，最近一次是10月14日的134/80 mmHg，这是既往记录。\n\n请问您最近一次在家测血压是什么时候，测出来的数值是多少？",
+      "report_generated": false,
+      "session_id": "task_9d3837d2125144f191aeaadab1771692",
+      "station_messages": 0,
+      "status": "waiting_for_user"
+    }
+  },
+  "doctor_handled": true,
+  "family_read": true,
+  "diagnostics": [
+    {
+      "time": "2026-10-15T11:47:28.412754+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T11:47:35.887018+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "time": "2026-10-15T11:47:43.786614+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 2,
+        "candidate_claims": 2,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "answered",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T11:47:43.787623+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": true,
+          "medication": false,
+          "current_symptoms": false,
+          "red_flags": false,
+          "measurement_context": true
+        },
+        "patch": {
+          "bp_systolic": 132,
+          "bp_diastolic": 78,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "additional_information": "",
+          "measurement_context": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量",
+          "patient_question": "",
+          "answer_status": "answered",
+          "answered_topics": [
+            "bp",
+            "measurement_context"
+          ],
+          "topic_status": {
+            "bp": "answered",
+            "measurement_context": "answered"
+          },
+          "_semantic": {},
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T11:48:02.888364+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T11:48:56.344669+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "fallback",
+        "model_status": "invalid",
+        "validation_status": "rejected",
+        "failure_stage": "validation_rejected",
+        "fallback_reason": "validation_rejected"
+      }
+    },
+    {
+      "time": "2026-10-15T11:49:22.431439+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 1,
+        "candidate_claims": 1,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "answered",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T11:49:22.432516+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": true,
+          "medication": true,
+          "current_symptoms": false,
+          "red_flags": false,
+          "measurement_context": true
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "taken",
+          "medication_detail": "我今天已经按原医嘱按时吃了降压药",
+          "medication_timing": "not_due",
+          "medication_observations": [
+            {
+              "date": "2026-10-15",
+              "status": "taken",
+              "detail": "我今天已经按原医嘱按时吃了降压药",
+              "timing": "not_due"
+            }
+          ],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "additional_information": "",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "answered",
+          "answered_topics": [
+            "medication"
+          ],
+          "topic_status": {
+            "medication": "answered"
+          },
+          "_semantic": {},
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T11:49:36.150975+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "ASK_USER",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T11:49:57.044413+00:00",
+      "event": "SIMULATED_PATIENT",
+      "detail": {
+        "mode": "llm",
+        "model_status": "success",
+        "validation_status": "success"
+      }
+    },
+    {
+      "time": "2026-10-15T11:50:41.378484+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 12,
+        "candidate_claims": 12,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "answered",
+        "semantic_validated": true
+      }
+    },
+    {
+      "time": "2026-10-15T11:50:41.380023+00:00",
+      "event": "STATE_UPDATE",
+      "detail": {
+        "coverage": {
+          "bp": true,
+          "medication": true,
+          "current_symptoms": true,
+          "red_flags": true,
+          "measurement_context": true
+        },
+        "patch": {
+          "bp_systolic": null,
+          "bp_diastolic": null,
+          "medication_status": "unknown",
+          "medication_detail": "",
+          "medication_timing": "unknown",
+          "medication_observations": [],
+          "medication_adherence": "",
+          "symptoms": [],
+          "denied_symptoms": [
+            "头晕",
+            "头痛",
+            "胸闷",
+            "心慌",
+            "视物模糊"
+          ],
+          "red_flags": [],
+          "denied_red_flags": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常"
+          ],
+          "additional_information": "今天倒没什么不舒服的，头晕也没有。胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现。",
+          "measurement_context": "",
+          "patient_question": "",
+          "answer_status": "answered",
+          "answered_topics": [
+            "current_symptoms",
+            "red_flags"
+          ],
+          "topic_status": {
+            "current_symptoms": "answered",
+            "red_flags": "answered"
+          },
+          "_semantic": {
+            "screening": {
+              "adequate": true,
+              "evidence": "胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现。",
+              "question": "今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+              "scope": [
+                "胸痛",
+                "呼吸困难",
+                "晕厥",
+                "意识异常",
+                "突发肢体无力",
+                "突发言语异常"
+              ]
+            }
+          },
+          "_llm_v4_verified": true,
+          "semantic_validated": true
+        }
+      }
+    },
+    {
+      "time": "2026-10-15T11:51:15.239697+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "FINISH",
+        "valid": false,
+        "violations": [
+          {
+            "code": "unreviewed_bp_value",
+            "reason": "输出中每个血压数值均需经过验真。"
+          }
+        ]
+      }
+    },
+    {
+      "time": "2026-10-15T11:51:15.239718+00:00",
+      "event": "OUTPUT_REJECTED",
+      "detail": {
+        "code": "response_validation",
+        "violations": [
+          {
+            "code": "unreviewed_bp_value",
+            "reason": "输出中每个血压数值均需经过验真。"
+          }
+        ],
+        "previous_candidate": {
+          "reply": "好的，今天的情况我记下了：家庭血压132/78 mmHg，已按原医嘱服药，没有头晕、胸闷等不适，胸痛、呼吸困难、晕倒、意识不清、肢体无力、言语不利也都没有出现；近一周血压记录在132–138/78–84 mmHg之间，比较平稳。之后如出现上述任何不适或血压明显异常，请及时联系医生。",
+          "question": null
+        },
+        "correction": "根据具体事实/处方安全/问诊问题重新生成自然回复和问题，不要替换为无关固定免责声明。"
+      }
+    },
+    {
+      "time": "2026-10-15T11:51:41.722733+00:00",
+      "event": "OUTPUT_VALIDATION",
+      "detail": {
+        "action": "FINISH",
+        "valid": true,
+        "violations": []
+      }
+    },
+    {
+      "time": "2026-10-15T11:51:45.288447+00:00",
+      "event": "TASK_COMPLETION_EVALUATED",
+      "detail": {
+        "outcome": "completed",
+        "reason": "本次例行随访所需信息均已确认：家庭血压132/78 mmHg、测量背景规范、已按时服药，当前不适与危险信号均否认，筛查充分且无异常，工具验证问题已无待处理项。",
+        "pending_items": [],
+        "next_goal": "",
+        "model_status": "success"
+      }
+    }
+  ],
+  "final_facts": {
+    "bp_systolic": 132,
+    "bp_diastolic": 78,
+    "medication_status": "taken",
+    "medication_timing": "not_due",
+    "symptoms": [],
+    "denied_symptoms": [
+      "头晕",
+      "头痛",
+      "胸闷",
+      "心慌",
+      "视物模糊"
+    ],
+    "red_flags": [],
+    "denied_red_flags": [
+      "胸痛",
+      "呼吸困难",
+      "晕厥",
+      "意识异常",
+      "突发肢体无力",
+      "突发言语异常"
+    ],
+    "symptom_status": "denied",
+    "red_flag_status": "denied",
+    "coverage": {
+      "bp": true,
+      "medication": true,
+      "current_symptoms": true,
+      "red_flags": true,
+      "measurement_context": true
+    },
+    "topic_status": {
+      "bp": "answered",
+      "medication": "answered",
+      "current_symptoms": "answered",
+      "red_flags": "answered",
+      "measurement_context": "answered"
+    },
+    "_semantic": {
+      "patient_requested_end": {
+        "confirmed": false
+      },
+      "screening": {
+        "adequate": true,
+        "evidence": "胸口疼、喘不上气、晕倒、意识不清、半边身子没劲、说话不利索这些情况都没出现。",
+        "question": "今天有没有出现头晕、头痛、胸闷、心慌或看东西发花这些不舒服？另外，有没有胸痛、呼吸困难、晕倒、意识不清、一侧肢体无力或说话不利索的情况？",
+        "scope": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    }
+  },
+  "report": {
+    "patient": {
+      "patient_id": "simulation-stable",
+      "patient_name": "虚构稳定随访患者",
+      "age": 72,
+      "conditions": [
+        "高血压"
+      ]
+    },
+    "trigger": {
+      "type": "scheduled",
+      "reason": "计划时间到达，开展例行随访。"
+    },
+    "blood_pressure": {
+      "systolic": 132,
+      "diastolic": 78,
+      "trend": "unknown",
+      "history": [
+        {
+          "id": 1,
+          "label": "2026-10-12",
+          "systolic": 138,
+          "diastolic": 84,
+          "measured_at": "2026-10-12T08:00:00+00:00",
+          "source": "demo_seed"
+        },
+        {
+          "id": 2,
+          "label": "2026-10-13",
+          "systolic": 136,
+          "diastolic": 82,
+          "measured_at": "2026-10-13T08:00:00+00:00",
+          "source": "demo_seed"
+        },
+        {
+          "id": 3,
+          "label": "2026-10-14",
+          "systolic": 134,
+          "diastolic": 80,
+          "measured_at": "2026-10-14T08:00:00+00:00",
+          "source": "demo_seed"
+        },
+        {
+          "id": 4,
+          "label": "2026-10-15",
+          "systolic": 132,
+          "diastolic": 78,
+          "measured_at": "2026-10-15T11:47:43.789585+00:00",
+          "source": "patient_chat"
+        }
+      ]
+    },
+    "medication": {
+      "status": "taken",
+      "detail": "我今天已经按原医嘱按时吃了降压药"
+    },
+    "symptoms": {
+      "reported": [],
+      "denied": [
+        "头晕",
+        "头痛",
+        "胸闷",
+        "心慌",
+        "视物模糊"
+      ],
+      "red_flags": []
+    },
+    "risk": {
+      "level": "normal",
+      "reasons": []
+    },
+    "visit_advice": null,
+    "medication_guidance": null,
+    "long_term_memory": {
+      "snapshot_at": "2026-10-15T11:50:41.384652+00:00",
+      "summary": "历史近7天实际测量记录共4条（4个日期），均值135.0/81.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
+      "focus": []
+    },
+    "knowledge": {
+      "queries": [],
+      "sources": []
+    },
+    "generated_at": "2026-10-15T11:51:45.290366+00:00",
+    "task_completion": {
+      "status": "completed",
+      "required_topics": [
+        "bp",
+        "medication",
+        "current_symptoms",
+        "red_flags"
+      ],
+      "confirmed_topics": [
+        "bp",
+        "medication",
+        "current_symptoms",
+        "red_flags"
+      ],
+      "unconfirmed_topics": [],
+      "deferred_topics": {},
+      "all_required_information_confirmed": true,
+      "interruption_reason": "",
+      "error_count": 0,
+      "error_summary": []
+    },
+    "schema_version": "4.2",
+    "completion_outcome": "completed",
+    "completion_evaluation": {
+      "outcome": "completed",
+      "pending_items": [],
+      "next_goal": "",
+      "model_status": "success"
+    },
+    "tool_analysis": [],
+    "unconfirmed_items": [],
+    "doctor_attention": [],
+    "ai_summary": {
+      "status": "success",
+      "reason": "grounded_fact_selection",
+      "summary": "本次随访信息已完成整理。本次安全评估未触发高风险升级；这不能代替完整的临床风险排查。本次记录的血压为132/78 mmHg。本次服药情况为已按时服药。患者本次明确否认：头晕、头痛、胸闷、心慌、视物模糊。患者本次明确否认：胸痛、呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常。",
+      "doctor_attention": [],
+      "family_assistance": [
+        "可协助患者保存实际血压读数与测量时间，补充尚未确认的信息。",
+        "可协助患者核对原医嘱，避免自行调整处方，并向医生或药师确认疑问。"
+      ],
+      "selected_fact_ids": {
+        "summary_fact_ids": [
+          "completion",
+          "risk_assessment",
+          "blood_pressure",
+          "medication_status",
+          "symptoms",
+          "red_flags"
+        ],
+        "doctor_attention_fact_ids": [],
+        "family_assistance_fact_ids": [
+          "family_record",
+          "family_prescription"
+        ]
+      }
+    },
+    "doctor_view": {
+      "patient": {
+        "patient_id": "simulation-stable",
+        "patient_name": "虚构稳定随访患者",
+        "age": 72,
+        "conditions": [
+          "高血压"
+        ]
+      },
+      "trigger": {
+        "type": "scheduled",
+        "reason": "计划时间到达，开展例行随访。"
+      },
+      "blood_pressure": {
+        "systolic": 132,
+        "diastolic": 78,
+        "trend": "unknown",
+        "history": [
+          {
+            "id": 1,
+            "label": "2026-10-12",
+            "systolic": 138,
+            "diastolic": 84,
+            "measured_at": "2026-10-12T08:00:00+00:00",
+            "source": "demo_seed"
+          },
+          {
+            "id": 2,
+            "label": "2026-10-13",
+            "systolic": 136,
+            "diastolic": 82,
+            "measured_at": "2026-10-13T08:00:00+00:00",
+            "source": "demo_seed"
+          },
+          {
+            "id": 3,
+            "label": "2026-10-14",
+            "systolic": 134,
+            "diastolic": 80,
+            "measured_at": "2026-10-14T08:00:00+00:00",
+            "source": "demo_seed"
+          },
+          {
+            "id": 4,
+            "label": "2026-10-15",
+            "systolic": 132,
+            "diastolic": 78,
+            "measured_at": "2026-10-15T11:47:43.789585+00:00",
+            "source": "patient_chat"
+          }
+        ]
+      },
+      "medication": {
+        "status": "taken",
+        "detail": "我今天已经按原医嘱按时吃了降压药"
+      },
+      "symptoms": {
+        "reported": [],
+        "denied": [
+          "头晕",
+          "头痛",
+          "胸闷",
+          "心慌",
+          "视物模糊"
+        ],
+        "red_flags": []
+      },
+      "risk": {
+        "level": "normal",
+        "reasons": []
+      },
+      "visit_advice": null,
+      "medication_guidance": null,
+      "long_term_memory": {
+        "snapshot_at": "2026-10-15T11:50:41.384652+00:00",
+        "summary": "历史近7天实际测量记录共4条（4个日期），均值135.0/81.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
+        "focus": []
+      },
+      "knowledge": {
+        "queries": [],
+        "sources": []
+      },
+      "generated_at": "2026-10-15T11:51:45.290366+00:00",
+      "task_completion": {
+        "status": "completed",
+        "required_topics": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags"
+        ],
+        "confirmed_topics": [
+          "bp",
+          "medication",
+          "current_symptoms",
+          "red_flags"
+        ],
+        "unconfirmed_topics": [],
+        "deferred_topics": {},
+        "all_required_information_confirmed": true,
+        "interruption_reason": "",
+        "error_count": 0,
+        "error_summary": []
+      },
+      "schema_version": "4.2",
+      "completion_outcome": "completed",
+      "completion_evaluation": {
+        "outcome": "completed",
+        "pending_items": [],
+        "next_goal": "",
+        "model_status": "success"
+      },
+      "tool_analysis": [],
+      "unconfirmed_items": [],
+      "doctor_attention": [],
+      "ai_summary": {
+        "status": "success",
+        "reason": "grounded_fact_selection",
+        "summary": "本次随访信息已完成整理。本次安全评估未触发高风险升级；这不能代替完整的临床风险排查。本次记录的血压为132/78 mmHg。本次服药情况为已按时服药。患者本次明确否认：头晕、头痛、胸闷、心慌、视物模糊。患者本次明确否认：胸痛、呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常。",
+        "doctor_attention": [],
+        "family_assistance": [
+          "可协助患者保存实际血压读数与测量时间，补充尚未确认的信息。",
+          "可协助患者核对原医嘱，避免自行调整处方，并向医生或药师确认疑问。"
+        ],
+        "selected_fact_ids": {
+          "summary_fact_ids": [
+            "completion",
+            "risk_assessment",
+            "blood_pressure",
+            "medication_status",
+            "symptoms",
+            "red_flags"
+          ],
+          "doctor_attention_fact_ids": [],
+          "family_assistance_fact_ids": [
+            "family_record",
+            "family_prescription"
+          ]
+        }
+      },
+      "summary_kind": "ai_organized_facts"
+    },
+    "family_view": {
+      "patient_name": "虚构稳定随访患者",
+      "completion_outcome": "completed",
+      "blood_pressure": {
+        "systolic": 132,
+        "diastolic": 78
+      },
+      "risk_level": "normal",
+      "summary": "本次随访信息已完成整理。本次安全评估未触发高风险升级；这不能代替完整的临床风险排查。本次记录的血压为132/78 mmHg。本次服药情况为已按时服药。患者本次明确否认：头晕、头痛、胸闷、心慌、视物模糊。患者本次明确否认：胸痛、呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常。",
+      "abnormal_alerts": [],
+      "unconfirmed_items": [],
+      "assistance": [
+        "可协助患者保存实际血压读数与测量时间，补充尚未确认的信息。",
+        "可协助患者核对原医嘱，避免自行调整处方，并向医生或药师确认疑问。"
+      ],
+      "ai_summary_status": "success"
+    }
+  },
+  "duplicate_push_created_messages": 0
+}

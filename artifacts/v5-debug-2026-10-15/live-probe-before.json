@@ -1,0 +1,962 @@
+{
+  "mode": "live",
+  "fictional": true,
+  "calls": [
+    {
+      "case": "extraction",
+      "payload": {
+        "patient_message": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+        "today": "2026-10-15",
+        "question_context": {
+          "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+          "topic": "red_flags",
+          "kind": "symptoms",
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+          "asked_symptoms": [
+            "头晕",
+            "胸闷"
+          ],
+          "asked_red_flags": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常"
+          ]
+        },
+        "last_agent_question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "current_goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+        "today_state": {
+          "bp_systolic": 168,
+          "bp_diastolic": 104,
+          "medication_status": "unknown",
+          "medication_timing": "unknown",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "symptom_status": null,
+          "red_flag_status": null,
+          "topic_status": {
+            "bp": "unanswered",
+            "medication": "unanswered",
+            "current_symptoms": "unanswered",
+            "red_flags": "unanswered",
+            "measurement_context": "unanswered"
+          },
+          "deferred_topics": {}
+        }
+      },
+      "result": {
+        "claims": [
+          {
+            "id": "c1",
+            "kind": "symptom",
+            "value": {
+              "name": "胸痛",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "我现在没有胸痛"
+          },
+          {
+            "id": "c2",
+            "kind": "symptom",
+            "value": {
+              "name": "呼吸困难",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "没有胸痛、呼吸困难"
+          },
+          {
+            "id": "c3",
+            "kind": "symptom",
+            "value": {
+              "name": "晕厥",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "呼吸困难、晕厥"
+          },
+          {
+            "id": "c4",
+            "kind": "symptom",
+            "value": {
+              "name": "意识异常",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "晕厥、意识异常"
+          },
+          {
+            "id": "c5",
+            "kind": "symptom",
+            "value": {
+              "name": "突发肢体无力",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "意识异常、突发肢体无力或突发言语异常"
+          },
+          {
+            "id": "c6",
+            "kind": "symptom",
+            "value": {
+              "name": "突发言语异常",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "突发肢体无力或突发言语异常"
+          },
+          {
+            "id": "c7",
+            "kind": "symptom",
+            "value": {
+              "name": "头晕",
+              "red_flag": false
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "也没有头晕"
+          },
+          {
+            "id": "c8",
+            "kind": "additional_information",
+            "value": "我现在没有不舒服",
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "我现在没有不舒服"
+          }
+        ],
+        "answer_status": "answered",
+        "patient_question": "",
+        "screening": {
+          "adequate": true,
+          "evidence": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+          "scope": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常",
+            "头晕"
+          ],
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？"
+        },
+        "reason": "患者用当前时态明确否认六项标准红旗症状及头晕，属有效危险筛查；上一问同时询问了胸闷，患者本轮未提及胸闷，故scope未纳入且不推断其否认，仅“没有不舒服”这一笼统表述不足以覆盖未提及的胸闷。"
+      },
+      "duration_seconds": 4.842
+    },
+    {
+      "case": "extraction",
+      "payload": {
+        "patient_message": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+        "today": "2026-10-15",
+        "question_context": {
+          "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+          "topic": "red_flags",
+          "kind": "symptoms",
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+          "asked_symptoms": [
+            "头晕",
+            "胸闷"
+          ],
+          "asked_red_flags": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常"
+          ]
+        },
+        "last_agent_question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "current_goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+        "today_state": {
+          "bp_systolic": 168,
+          "bp_diastolic": 104,
+          "medication_status": "unknown",
+          "medication_timing": "unknown",
+          "symptoms": [],
+          "denied_symptoms": [],
+          "red_flags": [],
+          "denied_red_flags": [],
+          "symptom_status": null,
+          "red_flag_status": null,
+          "topic_status": {
+            "bp": "unanswered",
+            "medication": "unanswered",
+            "current_symptoms": "unanswered",
+            "red_flags": "unanswered",
+            "measurement_context": "unanswered"
+          },
+          "deferred_topics": {}
+        },
+        "claims": [
+          {
+            "id": "c1",
+            "kind": "symptom",
+            "value": {
+              "name": "胸痛",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "我现在没有胸痛"
+          },
+          {
+            "id": "c2",
+            "kind": "symptom",
+            "value": {
+              "name": "呼吸困难",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "没有胸痛、呼吸困难"
+          },
+          {
+            "id": "c3",
+            "kind": "symptom",
+            "value": {
+              "name": "晕厥",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "呼吸困难、晕厥"
+          },
+          {
+            "id": "c4",
+            "kind": "symptom",
+            "value": {
+              "name": "意识异常",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "晕厥、意识异常"
+          },
+          {
+            "id": "c5",
+            "kind": "symptom",
+            "value": {
+              "name": "突发肢体无力",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "意识异常、突发肢体无力或突发言语异常"
+          },
+          {
+            "id": "c6",
+            "kind": "symptom",
+            "value": {
+              "name": "突发言语异常",
+              "red_flag": true
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "突发肢体无力或突发言语异常"
+          },
+          {
+            "id": "c7",
+            "kind": "symptom",
+            "value": {
+              "name": "头晕",
+              "red_flag": false
+            },
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "也没有头晕"
+          },
+          {
+            "id": "c8",
+            "kind": "additional_information",
+            "value": "我现在没有不舒服",
+            "polarity": "denied",
+            "temporal": "current",
+            "evidence": "我现在没有不舒服"
+          }
+        ],
+        "screening": {
+          "adequate": true,
+          "evidence": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+          "scope": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常",
+            "头晕"
+          ],
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？"
+        }
+      },
+      "result": {
+        "reviews": [
+          {
+            "id": "c1",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c2",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c3",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c4",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c5",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c6",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c7",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          },
+          {
+            "id": "c8",
+            "supported": true,
+            "polarity": "denied",
+            "temporal": "current",
+            "date": "2026-10-15"
+          }
+        ],
+        "screening": {
+          "supported": true,
+          "adequate": true,
+          "evidence": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+          "scope": [
+            "胸痛",
+            "胸闷",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常",
+            "头晕"
+          ],
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？"
+        }
+      },
+      "duration_seconds": 32.696
+    },
+    {
+      "case": "patient",
+      "payload": {
+        "scenario_id": "high_bp",
+        "profile": "cooperative",
+        "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "question_context": {
+          "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+          "topic": "red_flags",
+          "kind": "symptoms",
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+          "asked_symptoms": [
+            "头晕",
+            "胸闷"
+          ],
+          "asked_red_flags": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常"
+          ]
+        },
+        "candidate_facts": [
+          {
+            "fact_id": "current_bp",
+            "topic": "bp",
+            "values": {
+              "bp_systolic": 168,
+              "bp_diastolic": 104
+            }
+          },
+          {
+            "fact_id": "bp_history",
+            "topic": "bp_history",
+            "values": {
+              "bp_history": [
+                {
+                  "label": "历史记录1",
+                  "systolic": 148,
+                  "diastolic": 90
+                },
+                {
+                  "label": "历史记录2",
+                  "systolic": 156,
+                  "diastolic": 96
+                },
+                {
+                  "label": "历史记录3",
+                  "systolic": 160,
+                  "diastolic": 100
+                }
+              ]
+            }
+          },
+          {
+            "fact_id": "medication",
+            "topic": "medication",
+            "values": {
+              "medication_status": "taken",
+              "medication_timing": "unknown"
+            }
+          },
+          {
+            "fact_id": "medication_details",
+            "topic": "medication_details",
+            "values": {
+              "medication_name": "氨氯地平",
+              "medication_detail": "原医嘱为氨氯地平5 mg，每天一次；本次未改变处方。"
+            }
+          },
+          {
+            "fact_id": "symptoms",
+            "topic": "current_symptoms",
+            "values": {
+              "symptoms": [],
+              "denied_symptoms": [
+                "头晕"
+              ],
+              "symptom_status": "denied"
+            }
+          },
+          {
+            "fact_id": "red_flags",
+            "topic": "red_flags",
+            "values": {
+              "red_flags": [],
+              "denied_red_flags": [
+                "胸痛",
+                "呼吸困难",
+                "晕厥",
+                "意识异常",
+                "突发肢体无力",
+                "突发言语异常"
+              ],
+              "red_flag_status": "denied"
+            }
+          },
+          {
+            "fact_id": "measurement_context",
+            "topic": "measurement_context",
+            "values": {
+              "measurement_context": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。"
+            }
+          },
+          {
+            "fact_id": "monitoring_plan",
+            "topic": "monitoring_plan",
+            "values": {
+              "monitoring_plan": "我明天会量血压，并记录和上传血压读数。"
+            }
+          }
+        ],
+        "unavailable_topics": [],
+        "already_reported_fact_ids": [],
+        "turn_index": 0
+      },
+      "result": {
+        "response_fact_ids": [
+          "red_flags",
+          "symptoms"
+        ],
+        "message": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况；头晕也没有。",
+        "fact_claims": [
+          {
+            "fact_id": "red_flags",
+            "evidence": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况",
+            "values": {
+              "red_flags": [],
+              "denied_red_flags": [
+                "胸痛",
+                "呼吸困难",
+                "晕厥",
+                "意识异常",
+                "突发肢体无力",
+                "突发言语异常"
+              ],
+              "red_flag_status": "denied"
+            }
+          },
+          {
+            "fact_id": "symptoms",
+            "evidence": "头晕也没有",
+            "values": {
+              "denied_symptoms": [
+                "头晕"
+              ],
+              "symptom_status": "denied"
+            }
+          }
+        ]
+      },
+      "duration_seconds": 30.953
+    },
+    {
+      "case": "patient",
+      "payload": {
+        "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "question_context": {
+          "goal": "核实本次168/104读数是否伴随需要紧急处理的危险症状",
+          "topic": "red_flags",
+          "kind": "symptoms",
+          "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+          "asked_symptoms": [
+            "头晕",
+            "胸闷"
+          ],
+          "asked_red_flags": [
+            "胸痛",
+            "呼吸困难",
+            "晕厥",
+            "意识异常",
+            "突发肢体无力",
+            "突发言语异常"
+          ]
+        },
+        "message": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况；头晕也没有。",
+        "response_fact_ids": [
+          "red_flags",
+          "symptoms"
+        ],
+        "claims": [
+          {
+            "fact_id": "red_flags",
+            "evidence": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况",
+            "values": {
+              "red_flags": [],
+              "denied_red_flags": [
+                "胸痛",
+                "呼吸困难",
+                "晕厥",
+                "意识异常",
+                "突发肢体无力",
+                "突发言语异常"
+              ],
+              "red_flag_status": "denied"
+            }
+          },
+          {
+            "fact_id": "symptoms",
+            "evidence": "头晕也没有",
+            "values": {
+              "denied_symptoms": [
+                "头晕"
+              ],
+              "symptom_status": "denied"
+            }
+          }
+        ],
+        "authoritative_facts": [
+          {
+            "fact_id": "current_bp",
+            "topic": "bp",
+            "values": {
+              "bp_systolic": 168,
+              "bp_diastolic": 104
+            }
+          },
+          {
+            "fact_id": "bp_history",
+            "topic": "bp_history",
+            "values": {
+              "bp_history": [
+                {
+                  "label": "历史记录1",
+                  "systolic": 148,
+                  "diastolic": 90
+                },
+                {
+                  "label": "历史记录2",
+                  "systolic": 156,
+                  "diastolic": 96
+                },
+                {
+                  "label": "历史记录3",
+                  "systolic": 160,
+                  "diastolic": 100
+                }
+              ]
+            }
+          },
+          {
+            "fact_id": "medication",
+            "topic": "medication",
+            "values": {
+              "medication_status": "taken",
+              "medication_timing": "unknown"
+            }
+          },
+          {
+            "fact_id": "medication_details",
+            "topic": "medication_details",
+            "values": {
+              "medication_name": "氨氯地平",
+              "medication_detail": "原医嘱为氨氯地平5 mg，每天一次；本次未改变处方。"
+            }
+          },
+          {
+            "fact_id": "symptoms",
+            "topic": "current_symptoms",
+            "values": {
+              "symptoms": [],
+              "denied_symptoms": [
+                "头晕"
+              ],
+              "symptom_status": "denied"
+            }
+          },
+          {
+            "fact_id": "red_flags",
+            "topic": "red_flags",
+            "values": {
+              "red_flags": [],
+              "denied_red_flags": [
+                "胸痛",
+                "呼吸困难",
+                "晕厥",
+                "意识异常",
+                "突发肢体无力",
+                "突发言语异常"
+              ],
+              "red_flag_status": "denied"
+            }
+          },
+          {
+            "fact_id": "measurement_context",
+            "topic": "measurement_context",
+            "values": {
+              "measurement_context": "今天早晨坐着安静休息5分钟后，使用上臂式血压计测量。"
+            }
+          },
+          {
+            "fact_id": "monitoring_plan",
+            "topic": "monitoring_plan",
+            "values": {
+              "monitoring_plan": "我明天会量血压，并记录和上传血压读数。"
+            }
+          }
+        ],
+        "profile": "cooperative"
+      },
+      "result": {
+        "valid": true,
+        "supported_fact_ids": [
+          "red_flags",
+          "symptoms"
+        ],
+        "fact_claims": [
+          {
+            "fact_id": "red_flags",
+            "evidence": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况",
+            "values": {
+              "denied_red_flags": [
+                "胸痛",
+                "呼吸困难",
+                "晕厥",
+                "意识异常",
+                "突发肢体无力",
+                "突发言语异常"
+              ],
+              "red_flag_status": "denied"
+            }
+          },
+          {
+            "fact_id": "symptoms",
+            "evidence": "头晕也没有",
+            "values": {
+              "denied_symptoms": [
+                "头晕"
+              ],
+              "symptom_status": "denied"
+            }
+          }
+        ],
+        "errors": []
+      },
+      "duration_seconds": 5.192
+    }
+  ],
+  "case": "patient",
+  "extraction": {
+    "patch": {
+      "bp_systolic": null,
+      "bp_diastolic": null,
+      "medication_status": "unknown",
+      "medication_detail": "",
+      "medication_timing": "unknown",
+      "medication_observations": [],
+      "medication_adherence": "",
+      "symptoms": [],
+      "denied_symptoms": [
+        "头晕"
+      ],
+      "red_flags": [],
+      "denied_red_flags": [
+        "胸痛",
+        "呼吸困难",
+        "晕厥",
+        "意识异常",
+        "突发肢体无力",
+        "突发言语异常"
+      ],
+      "additional_information": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+      "measurement_context": "",
+      "patient_question": "",
+      "answer_status": "answered",
+      "answered_topics": [
+        "current_symptoms"
+      ],
+      "topic_status": {
+        "current_symptoms": "answered"
+      },
+      "_semantic": {},
+      "_llm_v4_verified": true,
+      "semantic_validated": false
+    },
+    "trace": [
+      {
+        "time": "2026-10-15T11:42:31.126154+00:00",
+        "event": "LLM_CALL",
+        "detail": {
+          "purpose": "EXTRACT",
+          "ok": true,
+          "called": true,
+          "status": "success",
+          "attempt": 1,
+          "max_attempts": 2,
+          "failure_stage": "generation",
+          "failure_kind": "",
+          "deepseek_called": true,
+          "provider_events": [
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "started",
+              "error_type": null
+            },
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "success",
+              "error_type": null
+            }
+          ],
+          "agent_version": "V5.0",
+          "duration_ms": 4843.4
+        }
+      },
+      {
+        "time": "2026-10-15T11:43:03.824504+00:00",
+        "event": "LLM_CALL",
+        "detail": {
+          "purpose": "VERIFY_EXTRACT",
+          "ok": true,
+          "called": true,
+          "status": "success",
+          "attempt": 1,
+          "max_attempts": 2,
+          "failure_stage": "validation",
+          "failure_kind": "",
+          "deepseek_called": true,
+          "provider_events": [
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "started",
+              "error_type": null
+            },
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "success",
+              "error_type": null
+            }
+          ],
+          "agent_version": "V5.0",
+          "duration_ms": 32697.9
+        }
+      },
+      {
+        "time": "2026-10-15T11:43:03.824688+00:00",
+        "event": "LLM_VALIDATION_ERROR",
+        "detail": {
+          "purpose": "EXTRACT",
+          "status": "error",
+          "code": "unsupported_semantic_claims_or_screening"
+        }
+      },
+      {
+        "time": "2026-10-15T11:43:03.824764+00:00",
+        "event": "SEMANTIC_VALIDATION_REJECTED",
+        "detail": {
+          "purpose": "VERIFY_EXTRACT",
+          "status": "rejected",
+          "candidate_count": 8,
+          "accepted_count": 8
+        }
+      },
+      {
+        "time": "2026-10-15T11:43:03.824775+00:00",
+        "event": "LLM_EXTRACTION_RESULT",
+        "detail": {
+          "accepted_claims": 8,
+          "candidate_claims": 8,
+          "reported_symptoms": [],
+          "reported_red_flags": [],
+          "answer_status": "answered",
+          "semantic_validated": false
+        }
+      }
+    ],
+    "extraction_ok": false
+  },
+  "purpose": "SIMULATED_PATIENT_VALIDATE",
+  "patient": {
+    "answer": {
+      "message": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况；头晕也没有。",
+      "reported_facts": [
+        {
+          "fact_id": "red_flags",
+          "topic": "red_flags",
+          "render": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况",
+          "values": {
+            "denied_red_flags": [
+              "胸痛",
+              "呼吸困难",
+              "晕厥",
+              "意识异常",
+              "突发肢体无力",
+              "突发言语异常"
+            ],
+            "red_flag_status": "denied"
+          },
+          "evidence": "没有胸痛，也没有呼吸困难、晕厥、意识异常、突发肢体无力、突发言语异常这些情况"
+        },
+        {
+          "fact_id": "symptoms",
+          "topic": "current_symptoms",
+          "render": "头晕也没有",
+          "values": {
+            "denied_symptoms": [
+              "头晕"
+            ],
+            "symptom_status": "denied"
+          },
+          "evidence": "头晕也没有"
+        }
+      ],
+      "mode": "llm",
+      "model_status": "success",
+      "validation_status": "success"
+    },
+    "trace": [
+      {
+        "time": "2026-10-15T11:43:34.781688+00:00",
+        "event": "LLM_CALL",
+        "detail": {
+          "purpose": "SIMULATED_PATIENT",
+          "ok": true,
+          "called": true,
+          "status": "success",
+          "attempt": 1,
+          "max_attempts": 2,
+          "failure_stage": "generation",
+          "failure_kind": "",
+          "deepseek_called": true,
+          "provider_events": [
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "started",
+              "error_type": null
+            },
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "success",
+              "error_type": null
+            }
+          ],
+          "agent_version": "V5.0",
+          "duration_ms": 30955.0
+        }
+      },
+      {
+        "time": "2026-10-15T11:43:39.977051+00:00",
+        "event": "LLM_CALL",
+        "detail": {
+          "purpose": "SIMULATED_PATIENT_VALIDATE",
+          "ok": true,
+          "called": true,
+          "status": "success",
+          "attempt": 1,
+          "max_attempts": 2,
+          "failure_stage": "validation",
+          "failure_kind": "",
+          "deepseek_called": true,
+          "provider_events": [
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "started",
+              "error_type": null
+            },
+            {
+              "provider": "deepseek",
+              "mode": "json",
+              "status": "success",
+              "error_type": null
+            }
+          ],
+          "agent_version": "V5.0",
+          "duration_ms": 5194.4
+        }
+      }
+    ]
+  }
+}

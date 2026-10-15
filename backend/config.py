@@ -22,7 +22,7 @@ DEEPSEEK_BASE_URL = os.getenv(
 
 DEEPSEEK_MODEL = os.getenv(
     "DEEPSEEK_MODEL",
-    "deepseek-chat"
+    "deepseek-flash"
 ).strip()
 
 

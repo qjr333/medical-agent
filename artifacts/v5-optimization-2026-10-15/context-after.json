@@ -1,0 +1,10 @@
+{
+  "kind": "deterministic_context_fixture",
+  "baseline_commit": "cd94bb6",
+  "recent_dialogue_messages": 8,
+  "agent_messages": 4,
+  "tool_result_occurrences": 1,
+  "planner_payload_characters": 3673,
+  "plan_calls": 2,
+  "real_model_requests": 0
+}

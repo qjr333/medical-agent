@@ -100,15 +100,27 @@ def _text_bp_errors(text, truth):
     errors = []
     current = (truth["bp_systolic"], truth["bp_diastolic"])
     history = {_pair(row) for row in truth["bp_history"]}
+    current_markers = r"本次|这次|今天|当前|刚测|刚量|您(?:的)?血压"
+    history_markers = r"历史|既往|以前|此前|前几天|最近几次|前面几次|过去"
     for clause in re.split(r"[。！!；;\n]", str(text or "")):
         for match in re.finditer(r"(\d{2,3})\s*/\s*(\d{2,3})", clause):
             prefix = clause[:match.start()]
             # General guideline targets are not claims about the patient.
             if re.search(r"目标|参考|阈值|标准|通常|控制在|建议低于", prefix[-24:]):
                 continue
-            if not re.search(r"本次|这次|今天|当前|刚测|刚量|您(?:的)?血压", prefix[-35:]):
-                continue
+            current_refs = list(re.finditer(current_markers, prefix))
+            history_refs = list(re.finditer(history_markers, prefix))
             value = (int(match.group(1)), int(match.group(2)))
+            # A sentence may explicitly contrast today's value with history.
+            # Attribute each numeric occurrence to its latest temporal label;
+            # a nearby earlier 'today' does not rename the historical list.
+            if history_refs and (not current_refs or history_refs[-1].start() > current_refs[-1].start()):
+                if value not in history | {current}:
+                    errors.append({"field": "narrative_history_bp", "code": "invented_history",
+                                   "actual": list(value), "evidence": clause[:300]})
+                continue
+            if not re.search(current_markers, prefix[-35:]):
+                continue
             if value != current:
                 errors.append({"field": "narrative_current_bp", "code": "stale_history_as_current"
                                if value in history else "incorrect_current_bp", "actual": list(value),
@@ -207,6 +219,8 @@ def _execution_observations(trace, rows, state):
     rag = [entry.get("detail") or {} for entry in trace if entry.get("event") == "RAG_RETRIEVAL"]
     timings = {}
     for call in calls:
+        if call.get("called") is not True:
+            continue
         duration = call.get("duration_ms")
         if isinstance(duration, (int, float)) and not isinstance(duration, bool) and duration >= 0:
             timings.setdefault(str(call.get("purpose") or "unknown"), []).append(duration)
@@ -266,9 +280,12 @@ def _execution_observations(trace, rows, state):
         "interruption_reasons": [(entry.get("detail") or {}).get("reason") for entry in trace
                                  if entry.get("event") == "TASK_INTERRUPTED"],
         "model_phase_timings": phase_timings,
+        "skipped_model_phases": dict(Counter(str(call.get("purpose") or "unknown")
+                                             for call in calls if call.get("called") is False)),
         "trace_elapsed_seconds": round(max(timestamps) - min(timestamps), 3) if len(timestamps) >= 2 else None,
         "model_failures_by_stage": dict(Counter(str(call.get("purpose") or "unknown") + ":" +
-            str(call.get("failure_kind") or "unspecified") for call in calls if call.get("ok") is False)),
+            str(call.get("failure_kind") or "unspecified") for call in calls
+            if call.get("called") is True and call.get("ok") is False)),
         "model_retry_events": sum(entry.get("event") == "MODEL_RETRY" for entry in trace),
         "model_retry_exhausted_events": sum(entry.get("event") == "MODEL_RETRY_EXHAUSTED" for entry in trace),
         "reexecuted_tool_names": {name: count for name, count in executed_names.items() if count > 1},

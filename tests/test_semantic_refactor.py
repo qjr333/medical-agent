@@ -42,7 +42,7 @@ class SemanticModel:
 
 def current_state(topic="medication", question="今天已经服用降压药了吗？", flags=None):
     return {"agent_version": "V5.0", "patient_id": "semantic-fictional",
-            "medication_status": "unknown", "medication_timing": "unknown",
+            "medication_status": "unknown", "medication_timing": "unknown", "medication_date": today_local_date(),
             "symptoms": [], "red_flags": [], "denied_symptoms": [], "denied_red_flags": [],
             "last_agent_question": question, "current_goal": "确认患者本轮信息",
             "question_context": {"question": question, "topic": topic, "goal": "确认患者本轮信息",
@@ -89,6 +89,23 @@ class SemanticExtractionTests(unittest.TestCase):
         data, _ = self.extract("嗯，吃过了", [fact("medication", {"status": "taken"}, "吃过了")])
         self.assertEqual(data["medication_status"], "taken")
 
+    def test_taken_does_not_confirm_not_due_even_if_both_models_accept_it(self):
+        text = "我今天已经按原医嘱按时吃了降压药"
+        data, _ = self.extract(text, [fact("medication", {"status": "taken", "timing": "not_due"}, text)])
+        self.assertTrue(data["semantic_validated"])
+        self.assertEqual(data["medication_status"], "taken")
+        self.assertEqual(data["medication_timing"], "unknown")
+        self.assertEqual(data["medication_observations"][0]["timing"], "unknown")
+        self.assertEqual(data["medication_detail"], text)
+
+    def test_pending_dose_not_due_is_preserved_after_independent_review(self):
+        text = "还没吃，还没到吃药时间"
+        data, _ = self.extract(text, [fact("medication", {"status": "not_taken_yet", "timing": "not_due"}, text)])
+        self.assertTrue(data["semantic_validated"])
+        self.assertEqual(data["medication_status"], "not_taken_yet")
+        self.assertEqual(data["medication_timing"], "not_due")
+        self.assertEqual(data["topic_status"]["medication"], "answered")
+
     def test_overdue_does_not_invent_a_dose_or_clock_time(self):
         state = current_state(question="是还没到规定服药时间，还是超过了？")
         state["medication_status"] = "not_taken_yet"
@@ -96,6 +113,33 @@ class SemanticExtractionTests(unittest.TestCase):
         self.assertEqual(data["medication_status"], "not_taken_yet")
         self.assertEqual(data["medication_timing"], "overdue")
         self.assertEqual(data["medication_detail"], "超过了")
+
+    def test_reviewed_partial_timing_updates_today_pending_dose(self):
+        state = current_state(question="是还没到规定服药时间，还是超过了？")
+        state["medication_status"] = "not_taken_yet"
+        data, _ = self.extract("超过了", [fact("medication", {"status": "unknown", "timing": "overdue"}, "超过了")], state=state)
+        self.assertTrue(data["semantic_validated"])
+        self.assertEqual(data["medication_status"], "not_taken_yet")
+        self.assertEqual(data["medication_timing"], "overdue")
+        self.assertEqual(data["topic_status"]["medication"], "answered")
+        self.assertEqual(data["medication_observations"][0]["status"], "not_taken_yet")
+
+    def test_partial_timing_cannot_invent_current_medication_status_or_reuse_yesterday(self):
+        for prior, day in (("unknown", today_local_date()), ("taken", today_local_date()), ("not_taken_yet", "2000-01-01")):
+            with self.subTest(prior=prior, day=day):
+                state = current_state(question="是还没到规定服药时间，还是超过了？")
+                state.update(medication_status=prior, medication_date=day)
+                data, _ = self.extract("超过了", [fact("medication", {"status": "unknown", "timing": "overdue"}, "超过了")], state=state)
+                self.assertEqual(data["medication_status"], "unknown")
+                self.assertEqual(data["medication_observations"], [])
+
+    def test_rejected_partial_timing_does_not_update_pending_dose(self):
+        state = current_state(question="是还没到规定服药时间，还是超过了？")
+        state["medication_status"] = "not_taken_yet"
+        data, _ = self.extract("超过了", [fact("medication", {"status": "unknown", "timing": "overdue"}, "超过了")], state=state,
+                               reviews=[{"id": "c1", "supported": False, "temporal": "current", "polarity": "affirmed"}])
+        self.assertFalse(data["semantic_validated"])
+        self.assertEqual(data["medication_observations"], [])
 
     def test_unable_answer_does_not_turn_into_a_negative_fact(self):
         data, model = self.extract("我记不清了", answer_status="unable")
@@ -182,10 +226,75 @@ class SemanticExtractionTests(unittest.TestCase):
         self.assertNotIn("screening", data["_semantic"])
         self.assertNotIn("red_flags", data["answered_topics"])
 
+    def test_screening_separates_asked_ordinary_symptoms_without_inventing_denials(self):
+        question = "现在有没有胸痛、头晕或胸闷？"
+        state = current_state("red_flags", question, ["胸痛"])
+        state["question_context"]["asked_symptoms"] = ["头晕", "胸闷"]
+        text = "没有胸痛，也没有头晕"
+        screening = {"adequate": True, "evidence": text, "scope": ["胸痛", "头晕"], "question": question}
+        reviewed = {**screening, "supported": True, "scope": ["胸痛", "头晕", "胸闷"]}
+        data, _ = self.extract(text, state=state, screening=screening, screening_review=reviewed, claims=[
+            fact("symptom", {"name": "胸痛", "red_flag": True}, "没有胸痛", polarity="denied"),
+            fact("symptom", {"name": "头晕", "red_flag": False}, "没有头晕", polarity="denied", claim_id="c2")])
+        self.assertTrue(data["semantic_validated"])
+        self.assertEqual(data["_semantic"]["screening"]["scope"], ["胸痛"])
+        self.assertEqual(data["denied_red_flags"], ["胸痛"])
+        self.assertEqual(data["denied_symptoms"], ["头晕"])
+        self.assertNotIn("胸闷", data["denied_symptoms"])
+
+    def test_screening_rejects_unrecognized_scope_labels(self):
+        question = "有没有胸痛？"
+        screening = {"adequate": True, "evidence": "没有", "scope": ["胸痛", "未询问的不明表现"], "question": question}
+        data, _ = self.extract("没有", state=current_state("red_flags", question, ["胸痛"]), screening=screening)
+        self.assertFalse(data["semantic_validated"])
+        self.assertNotIn("screening", data["_semantic"])
+
+    def test_screening_reviewer_cannot_expand_the_red_flag_scope(self):
+        question = "有没有胸痛或喘不上气？"
+        state = current_state("red_flags", question, ["胸痛", "呼吸困难"])
+        screening = {"adequate": True, "evidence": "没有", "scope": ["胸痛"], "question": question}
+        data, _ = self.extract("没有", state=state, screening=screening,
+                               screening_review={**screening, "supported": True, "scope": ["胸痛", "呼吸困难"]})
+        self.assertFalse(data["semantic_validated"])
+        self.assertNotIn("screening", data["_semantic"])
+
+    def test_ordinary_symptoms_alone_cannot_complete_red_flag_screening(self):
+        question = "有没有头晕？"
+        state = current_state("current_symptoms", question)
+        state["question_context"]["asked_symptoms"] = ["头晕"]
+        screening = {"adequate": True, "evidence": "没有", "scope": ["头晕"], "question": question}
+        data, _ = self.extract("没有", state=state, screening=screening)
+        self.assertFalse(data["semantic_validated"])
+        self.assertNotIn("red_flags", data["answered_topics"])
+
+    def test_danger_alias_is_not_discarded_as_an_ordinary_screening_item(self):
+        question = "有没有胸痛或喘不上气？"
+        state = current_state("red_flags", question, ["胸痛"])
+        state["question_context"]["asked_symptoms"] = ["喘不上气"]
+        screening = {"adequate": True, "evidence": "没有", "scope": ["胸痛", "喘不上气"], "question": question}
+        data, _ = self.extract("没有", state=state, screening=screening)
+        self.assertFalse(data["semantic_validated"])
+        self.assertNotIn("screening", data["_semantic"])
+
     def test_screening_from_another_question_is_not_accepted(self):
         bad = {"adequate": True, "evidence": "没有", "scope": ["胸痛"], "question": "另一个问题"}
         data, _ = self.extract("没有", screening=bad)
         self.assertNotIn("screening", data["_semantic"])
+
+    def test_direct_current_danger_conjunction_keeps_both_reported_symptoms(self):
+        model = Mock(side_effect=AssertionError("Direct danger must not wait for a model"))
+        data = followup_agent.extract_patient_information("我现在胸痛，而且呼吸困难。", current_state(),
+                                                          call_json_model=model, enable_v50=True)
+        self.assertEqual(data["red_flags"], ["胸痛", "呼吸困难"])
+        model.assert_not_called()
+
+    def test_danger_conjunction_does_not_promote_history_hypothesis_or_negation(self):
+        for text in ("昨天胸痛，而且呼吸困难", "如果胸痛，而且呼吸困难怎么办", "我没有胸痛，而且没有呼吸困难"):
+            with self.subTest(text=text):
+                self.assertEqual(followup_agent._minimal_safety_signals(text, current_state()), [])
+        for text in ("我现在胸痛，而且昨天呼吸困难", "我现在胸痛，并且没有呼吸困难", "我现在胸痛，而且如果呼吸困难怎么办"):
+            with self.subTest(text=text):
+                self.assertEqual(followup_agent._minimal_safety_signals(text, current_state()), ["胸痛"])
 
     def test_monitoring_plan_and_end_request_use_verified_semantics(self):
         text = "明天我会测血压，今天先聊到这里吧"

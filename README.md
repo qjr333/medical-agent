@@ -31,6 +31,12 @@ V5 模拟和主动任务通过 `backend/runtime_v5.py` 执行，明确启用 V5�
 `/api/trigger`、`/api/chat` 保留旧路径及响应字段，使用下方 V5 启动配置运行。
 医学风险判断、数值有效性、工具参数、处方限制和风险升级由后端独立执行。
 
+V5 在返回输入已接收前保存患者原话，提取成功后先保存待验证候选，独立语义验证通过后再原子写入事实与记录。
+中断恢复复用原始输入或候选，不重复应用已确认事实。对话与工具结果在规划上下文中去重，审计 Trace 保留。
+相同事实下已通过验证的“继续随访”评估可以复用；新回答、风险、工具结果或结束意图变化即失效。
+追问、工具选择及结束申请仍由 LLM 决定。单次规划与内部恢复共享时间窗口；同一次患者输入最多累计24次内部 PLAN，
+耗尽后安全暂停。这是执行成本限制，不是患者问答轮数或固定问卷。
+
 ## 目录结构
 
 ```text
@@ -93,7 +99,7 @@ npm ci
 ```dotenv
 DEEPSEEK_API_KEY=填写自己的密钥
 DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_MODEL=deepseek-flash
 LLM_AGENT_V50=1
 DEEPSEEK_TIMEOUT_SECONDS=50
 V5_REQUEST_TIMEOUT_SECONDS=120
@@ -148,6 +154,10 @@ npm run dev
 API 创建入口为 `POST /api/v5/simulations`，主要字段为 `scenario_id`、`model_mode`、`max_turns` 和 `delay_seconds`。
 读取结果使用 `GET /api/v5/simulations/{run_id}` 和创建时返回的 `X-Demo-Token`。
 
+可恢复的模型中断会显示“已暂停”和恢复按钮；点击后从已保存阶段继续，不伪造患者输入。
+暂停时停止轮询，已记录为可恢复暂停的模拟不会在程序重启后被自动重试。不可恢复、已结束及预算耗尽的运行不能强行恢复。
+真实模式必须验证自然回答及其事实证据；只有明确的离线脚本模式可以使用预设事实渲染。
+
 命令行验证完整业务链，使用临时数据库并输出虚构对话：
 
 ```sh
@@ -176,14 +186,19 @@ DEEPSEEK_API_KEY='' .venv/bin/python -B scripts/smoke_v50.py --scenario stable -
 
 ```sh
 DEEPSEEK_API_KEY='' .venv/bin/python -B -m unittest discover -s tests -v
+node --test tests/frontend_regression.test.mjs
 cd frontend
 npm run build
+npm run lint
 ```
 
 测试保留旧版本兼容用例，覆盖 API、状态更新、多轮交互、安全升级、报告幂等、权限、任务恢复、
 旧会话在新进程恢复、历史报告、Patient Memory、医疗工具、RAG 缓存建立/复用/失效和模型超时恢复。
 真实模型验证应另行执行 `--mode live`，不能用 Mock 结果代替真实模型通过结论。
-本次精简的实际验证记录见 [交付记录](docs/cleanup-result.md)。
+最新真实调试：稳定患者正常完成、危险症状正确升级；异常血压场景仍在工具与回复验证中达到时间上限并暂停，尚未全部通过。
+真实短答、错误Trace、耗时和剩余问题见 [本次调试结果](docs/v5-debug-2026-10-15.md)。
+此前离线优化的测试结果保留在 [优化交付记录](docs/v5-optimization-result.md)、[完整离线对话](artifacts/v5-optimization-2026-10-15/conversations.md)。
+前一批结构精简记录保留在 [历史交付记录](docs/cleanup-result.md)。
 
 ## 已知限制
 

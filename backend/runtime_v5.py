@@ -176,9 +176,25 @@ class AgentRuntime:
             for _ in range(3):
                 if state.get("followup_status") != "processing":
                     break
+                remaining = max(0.0, planning_deadline - monotonic())
+                if remaining <= 0:
+                    # An exhausted window cannot perform a resume. Preserve the
+                    # saved stage for an explicit later request instead of
+                    # recording three zero-work attempts as a retry failure.
+                    state.update(followup_status="interrupted", interruption_reason="planning_time_budget")
+                    pending = state.setdefault("execution_pending", {})
+                    pending.update(reason="planning_time_budget", next_action=pending.get("next_action") or "PLAN")
+                    state["last_agent_response"] = "本轮自动处理已达到时间上限，记录和处理进度已保存，可以稍后恢复；当前医学评估尚未完成。"
+                    add_trace(state, "SAFETY_PAUSE", {"purpose": "PLAN", "status": "paused",
+                              "failure_kind": "planning_time_budget", "recoverable": True,
+                              "next_action": pending["next_action"]})
+                    add_trace(state, "TASK_INTERRUPTED", {"reason": "planning_time_budget", "next_status": "interrupted"})
+                    add_trace(state, "AGENT_RESPONSE", {"message": state["last_agent_response"], "followup_status": "interrupted"})
+                    checkpoint()
+                    break
                 add_trace(state, "EXECUTION_RESUMED", {"automatic": True})
                 response = run_followup_agent(state, call_json_model=self.model, enable_v50=True,
-                                              max_seconds=max(0.0, planning_deadline - monotonic()))
+                                              max_seconds=remaining)
                 state["last_agent_response"] = response["message"]
                 add_trace(state, "AGENT_RESPONSE", {"message": response["message"], "followup_status": state["followup_status"]})
                 checkpoint()

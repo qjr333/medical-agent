@@ -123,41 +123,42 @@
           "model_phase_timings": {
             "PLAN": {
               "calls": 6,
-              "total_ms": 1.0,
-              "mean_ms": 0.2
+              "total_ms": 1.8,
+              "mean_ms": 0.3
             },
             "VERIFY_RESPONSE": {
               "calls": 5,
-              "total_ms": 0.8,
+              "total_ms": 0.9,
               "mean_ms": 0.2
             },
             "SIMULATED_PATIENT": {
               "calls": 4,
-              "total_ms": 0.8,
-              "mean_ms": 0.2
+              "total_ms": 2.6,
+              "mean_ms": 0.7
             },
             "EXTRACT": {
               "calls": 4,
-              "total_ms": 1.6,
-              "mean_ms": 0.4
+              "total_ms": 5.5,
+              "mean_ms": 1.4
             },
             "VERIFY_EXTRACT": {
               "calls": 4,
-              "total_ms": 0.7,
-              "mean_ms": 0.2
+              "total_ms": 1.5,
+              "mean_ms": 0.4
             },
             "COMPLETE": {
               "calls": 1,
-              "total_ms": 0.1,
-              "mean_ms": 0.1
+              "total_ms": 0.2,
+              "mean_ms": 0.2
             },
             "REPORT_SUMMARY": {
               "calls": 1,
-              "total_ms": 0.2,
-              "mean_ms": 0.2
+              "total_ms": 1.3,
+              "mean_ms": 1.3
             }
           },
-          "trace_elapsed_seconds": 0.644,
+          "skipped_model_phases": {},
+          "trace_elapsed_seconds": 0.895,
           "model_failures_by_stage": {},
           "model_retry_events": 0,
           "model_retry_exhausted_events": 0,
@@ -276,41 +277,42 @@
       "model_phase_timings": {
         "PLAN": {
           "calls": 6,
-          "total_ms": 1.0,
-          "mean_ms": 0.2
+          "total_ms": 1.8,
+          "mean_ms": 0.3
         },
         "VERIFY_RESPONSE": {
           "calls": 5,
-          "total_ms": 0.8,
+          "total_ms": 0.9,
           "mean_ms": 0.2
         },
         "SIMULATED_PATIENT": {
           "calls": 4,
-          "total_ms": 0.8,
-          "mean_ms": 0.2
+          "total_ms": 2.6,
+          "mean_ms": 0.7
         },
         "EXTRACT": {
           "calls": 4,
-          "total_ms": 1.6,
-          "mean_ms": 0.4
+          "total_ms": 5.5,
+          "mean_ms": 1.4
         },
         "VERIFY_EXTRACT": {
           "calls": 4,
-          "total_ms": 0.7,
-          "mean_ms": 0.2
+          "total_ms": 1.5,
+          "mean_ms": 0.4
         },
         "COMPLETE": {
           "calls": 1,
-          "total_ms": 0.1,
-          "mean_ms": 0.1
+          "total_ms": 0.2,
+          "mean_ms": 0.2
         },
         "REPORT_SUMMARY": {
           "calls": 1,
-          "total_ms": 0.2,
-          "mean_ms": 0.2
+          "total_ms": 1.3,
+          "mean_ms": 1.3
         }
       },
-      "trace_elapsed_seconds": 0.644,
+      "skipped_model_phases": {},
+      "trace_elapsed_seconds": 0.895,
       "model_failures_by_stage": {},
       "model_retry_events": 0,
       "model_retry_exhausted_events": 0,
@@ -386,7 +388,7 @@
   "trace": [
     {
       "id": 0,
-      "time": "2026-10-15T03:09:55.343471+00:00",
+      "time": "2026-10-15T11:16:25.229952+00:00",
       "event": "TRIGGER_ENGINE",
       "stage": "trigger",
       "detail": {
@@ -396,7 +398,7 @@
     },
     {
       "id": 3,
-      "time": "2026-10-15T03:09:55.843931+00:00",
+      "time": "2026-10-15T11:16:25.952262+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -409,13 +411,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.4,
         "provider_request_count": 0
       }
     },
     {
       "id": 4,
-      "time": "2026-10-15T03:09:55.843956+00:00",
+      "time": "2026-10-15T11:16:25.952329+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -425,7 +427,7 @@
     },
     {
       "id": 6,
-      "time": "2026-10-15T03:09:55.846257+00:00",
+      "time": "2026-10-15T11:16:25.956965+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -444,7 +446,7 @@
     },
     {
       "id": 10,
-      "time": "2026-10-15T03:09:55.846519+00:00",
+      "time": "2026-10-15T11:16:25.957247+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -453,7 +455,7 @@
     },
     {
       "id": 11,
-      "time": "2026-10-15T03:09:55.851425+00:00",
+      "time": "2026-10-15T11:16:25.964919+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
@@ -472,7 +474,7 @@
     },
     {
       "id": 12,
-      "time": "2026-10-15T03:09:55.851493+00:00",
+      "time": "2026-10-15T11:16:25.964987+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -483,7 +485,7 @@
     },
     {
       "id": 13,
-      "time": "2026-10-15T03:09:55.853869+00:00",
+      "time": "2026-10-15T11:16:25.967780+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -492,7 +494,7 @@
     },
     {
       "id": 14,
-      "time": "2026-10-15T03:09:55.860222+00:00",
+      "time": "2026-10-15T11:16:25.974998+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -505,13 +507,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 1.2,
+        "duration_ms": 1.7,
         "provider_request_count": 0
       }
     },
     {
       "id": 15,
-      "time": "2026-10-15T03:09:55.861924+00:00",
+      "time": "2026-10-15T11:16:25.977876+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -530,14 +532,14 @@
     },
     {
       "id": 17,
-      "time": "2026-10-15T03:09:55.862454+00:00",
+      "time": "2026-10-15T11:16:25.978400+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 20,
-      "time": "2026-10-15T03:09:55.869158+00:00",
+      "time": "2026-10-15T11:16:25.982970+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -550,13 +552,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.3,
+        "duration_ms": 0.2,
         "provider_request_count": 0
       }
     },
     {
       "id": 21,
-      "time": "2026-10-15T03:09:55.869187+00:00",
+      "time": "2026-10-15T11:16:25.982989+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -566,7 +568,7 @@
     },
     {
       "id": 23,
-      "time": "2026-10-15T03:09:55.869525+00:00",
+      "time": "2026-10-15T11:16:25.983224+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -579,13 +581,13 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 27,
-      "time": "2026-10-15T03:09:55.869633+00:00",
+      "time": "2026-10-15T11:16:25.983266+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -594,7 +596,7 @@
     },
     {
       "id": 28,
-      "time": "2026-10-15T03:09:55.876518+00:00",
+      "time": "2026-10-15T11:16:25.988500+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
@@ -613,7 +615,7 @@
     },
     {
       "id": 29,
-      "time": "2026-10-15T03:09:55.876549+00:00",
+      "time": "2026-10-15T11:16:25.988527+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -624,7 +626,7 @@
     },
     {
       "id": 30,
-      "time": "2026-10-15T03:09:55.879396+00:00",
+      "time": "2026-10-15T11:16:25.991682+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -633,7 +635,7 @@
     },
     {
       "id": 31,
-      "time": "2026-10-15T03:09:55.883345+00:00",
+      "time": "2026-10-15T11:16:25.995046+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -646,13 +648,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.2,
         "provider_request_count": 0
       }
     },
     {
       "id": 32,
-      "time": "2026-10-15T03:09:55.923232+00:00",
+      "time": "2026-10-15T11:16:26.031672+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -665,20 +667,20 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 34,
-      "time": "2026-10-15T03:09:55.925076+00:00",
+      "time": "2026-10-15T11:16:26.032738+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 37,
-      "time": "2026-10-15T03:09:55.931245+00:00",
+      "time": "2026-10-15T11:16:26.037832+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -697,7 +699,7 @@
     },
     {
       "id": 38,
-      "time": "2026-10-15T03:09:55.931270+00:00",
+      "time": "2026-10-15T11:16:26.037855+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -707,7 +709,7 @@
     },
     {
       "id": 40,
-      "time": "2026-10-15T03:09:55.931565+00:00",
+      "time": "2026-10-15T11:16:26.038099+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -726,7 +728,7 @@
     },
     {
       "id": 44,
-      "time": "2026-10-15T03:09:55.931700+00:00",
+      "time": "2026-10-15T11:16:26.038145+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -735,7 +737,7 @@
     },
     {
       "id": 45,
-      "time": "2026-10-15T03:09:55.936549+00:00",
+      "time": "2026-10-15T11:16:26.046862+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
@@ -748,13 +750,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 46,
-      "time": "2026-10-15T03:09:55.936608+00:00",
+      "time": "2026-10-15T11:16:26.046887+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -765,7 +767,7 @@
     },
     {
       "id": 47,
-      "time": "2026-10-15T03:09:55.939973+00:00",
+      "time": "2026-10-15T11:16:26.050811+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -774,7 +776,7 @@
     },
     {
       "id": 48,
-      "time": "2026-10-15T03:09:55.942999+00:00",
+      "time": "2026-10-15T11:16:26.055295+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -793,7 +795,7 @@
     },
     {
       "id": 49,
-      "time": "2026-10-15T03:09:55.945120+00:00",
+      "time": "2026-10-15T11:16:26.059152+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -806,20 +808,20 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.6,
         "provider_request_count": 0
       }
     },
     {
       "id": 51,
-      "time": "2026-10-15T03:09:55.945885+00:00",
+      "time": "2026-10-15T11:16:26.059881+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 54,
-      "time": "2026-10-15T03:09:55.951156+00:00",
+      "time": "2026-10-15T11:16:26.066352+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -832,13 +834,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.5,
         "provider_request_count": 0
       }
     },
     {
       "id": 55,
-      "time": "2026-10-15T03:09:55.951177+00:00",
+      "time": "2026-10-15T11:16:26.066384+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -848,7 +850,7 @@
     },
     {
       "id": 57,
-      "time": "2026-10-15T03:09:55.951413+00:00",
+      "time": "2026-10-15T11:16:26.066893+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -861,13 +863,13 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.3,
         "provider_request_count": 0
       }
     },
     {
       "id": 61,
-      "time": "2026-10-15T03:09:55.951459+00:00",
+      "time": "2026-10-15T11:16:26.067002+00:00",
       "event": "AGENT_RESPONSE",
       "stage": "agent_reply",
       "detail": {
@@ -876,7 +878,7 @@
     },
     {
       "id": 62,
-      "time": "2026-10-15T03:09:55.958113+00:00",
+      "time": "2026-10-15T11:16:26.078735+00:00",
       "event": "LLM_CALL",
       "stage": "simulated_patient",
       "detail": {
@@ -889,13 +891,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 2.1,
         "provider_request_count": 0
       }
     },
     {
       "id": 63,
-      "time": "2026-10-15T03:09:55.958143+00:00",
+      "time": "2026-10-15T11:16:26.078778+00:00",
       "event": "SIMULATED_PATIENT",
       "stage": "simulated_patient",
       "detail": {
@@ -906,7 +908,7 @@
     },
     {
       "id": 64,
-      "time": "2026-10-15T03:09:55.961520+00:00",
+      "time": "2026-10-15T11:16:26.082872+00:00",
       "event": "USER_MESSAGE",
       "stage": "patient_input",
       "detail": {
@@ -915,7 +917,7 @@
     },
     {
       "id": 65,
-      "time": "2026-10-15T03:09:55.965609+00:00",
+      "time": "2026-10-15T11:16:26.092766+00:00",
       "event": "LLM_CALL",
       "stage": "information_extraction",
       "detail": {
@@ -928,13 +930,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 3.4,
         "provider_request_count": 0
       }
     },
     {
       "id": 66,
-      "time": "2026-10-15T03:09:55.967448+00:00",
+      "time": "2026-10-15T11:16:26.096467+00:00",
       "event": "LLM_CALL",
       "stage": "information_validation",
       "detail": {
@@ -947,20 +949,20 @@
         "failure_stage": "validation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.6,
         "provider_request_count": 0
       }
     },
     {
       "id": 68,
-      "time": "2026-10-15T03:09:55.967883+00:00",
+      "time": "2026-10-15T11:16:26.096874+00:00",
       "event": "STATE_UPDATE",
       "stage": "information_extraction",
       "detail": {}
     },
     {
       "id": 71,
-      "time": "2026-10-15T03:09:55.972223+00:00",
+      "time": "2026-10-15T11:16:26.101535+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -973,13 +975,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.2,
+        "duration_ms": 0.3,
         "provider_request_count": 0
       }
     },
     {
       "id": 72,
-      "time": "2026-10-15T03:09:55.972247+00:00",
+      "time": "2026-10-15T11:16:26.101583+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -989,19 +991,19 @@
     },
     {
       "id": 74,
-      "time": "2026-10-15T03:09:55.973416+00:00",
+      "time": "2026-10-15T11:16:26.103230+00:00",
       "event": "V4_TOOL_CALL",
       "stage": "medical_tool",
       "detail": {
         "tool": "CHECK_BP_HISTORY",
         "status": "success",
         "executed": true,
-        "duration_ms": 1.1
+        "duration_ms": 1.6
       }
     },
     {
       "id": 76,
-      "time": "2026-10-15T03:09:55.973779+00:00",
+      "time": "2026-10-15T11:16:26.103590+00:00",
       "event": "LLM_CALL",
       "stage": "planner",
       "detail": {
@@ -1014,13 +1016,13 @@
         "failure_stage": "generation",
         "failure_kind": "",
         "deepseek_called": false,
-        "duration_ms": 0.1,
+        "duration_ms": 0.2,
         "provider_request_count": 0
       }
     },
     {
       "id": 77,
-      "time": "2026-10-15T03:09:55.973802+00:00",
+      "time": "2026-10-15T11:16:26.103611+00:00",
       "event": "LLM_DECISION",
       "stage": "planner",
       "detail": {
@@ -1030,7 +1032,7 @@
     },
     {
       "id": 79,
-      "time": "2026-10-15T03:09:55.974187+00:00",
+      "time": "2026-10-15T11:16:26.103995+00:00",
       "event": "LLM_CALL",
       "stage": "response_validation",
       "detail": {
@@ -1049,49 +1051,11 @@
     },
     {
       "id": 81,
-      "time": "2026-10-15T03:09:55.974766+00:00",
+      "time": "2026-10-15T11:16:26.105089+00:00",
       "event": "LLM_CALL",
       "stage": "completion",
       "detail": {
         "purpose": "COMPLETE",
-        "ok": true,
-        "called": true,
-        "status": "success",
-        "attempt": 1,
-        "max_attempts": 2,
-        "failure_stage": "generation",
-        "failure_kind": "",
-        "deepseek_called": false,
-        "duration_ms": 0.1,
-        "provider_request_count": 0
-      }
-    },
-    {
-      "id": 82,
-      "time": "2026-10-15T03:09:55.974847+00:00",
-      "event": "TASK_COMPLETION_EVALUATED",
-      "stage": "completion",
-      "detail": {
-        "outcome": "completed",
-        "model_status": "success"
-      }
-    },
-    {
-      "id": 86,
-      "time": "2026-10-15T03:09:55.976312+00:00",
-      "event": "AGENT_RESPONSE",
-      "stage": "agent_reply",
-      "detail": {
-        "message": "本次事实已记录；相关疑问以原医嘱和医生确认意见为准。"
-      }
-    },
-    {
-      "id": 87,
-      "time": "2026-10-15T03:09:55.984287+00:00",
-      "event": "LLM_CALL",
-      "stage": "report",
-      "detail": {
-        "purpose": "REPORT_SUMMARY",
         "ok": true,
         "called": true,
         "status": "success",
@@ -1105,8 +1069,46 @@
       }
     },
     {
+      "id": 82,
+      "time": "2026-10-15T11:16:26.105133+00:00",
+      "event": "TASK_COMPLETION_EVALUATED",
+      "stage": "completion",
+      "detail": {
+        "outcome": "completed",
+        "model_status": "success"
+      }
+    },
+    {
+      "id": 86,
+      "time": "2026-10-15T11:16:26.106637+00:00",
+      "event": "AGENT_RESPONSE",
+      "stage": "agent_reply",
+      "detail": {
+        "message": "本次事实已记录；相关疑问以原医嘱和医生确认意见为准。"
+      }
+    },
+    {
+      "id": 87,
+      "time": "2026-10-15T11:16:26.117726+00:00",
+      "event": "LLM_CALL",
+      "stage": "report",
+      "detail": {
+        "purpose": "REPORT_SUMMARY",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "duration_ms": 1.3,
+        "provider_request_count": 0
+      }
+    },
+    {
       "id": 88,
-      "time": "2026-10-15T03:09:55.984582+00:00",
+      "time": "2026-10-15T11:16:26.118040+00:00",
       "event": "REPORT_GENERATED",
       "stage": "report",
       "detail": {
@@ -1116,7 +1118,7 @@
     },
     {
       "id": 89,
-      "time": "2026-10-15T03:09:55.987900+00:00",
+      "time": "2026-10-15T11:16:26.124984+00:00",
       "event": "MESSAGE_DELIVERY",
       "stage": "notification",
       "detail": {
@@ -1292,34 +1294,34 @@
     }
   ],
   "task": {
-    "task_id": "4bd4eb35-e4a3-44c2-a363-cd56fe0e9867",
+    "task_id": "36e07172-357f-459d-972e-ce01beb91bfe",
     "patient_id": "simulation-stable",
-    "event_id": "plan:90ebeda6-4b74-4609-a8b1-b5475646e2ce:2026-10-15T03:09:55.336057+00:00",
+    "event_id": "plan:102d003a-c32b-4c0f-8d33-646581b385ba:2026-10-15T11:16:25.214891+00:00",
     "trigger_type": "scheduled",
-    "due_at": "2026-10-15T03:09:55.336057+00:00",
+    "due_at": "2026-10-15T11:16:25.214891+00:00",
     "status": "completed",
     "attempts": 1,
     "max_attempts": 3,
     "lease_until": null,
     "claim_token": null,
-    "session_id": "task_4bd4eb35e4a344c2a363cd56fe0e9867",
+    "session_id": "task_36e07172357f459d972ece01beb91bfe",
     "last_error": null,
-    "created_at": "2026-10-15T03:09:55.339877+00:00",
-    "updated_at": "2026-10-15T03:09:55.998445+00:00",
+    "created_at": "2026-10-15T11:16:25.219550+00:00",
+    "updated_at": "2026-10-15T11:16:26.139886+00:00",
     "delivery_status": "not_configured",
     "station_delivery_status": "delivered",
     "report_generated": 1,
     "station_messages": 2,
     "payload": {
-      "plan_id": "90ebeda6-4b74-4609-a8b1-b5475646e2ce",
-      "window_end": "2026-10-15T03:09:55.336057+00:00",
-      "window_start": "2026-10-15T03:08:55.336057+00:00"
+      "plan_id": "102d003a-c32b-4c0f-8d33-646581b385ba",
+      "window_end": "2026-10-15T11:16:25.214891+00:00",
+      "window_start": "2026-10-15T11:15:25.214891+00:00"
     },
     "result": {
       "followup_status": "waiting_for_user",
       "message": "现在有没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常？",
       "report_generated": false,
-      "session_id": "task_4bd4eb35e4a344c2a363cd56fe0e9867",
+      "session_id": "task_36e07172357f459d972ece01beb91bfe",
       "station_messages": 0,
       "status": "waiting_for_user"
     }
@@ -1328,7 +1330,7 @@
   "family_read": true,
   "diagnostics": [
     {
-      "time": "2026-10-15T03:09:55.846442+00:00",
+      "time": "2026-10-15T11:16:25.957167+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1337,7 +1339,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.851493+00:00",
+      "time": "2026-10-15T11:16:25.964987+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1346,7 +1348,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.862034+00:00",
+      "time": "2026-10-15T11:16:25.978004+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 6,
@@ -1358,7 +1360,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.862454+00:00",
+      "time": "2026-10-15T11:16:25.978400+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1418,7 +1420,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.869569+00:00",
+      "time": "2026-10-15T11:16:25.983239+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1427,7 +1429,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.876549+00:00",
+      "time": "2026-10-15T11:16:25.988527+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1436,7 +1438,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.923281+00:00",
+      "time": "2026-10-15T11:16:26.031721+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1448,7 +1450,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.925076+00:00",
+      "time": "2026-10-15T11:16:26.032738+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1487,7 +1489,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.931598+00:00",
+      "time": "2026-10-15T11:16:26.038116+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1496,7 +1498,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.936608+00:00",
+      "time": "2026-10-15T11:16:26.046887+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1505,7 +1507,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.945176+00:00",
+      "time": "2026-10-15T11:16:26.059185+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1517,7 +1519,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.945885+00:00",
+      "time": "2026-10-15T11:16:26.059881+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1563,7 +1565,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.951431+00:00",
+      "time": "2026-10-15T11:16:26.066939+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "ASK_USER",
@@ -1572,7 +1574,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.958143+00:00",
+      "time": "2026-10-15T11:16:26.078778+00:00",
       "event": "SIMULATED_PATIENT",
       "detail": {
         "mode": "llm",
@@ -1581,7 +1583,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.967478+00:00",
+      "time": "2026-10-15T11:16:26.096499+00:00",
       "event": "LLM_EXTRACTION_RESULT",
       "detail": {
         "accepted_claims": 1,
@@ -1593,7 +1595,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.967883+00:00",
+      "time": "2026-10-15T11:16:26.096874+00:00",
       "event": "STATE_UPDATE",
       "detail": {
         "coverage": {
@@ -1634,7 +1636,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.974236+00:00",
+      "time": "2026-10-15T11:16:26.104048+00:00",
       "event": "OUTPUT_VALIDATION",
       "detail": {
         "action": "FINISH",
@@ -1643,7 +1645,7 @@
       }
     },
     {
-      "time": "2026-10-15T03:09:55.974847+00:00",
+      "time": "2026-10-15T11:16:26.105133+00:00",
       "event": "TASK_COMPLETION_EVALUATED",
       "detail": {
         "outcome": "completed",
@@ -1754,7 +1756,7 @@
           "label": "2026-10-15",
           "systolic": 132,
           "diastolic": 78,
-          "measured_at": "2026-10-15T03:09:55.927799+00:00",
+          "measured_at": "2026-10-15T11:16:26.034906+00:00",
           "source": "patient_chat"
         }
       ]
@@ -1777,7 +1779,7 @@
     "visit_advice": null,
     "medication_guidance": null,
     "long_term_memory": {
-      "snapshot_at": "2026-10-15T03:09:55.969693+00:00",
+      "snapshot_at": "2026-10-15T11:16:26.099618+00:00",
       "summary": "历史近7天实际测量记录共4条（4个日期），均值135.0/81.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
       "focus": []
     },
@@ -1785,7 +1787,7 @@
       "queries": [],
       "sources": []
     },
-    "generated_at": "2026-10-15T03:09:55.975913+00:00",
+    "generated_at": "2026-10-15T11:16:26.106086+00:00",
     "task_completion": {
       "status": "completed",
       "required_topics": [
@@ -1827,7 +1829,7 @@
             "label": "2026-10-15",
             "systolic": 132,
             "diastolic": 78,
-            "measured_at": "2026-10-15T03:09:55.927799+00:00",
+            "measured_at": "2026-10-15T11:16:26.034906+00:00",
             "source": "patient_chat"
           },
           "recent_3": {
@@ -1878,7 +1880,7 @@
               "label": "2026-10-15",
               "systolic": 132,
               "diastolic": 78,
-              "measured_at": "2026-10-15T03:09:55.927799+00:00",
+              "measured_at": "2026-10-15T11:16:26.034906+00:00",
               "source": "patient_chat"
             }
           ]
@@ -1962,7 +1964,7 @@
             "label": "2026-10-15",
             "systolic": 132,
             "diastolic": 78,
-            "measured_at": "2026-10-15T03:09:55.927799+00:00",
+            "measured_at": "2026-10-15T11:16:26.034906+00:00",
             "source": "patient_chat"
           }
         ]
@@ -1985,7 +1987,7 @@
       "visit_advice": null,
       "medication_guidance": null,
       "long_term_memory": {
-        "snapshot_at": "2026-10-15T03:09:55.969693+00:00",
+        "snapshot_at": "2026-10-15T11:16:26.099618+00:00",
         "summary": "历史近7天实际测量记录共4条（4个日期），均值135.0/81.0 mmHg。以上均为历史事实，不代表本次服药或症状状态。",
         "focus": []
       },
@@ -1993,7 +1995,7 @@
         "queries": [],
         "sources": []
       },
-      "generated_at": "2026-10-15T03:09:55.975913+00:00",
+      "generated_at": "2026-10-15T11:16:26.106086+00:00",
       "task_completion": {
         "status": "completed",
         "required_topics": [
@@ -2035,7 +2037,7 @@
               "label": "2026-10-15",
               "systolic": 132,
               "diastolic": 78,
-              "measured_at": "2026-10-15T03:09:55.927799+00:00",
+              "measured_at": "2026-10-15T11:16:26.034906+00:00",
               "source": "patient_chat"
             },
             "recent_3": {
@@ -2086,7 +2088,7 @@
                 "label": "2026-10-15",
                 "systolic": 132,
                 "diastolic": 78,
-                "measured_at": "2026-10-15T03:09:55.927799+00:00",
+                "measured_at": "2026-10-15T11:16:26.034906+00:00",
                 "source": "patient_chat"
               }
             ]

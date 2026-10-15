@@ -307,6 +307,34 @@ class RuntimeCheckpointTests(unittest.TestCase):
         self.assertEqual(resumed["followup_status"], "waiting_for_user")
         self.assertFalse(any(entry["event"] == "USER_MESSAGE" for entry in resumed["trace"]))
 
+    def test_expired_planning_window_pauses_without_empty_automatic_resumes(self):
+        clock = [100.0]
+        windows = []
+
+        def planner(state, **kwargs):
+            windows.append(kwargs["max_seconds"])
+            clock[0] += 120
+            state["followup_status"] = "processing"
+            state["execution_pending"] = {"next_action": "PLAN", "plan_calls": 2, "input_count": 0}
+            return {"message": "正在整理。"}
+
+        with patch.object(runtime_v5, "monotonic", side_effect=lambda: clock[0]), \
+                patch.object(runtime_v5.config, "V5_REQUEST_TIMEOUT_SECONDS", 120), \
+                patch.object(runtime_v5, "run_followup_agent", side_effect=planner):
+            resumed = runtime_v5.AgentRuntime().turn(self.sid)
+        self.assertEqual(windows, [120])
+        self.assertEqual(resumed["followup_status"], "interrupted")
+        self.assertEqual(resumed["interruption_reason"], "planning_time_budget")
+        self.assertEqual(resumed["execution_pending"]["plan_calls"], 2)
+        self.assertFalse(any(entry["event"] == "EXECUTION_RESUMED" for entry in resumed["trace"]))
+        self.assertIsNone(resumed.get("report"))
+        self.assertEqual(self.bp_count(), 0)
+        with patch.object(runtime_v5, "run_followup_agent", side_effect=self.waiting):
+            recovered = runtime_v5.AgentRuntime().turn(self.sid)
+        self.assertEqual(recovered["followup_status"], "waiting_for_user")
+        self.assertEqual(self.bp_count(), 0)
+        self.assertFalse(any(entry["event"] == "USER_MESSAGE" for entry in recovered["trace"]))
+
 
 if __name__ == "__main__":
     unittest.main()

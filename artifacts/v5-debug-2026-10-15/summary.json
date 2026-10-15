@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-15",
+  "model": "deepseek-flash",
+  "database": "isolated fictional patients",
+  "rag": "keyword",
+  "baseline_tests": 671,
+  "final_tests": 687,
+  "frontend_tests": 7,
+  "real_scenarios": [
+    {
+      "file": "live-stable-final.json",
+      "scenario": "stable",
+      "followup_status": "completed",
+      "evaluation_pass": true,
+      "score": 100,
+      "provider_requests": 28,
+      "trace_seconds": 264.31,
+      "patient_turns": 3,
+      "fallback_answers": 1,
+      "executed_tools": 1,
+      "exact_duplicate_questions": 0,
+      "doctor_handled": true,
+      "family_read": true
+    },
+    {
+      "file": "live-high_bp-after.json",
+      "scenario": "high_bp",
+      "followup_status": "interrupted",
+      "evaluation_pass": false,
+      "score": 91,
+      "provider_requests": 50,
+      "trace_seconds": 592.592,
+      "patient_turns": 5,
+      "fallback_answers": 1,
+      "executed_tools": 6,
+      "exact_duplicate_questions": 0,
+      "doctor_handled": false,
+      "family_read": false
+    },
+    {
+      "file": "live-danger-after.json",
+      "scenario": "danger",
+      "followup_status": "escalated",
+      "evaluation_pass": true,
+      "score": 100,
+      "provider_requests": 2,
+      "trace_seconds": 12.044,
+      "patient_turns": 1,
+      "fallback_answers": 0,
+      "executed_tools": 1,
+      "exact_duplicate_questions": 0,
+      "doctor_handled": true,
+      "family_read": true
+    }
+  ],
+  "short_answer_probes": [
+    {
+      "case": "not_yet",
+      "pass": true,
+      "requests": 2,
+      "medication_status": "not_taken_yet",
+      "medication_timing": "unknown",
+      "answer_status": "answered"
+    },
+    {
+      "case": "denied_missed",
+      "pass": true,
+      "requests": 2,
+      "medication_status": "unknown",
+      "medication_timing": "unknown",
+      "answer_status": "answered"
+    },
+    {
+      "case": "unable",
+      "pass": true,
+      "requests": 1,
+      "medication_status": "unknown",
+      "medication_timing": "unknown",
+      "answer_status": "unable"
+    },
+    {
+      "case": "overdue_final",
+      "pass": true,
+      "requests": 2,
+      "medication_status": "not_taken_yet",
+      "medication_timing": "overdue",
+      "answer_status": "answered"
+    }
+  ],
+  "thinking_comparison": {
+    "kind": "one_fictional_review_payload_two_modes",
+    "model": "deepseek-flash",
+    "production_configuration_changed": false,
+    "samples": [
+      {
+        "mode": "provider_default",
+        "seconds": 15.197,
+        "model": "deepseek-flash",
+        "max_tokens": 4096,
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 2646,
+          "prompt_tokens": 1339,
+          "total_tokens": 3985,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": null,
+            "audio_tokens": null,
+            "reasoning_tokens": 2288,
+            "rejected_prediction_tokens": null
+          },
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 256
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 1083
+        },
+        "reasoning_characters": 8558,
+        "reviewed_claims": 8,
+        "all_claims_supported": true,
+        "screening_supported": true
+      },
+      {
+        "mode": "thinking_disabled",
+        "seconds": 1.918,
+        "model": "deepseek-flash",
+        "max_tokens": 4096,
+        "finish_reason": "stop",
+        "usage": {
+          "completion_tokens": 341,
+          "prompt_tokens": 1314,
+          "total_tokens": 1655,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1314
+        },
+        "reasoning_characters": 0,
+        "reviewed_claims": 8,
+        "all_claims_supported": true,
+        "screening_supported": false
+      }
+    ],
+    "limitations": "One sample per mode; not a clinical accuracy or general latency benchmark; reasoning text never recorded."
+  },
+  "limitations": [
+    "One selected run per scenario; not a measured success rate.",
+    "Stable used one truthful patient fallback; danger patient used an urgent fixed profile.",
+    "High-BP follow-up remains interrupted and did not create a final report.",
+    "Scenarios were run during incremental fixes, not all rerun on the final revision.",
+    "Final short-answer and budget fixes have unit/targeted verification; no additional whole high-BP live rerun.",
+    "Earlier aborted/incomplete-fixture traces retained and excluded from acceptance counts."
+  ]
+}

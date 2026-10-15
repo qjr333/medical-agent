@@ -1,0 +1,107 @@
+{
+  "real_model_requests": 0,
+  "input_source": "live-probe-before.json",
+  "before_semantic_validated": false,
+  "after_semantic_validated": true,
+  "patch": {
+    "bp_systolic": null,
+    "bp_diastolic": null,
+    "medication_status": "unknown",
+    "medication_detail": "",
+    "medication_timing": "unknown",
+    "medication_observations": [],
+    "medication_adherence": "",
+    "symptoms": [],
+    "denied_symptoms": [
+      "头晕"
+    ],
+    "red_flags": [],
+    "denied_red_flags": [
+      "胸痛",
+      "呼吸困难",
+      "晕厥",
+      "意识异常",
+      "突发肢体无力",
+      "突发言语异常"
+    ],
+    "additional_information": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+    "measurement_context": "",
+    "patient_question": "",
+    "answer_status": "answered",
+    "answered_topics": [
+      "current_symptoms",
+      "red_flags"
+    ],
+    "topic_status": {
+      "current_symptoms": "answered",
+      "red_flags": "answered"
+    },
+    "_semantic": {
+      "screening": {
+        "adequate": true,
+        "evidence": "我现在没有胸痛、呼吸困难、晕厥、意识异常、突发肢体无力或突发言语异常。我现在没有不舒服，也没有头晕。",
+        "question": "这次测出168/104之后，您有没有出现胸痛或胸闷、喘不上气、头晕到快要晕倒、意识不清、突然一侧手脚没力气，或者说话说不清楚的情况？",
+        "scope": [
+          "胸痛",
+          "呼吸困难",
+          "晕厥",
+          "意识异常",
+          "突发肢体无力",
+          "突发言语异常"
+        ]
+      }
+    },
+    "_llm_v4_verified": true,
+    "semantic_validated": true
+  },
+  "trace": [
+    {
+      "time": "2026-10-15T11:46:55.082658+00:00",
+      "event": "LLM_CALL",
+      "detail": {
+        "purpose": "EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "generation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "provider_events": [],
+        "agent_version": "V5.0",
+        "duration_ms": 0.1
+      }
+    },
+    {
+      "time": "2026-10-15T11:46:55.082863+00:00",
+      "event": "LLM_CALL",
+      "detail": {
+        "purpose": "VERIFY_EXTRACT",
+        "ok": true,
+        "called": true,
+        "status": "success",
+        "attempt": 1,
+        "max_attempts": 2,
+        "failure_stage": "validation",
+        "failure_kind": "",
+        "deepseek_called": false,
+        "provider_events": [],
+        "agent_version": "V5.0",
+        "duration_ms": 0.1
+      }
+    },
+    {
+      "time": "2026-10-15T11:46:55.082929+00:00",
+      "event": "LLM_EXTRACTION_RESULT",
+      "detail": {
+        "accepted_claims": 8,
+        "candidate_claims": 8,
+        "reported_symptoms": [],
+        "reported_red_flags": [],
+        "answer_status": "answered",
+        "semantic_validated": true
+      }
+    }
+  ]
+}
